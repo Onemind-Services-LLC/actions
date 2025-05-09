@@ -17,7 +17,7 @@ To use these actions in your repository, reference them in your workflow file:
 ```yaml
 jobs:
   test:
-    uses: Onemind-Services-LLC/actions/.github/workflows/netbox-plugin-tests.yml@main
+    uses: Onemind-Services-LLC/actions/.github/workflows/netbox-plugin-tests.yml@master
     with:
       plugin_name: 'your_plugin_name'
       netbox_version: 'v4.2.9'  # Required: NetBox version to test against

@@ -36,11 +36,6 @@ jobs:
       git_token: ${{ secrets.GIT_TOKEN }}
 ```
 
-## Plugin Name Handling
-
-The workflow automatically handles the conversion from hyphenated repository names (e.g., `netbox-portal`) to
-underscore-separated Python module names (e.g., `netbox_portal`) for test execution.
-
 ## Requirements
 
 Your plugin repository should have:
