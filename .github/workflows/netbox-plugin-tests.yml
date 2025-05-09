@@ -53,6 +53,11 @@ jobs:
           --health-retries 5
 
     steps:
+      - name: Install System Dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libpq-dev
+
       - name: Checkout Plugin Repository
         uses: actions/checkout@v4
         with:
@@ -89,7 +94,6 @@ jobs:
       - name: Install NetBox Core Dependencies
         working-directory: netbox
         run: |
-          pip install libpq-dev
           pip install -r requirements.txt
 
       - name: Configure NetBox
