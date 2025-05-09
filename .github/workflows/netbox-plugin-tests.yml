@@ -4,23 +4,23 @@ on:
   workflow_call:
     inputs:
       plugin_name:
-        description: 'The name of the NetBox plugin (also used as the directory name)'
+        description: 'The name of the NetBox plugin, eg: netbox_secrets'
         required: true
         type: string
       netbox_version:
-        description: 'NetBox version to use'
+        description: 'NetBox version to use, eg: v4.3.0'
         required: true
         type: string
       python_version:
-        description: 'Python version to use'
+        description: 'Python version to use, eg: 3.12'
         required: false
         default: '3.12'
         type: string
 
     secrets:
       git_token:
-        description: 'GitHub token for potentially accessing private repositories'
-        required: false
+        description: 'GitHub token for accessing private repositories'
+        required: true
 
 jobs:
   test:
@@ -39,7 +39,7 @@ jobs:
           --health-retries 3
 
       postgres:
-        image: postgres:14-alpine
+        image: postgres:17-alpine
         env:
           POSTGRES_USER: netbox
           POSTGRES_PASSWORD: netbox
@@ -62,7 +62,6 @@ jobs:
         uses: actions/checkout@v4
         with:
           path: ${{ inputs.plugin_name }}
-          fetch-depth: 0
 
       - name: Checkout NetBox Repository
         uses: actions/checkout@v4
@@ -104,11 +103,8 @@ jobs:
 
       - name: Validate Database Migrations
         working-directory: netbox
-        run: python netbox/manage.py makemigrations --check --dry-run
+        run: python netbox/manage.py makemigrations --check
 
       - name: Run Tests
         working-directory: netbox
-        run: |
-          # Convert plugin-name to plugin_name for the Python module
-          MODULE_NAME=$(echo "${{ inputs.plugin_name }}" | tr '-' '_')
-          python netbox/manage.py test ${MODULE_NAME}.tests --parallel -v2
+        run: python netbox/manage.py test ${{ inputs.plugin_name }}.tests --parallel

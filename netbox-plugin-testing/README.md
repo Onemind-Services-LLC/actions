@@ -28,7 +28,7 @@ jobs:
   test:
     uses: Onemind-Services-LLC/actions/.github/workflows/netbox-plugin-tests.yml@master
     with:
-      plugin_name: 'your-plugin-name'  # Repository/directory name with hyphens
+      plugin_name: 'your_plugin_name'  # Repository/directory name with underscor
       netbox_version: 'v4.2.9'  # Required: NetBox version to test against
       python_version: '3.12'  # Default: 3.12
 
