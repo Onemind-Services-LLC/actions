@@ -1,0 +1,114 @@
+name: NetBox Plugin Tests
+
+on:
+  workflow_call:
+    inputs:
+      plugin_name:
+        description: 'The name of the NetBox plugin (also used as the directory name)'
+        required: true
+        type: string
+      netbox_version:
+        description: 'NetBox version to use'
+        required: true
+        type: string
+      python_version:
+        description: 'Python version to use'
+        required: false
+        default: '3.12'
+        type: string
+
+    secrets:
+      git_token:
+        description: 'GitHub token for potentially accessing private repositories'
+        required: false
+
+jobs:
+  test:
+    name: Run Tests
+    runs-on: ubuntu-22.04-sh
+
+    services:
+      redis:
+        image: redis:latest
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 3
+
+      postgres:
+        image: postgres:14-alpine
+        env:
+          POSTGRES_USER: netbox
+          POSTGRES_PASSWORD: netbox
+          POSTGRES_DB: netbox
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+      - name: Install System Dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y python3 python3-dev python3-pip libpq-dev
+
+      - name: Checkout Plugin Repository
+        uses: actions/checkout@v4
+        with:
+          path: ${{ inputs.plugin_name }}
+          fetch-depth: 0
+
+      - name: Checkout NetBox Repository
+        uses: actions/checkout@v4
+        with:
+          repository: "netbox-community/netbox"
+          path: netbox
+          ref: ${{ inputs.netbox_version }}
+
+      - name: Set up Python ${{ inputs.python_version }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ inputs.python_version }}
+          cache: 'pip'
+
+      - name: Install Plugin Dependencies
+        working-directory: ${{ inputs.plugin_name }}
+        run: |
+          echo machine github.com login ${{ secrets.git_token }} > ~/.netrc
+          
+          python -m pip install --upgrade pip
+          pip install -e .  # Install in development mode
+
+          if [ -f "requirements.txt" ]; then
+            echo "Found requirements.txt, installing dependencies..."
+            pip install -r requirements.txt
+          else
+            echo "No requirements.txt found, skipping requirements installation"
+          fi
+
+      - name: Install NetBox Core Dependencies
+        working-directory: netbox
+        run: |
+          pip install -r requirements.txt
+
+      - name: Configure NetBox
+        working-directory: netbox
+        run: |
+          ln -sf $(pwd)/../${{ inputs.plugin_name }}/testing_configuration/configuration.py netbox/netbox/configuration.py
+
+      - name: Validate Database Migrations
+        working-directory: netbox
+        run: python netbox/manage.py makemigrations --check --dry-run
+
+      - name: Run Tests
+        working-directory: netbox
+        run: |
+          # Convert plugin-name to plugin_name for the Python module
+          MODULE_NAME=$(echo "${{ inputs.plugin_name }}" | tr '-' '_')
+          python netbox/manage.py test ${MODULE_NAME}.tests --parallel -v2
