@@ -84,13 +84,6 @@ jobs:
           python -m pip install --upgrade pip
           pip install -e .  # Install in development mode
 
-          if [ -f "requirements.txt" ]; then
-            echo "Found requirements.txt, installing dependencies..."
-            pip install -r requirements.txt
-          else
-            echo "No requirements.txt found, skipping requirements installation"
-          fi
-
       - name: Install NetBox Core Dependencies
         working-directory: netbox
         run: |
