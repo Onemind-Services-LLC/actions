@@ -1,17 +1,17 @@
 # NetBox Plugin Testing
 
-This action provides a standardized way to test NetBox plugins. It sets up the necessary dependencies and runs plugin
-tests against a specified version of NetBox.
+A reusable GitHub Actions workflow for testing NetBox plugins. This workflow sets up the necessary dependencies and runs
+plugin tests against a specified version of NetBox.
 
 ## Features
 
-- Automatically sets up PostgreSQL and Redis services
-- Installs system dependencies
-- Checks out the plugin repository and NetBox
-- Handles plugin dependencies installation
-- Configures NetBox for testing
-- Validates database migrations
-- Runs plugin tests
+- 🐘 Automatically sets up PostgreSQL and Redis services
+- 📦 Installs system dependencies
+- 🔄 Checks out the plugin repository and NetBox
+- 🛠️ Handles plugin dependencies installation
+- ⚙️ Configures NetBox for testing
+- 🗃️ Validates database migrations
+- ✅ Runs plugin tests
 
 ## Usage
 
@@ -28,13 +28,28 @@ jobs:
   test:
     uses: Onemind-Services-LLC/actions/.github/workflows/netbox-plugin-tests.yml@master
     with:
-      plugin_name: 'your_plugin_name'  # Repository/directory name with underscor
-      netbox_version: 'v4.2.9'  # Required: NetBox version to test against
-      python_version: '3.12'  # Default: 3.12
-
+      plugin_name: 'your_plugin_name'   # Required: Repository/directory name with underscores
+      netbox_version: 'v4.2.9'          # Required: NetBox version to test against
+      python_version: '3.12'            # Optional: Python version to use (default: 3.12)
+      runner: 'ubuntu-22.04-sh'         # Optional: GitHub runner to use (default: ubuntu-22.04-sh)
     secrets:
       git_token: ${{ secrets.GIT_TOKEN }}
 ```
+
+## Parameters
+
+| Parameter        | Description                                                     | Required | Default             | Type   |
+|------------------|-----------------------------------------------------------------|----------|---------------------|--------|
+| `plugin_name`    | The name of the NetBox plugin (also used as the directory name) | Yes      | -                   | string |
+| `netbox_version` | NetBox version to test against                                  | Yes      | -                   | string |
+| `python_version` | Python version to use                                           | No       | `'3.12'`            | string |
+| `runner`         | GitHub runner to use for the workflow                           | No       | `'ubuntu-22.04-sh'` | string |
+
+## Secrets
+
+| Secret      | Description                                     | Required |
+|-------------|-------------------------------------------------|----------|
+| `git_token` | GitHub token for accessing private repositories | Yes      |
 
 ## Requirements
 
@@ -44,16 +59,148 @@ Your plugin repository should have:
 2. Tests in a module named `[plugin_name].tests` (with underscores)
 3. A NetBox test configuration at `testing_configuration/configuration.py`
 
-## Parameters
+## Configuration Examples
 
-| Parameter        | Description                                                     | Required | Default |
-|------------------|-----------------------------------------------------------------|----------|---------|
-| `plugin_name`    | The name of the NetBox plugin (also used as the directory name) | Yes      | -       |
-| `netbox_version` | NetBox version to test against                                  | Yes      | -       |
-| `python_version` | Python version to use                                           | No       | `3.12`  |
+### Basic Usage
 
-## Secrets
+```yaml
+jobs:
+  test:
+    uses: Onemind-Services-LLC/actions/.github/workflows/netbox-plugin-tests.yml@master
+    with:
+      plugin_name: 'my_netbox_plugin'
+      netbox_version: 'v4.2.9'
+    secrets:
+      git_token: ${{ secrets.GIT_TOKEN }}
+```
 
-| Secret      | Description                                     | Required |
-|-------------|-------------------------------------------------|----------|
-| `git_token` | GitHub token for accessing private repositories | Yes      |
+### With Custom Python Version
+
+```yaml
+jobs:
+  test:
+    uses: Onemind-Services-LLC/actions/.github/workflows/netbox-plugin-tests.yml@master
+    with:
+      plugin_name: 'my_netbox_plugin'
+      netbox_version: 'v4.2.9'
+      python_version: '3.11'
+    secrets:
+      git_token: ${{ secrets.GIT_TOKEN }}
+```
+
+### With Custom Runner
+
+```yaml
+jobs:
+  test:
+    uses: Onemind-Services-LLC/actions/.github/workflows/netbox-plugin-tests.yml@master
+    with:
+      plugin_name: 'my_netbox_plugin'
+      netbox_version: 'v4.2.9'
+      runner: 'ubuntu-latest'
+    secrets:
+      git_token: ${{ secrets.GIT_TOKEN }}
+```
+
+### Matrix Strategy with Multiple NetBox Versions
+
+```yaml
+jobs:
+  test:
+    strategy:
+      matrix:
+        netbox_version: [ 'v4.2.1', 'v4.2.2', 'v4.2.3' ]
+    uses: Onemind-Services-LLC/actions/.github/workflows/netbox-plugin-tests.yml@master
+    with:
+      plugin_name: 'my_netbox_plugin'
+      netbox_version: ${{ matrix.netbox_version }}
+    secrets:
+      git_token: ${{ secrets.GIT_TOKEN }}
+```
+
+### Complete Workflow Example
+
+```yaml
+name: NetBox Plugin Tests
+
+on:
+  - push
+  - pull_request
+
+jobs:
+  test:
+    strategy:
+      matrix:
+        netbox_version: [ 'v4.2.9', 'v4.1.0' ]
+        python_version: [ '3.11', '3.12' ]
+    uses: Onemind-Services-LLC/actions/.github/workflows/netbox-plugin-tests.yml@master
+    with:
+      plugin_name: 'my_netbox_plugin'
+      netbox_version: ${{ matrix.netbox_version }}
+      python_version: ${{ matrix.python_version }}
+    secrets:
+      git_token: ${{ secrets.GIT_TOKEN }}
+```
+
+## Sample Testing Configuration
+
+Create `testing_configuration/configuration.py` in your plugin repository:
+
+```python
+###################################################################
+#  This file serves as a base configuration for testing purposes  #
+#  only. It is not intended for production use.                   #
+###################################################################
+
+ALLOWED_HOSTS = ["*"]
+
+DATABASE = {
+    "NAME": "netbox",
+    "USER": "netbox",
+    "PASSWORD": "netbox",
+    "HOST": "localhost",
+    "PORT": "",
+    "CONN_MAX_AGE": 300,
+}
+
+PLUGINS = [
+    "your_plugin_name",  # Replace with your plugin name (with underscores)
+]
+
+PLUGINS_CONFIG = {  # type: ignore
+    "your_plugin_name": {}  # Replace with your plugin configuration
+}
+
+REDIS = {
+    "tasks": {
+        "HOST": "localhost",
+        "PORT": 6379,
+        "PASSWORD": "",
+        "DATABASE": 0,
+        "SSL": False,
+    },
+    "caching": {
+        "HOST": "localhost",
+        "PORT": 6379,
+        "PASSWORD": "",
+        "DATABASE": 1,
+        "SSL": False,
+    },
+}
+
+SECRET_KEY = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
+
+```
+
+## Troubleshooting
+
+### Common Issues
+
+**Problem**: Tests fail with database connection errors
+**Solution**: Ensure your `testing_configuration/configuration.py` matches the service configuration.
+
+**Problem**: Plugin not found during testing
+**Solution**: Verify your `plugin_name` parameter matches your package name exactly (with underscores).
+
+**Problem**: Migration errors during testing
+**Solution**: Check that your plugin's migrations are compatible with the specified NetBox version.
