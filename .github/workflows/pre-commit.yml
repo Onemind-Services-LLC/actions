@@ -1,0 +1,31 @@
+name: Pre-commit Checks
+
+on:
+  workflow_call:
+    inputs:
+      python_version:
+        description: 'Python version to use, eg: 3.12'
+        required: false
+        default: '3.12'
+        type: string
+      runner:
+        description: 'GitHub runner to use'
+        required: false
+        type: string
+        default: 'ubuntu-22.04-sh'
+
+jobs:
+  pre-commit:
+    name: Run pre-commit hooks
+    runs-on: ${{ inputs.runner }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ inputs.python_version }}
+          cache: pip
+
+      - uses: pre-commit/action@v3.0.1
