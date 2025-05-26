@@ -29,7 +29,7 @@ jobs:
   test:
     uses: Onemind-Services-LLC/actions/.github/workflows/netbox-plugin-tests.yml@master
     with:
-      plugin-name: 'your_plugin_name'          # Required: Name of your NetBox plugin
+      plugin-name: 'your_netbox_plugin'        # Required: Name of your NetBox plugin
       netbox-version: 'v4.2.9'                 # Required: NetBox version to test against
       runner: 'ubuntu-22.04-sh'                # Optional: Runner environment (default: ubuntu-22.04-sh)
       python-version: '3.12'                   # Optional: Python version (default: 3.12)
