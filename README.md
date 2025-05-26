@@ -29,10 +29,10 @@ jobs:
   test:
     uses: Onemind-Services-LLC/actions/.github/workflows/netbox-plugin-tests.yml@master
     with:
-      plugin_name: 'your_plugin_name'          # Required: Name of your NetBox plugin
-      netbox_version: 'v4.2.9'                 # Required: NetBox version to test against
+      plugin-name: 'your_plugin_name'          # Required: Name of your NetBox plugin
+      netbox-version: 'v4.2.9'                 # Required: NetBox version to test against
       runner: 'ubuntu-22.04-sh'                # Optional: Runner environment (default: ubuntu-22.04-sh)
-      python_version: '3.12'                   # Optional: Python version (default: 3.12)
+      python-version: '3.12'                   # Optional: Python version (default: 3.12)
 ```
 
 ### Pre-commit Checks
@@ -43,5 +43,5 @@ jobs:
     uses: Onemind-Services-LLC/actions/.github/workflows/pre-commit.yml@master
     with:
       runner: 'ubuntu-22.04-sh'                # Optional: Runner environment (default: ubuntu-22.04-sh)
-      python-version: '3.10'                   # Optional: Python version (default: 3.10)
+      python-version: '3.12'                   # Optional: Python version (default: 3.12)
 ```
