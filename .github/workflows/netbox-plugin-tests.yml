@@ -16,6 +16,11 @@ on:
         required: false
         default: '3.12'
         type: string
+      runner:
+        description: 'GitHub runner to use'
+        required: false
+        type: string
+        default: 'ubuntu-22.04-sh'
 
     secrets:
       git_token:
@@ -25,7 +30,7 @@ on:
 jobs:
   test:
     name: Run Tests
-    runs-on: ubuntu-22.04-sh
+    runs-on: ${{ inputs.runner }}
 
     services:
       redis:
