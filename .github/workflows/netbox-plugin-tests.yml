@@ -31,8 +31,6 @@ jobs:
   test:
     name: Run Tests
     runs-on: ${{ inputs.runner }}
-    env:
-      NETBOX_CONFIGURATION: ${{ github.workspace }}/testing_configuration/configuration
 
     services:
       redis:
@@ -96,10 +94,10 @@ jobs:
         run: |
           pip install -r requirements.txt
 
-#      - name: Configure NetBox
-#        working-directory: netbox
-#        run: |
-#          ln -sf $(pwd)/../${{ inputs.plugin-name }}/testing_configuration/configuration.py netbox/netbox/configuration.py
+      - name: Configure NetBox
+        working-directory: netbox
+        run: |
+          ln -sf $(pwd)/../${{ inputs.plugin-name }}/testing_configuration/configuration.py netbox/netbox/configuration.py
 
       - name: Validate Database Migrations
         working-directory: netbox
