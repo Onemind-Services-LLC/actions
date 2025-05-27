@@ -32,7 +32,7 @@ jobs:
     name: Run Tests
     runs-on: ${{ inputs.runner }}
     env:
-      NETBOX_CONFIGURATION: $(pwd)/${{ inputs.plugin_name }}/testing_configuration/configuration
+      NETBOX_CONFIGURATION: ${{ github.workspace }}/${{ inputs.plugin-name }}/testing_configuration/configuration
 
     services:
       redis:
