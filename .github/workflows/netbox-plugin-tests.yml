@@ -3,15 +3,15 @@ name: NetBox Plugin Tests
 on:
   workflow_call:
     inputs:
-      plugin_name:
+      plugin-name:
         description: 'The name of the NetBox plugin, eg: netbox_secrets'
         required: true
         type: string
-      netbox_version:
+      netbox-version:
         description: 'NetBox version to use, eg: v4.3.0'
         required: true
         type: string
-      python_version:
+      python-version:
         description: 'Python version to use, eg: 3.12'
         required: false
         default: '3.12'
@@ -23,7 +23,7 @@ on:
         default: 'ubuntu-22.04-sh'
 
     secrets:
-      git_token:
+      git-token:
         description: 'GitHub token for accessing private repositories'
         required: true
 
@@ -66,25 +66,25 @@ jobs:
       - name: Checkout Plugin Repository
         uses: actions/checkout@v4
         with:
-          path: ${{ inputs.plugin_name }}
+          path: ${{ inputs.plugin-name }}
 
       - name: Checkout NetBox Repository
         uses: actions/checkout@v4
         with:
           repository: "netbox-community/netbox"
           path: netbox
-          ref: ${{ inputs.netbox_version }}
+          ref: ${{ inputs.netbox-version }}
 
-      - name: Set up Python ${{ inputs.python_version }}
+      - name: Set up Python ${{ inputs.python-version }}
         uses: actions/setup-python@v5
         with:
-          python-version: ${{ inputs.python_version }}
+          python-version: ${{ inputs.python-version }}
           cache: 'pip'
 
       - name: Install Plugin Dependencies
-        working-directory: ${{ inputs.plugin_name }}
+        working-directory: ${{ inputs.plugin-name }}
         run: |
-          echo machine github.com login ${{ secrets.git_token }} > ~/.netrc
+          echo machine github.com login ${{ secrets.git-token }} > ~/.netrc
           
           python -m pip install --upgrade pip
           pip install -e .  # Install in development mode
@@ -97,7 +97,7 @@ jobs:
       - name: Configure NetBox
         working-directory: netbox
         run: |
-          ln -sf $(pwd)/../${{ inputs.plugin_name }}/testing_configuration/configuration.py netbox/netbox/configuration.py
+          ln -sf $(pwd)/../${{ inputs.plugin-name }}/testing_configuration/configuration.py netbox/netbox/configuration.py
 
       - name: Validate Database Migrations
         working-directory: netbox
@@ -105,4 +105,4 @@ jobs:
 
       - name: Run Tests
         working-directory: netbox
-        run: python netbox/manage.py test ${{ inputs.plugin_name }}.tests --parallel
+        run: python netbox/manage.py test ${{ inputs.plugin-name }}.tests --parallel

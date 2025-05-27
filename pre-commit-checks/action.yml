@@ -3,7 +3,7 @@ description: 'Run pre-commit hooks for code quality and linting'
 author: 'Prince Kumar <pkumar@onemindservices.com>'
 
 inputs:
-  python_version:
+  python-version:
     description: 'Python version to use'
     required: false
     default: '3.12'
@@ -19,4 +19,4 @@ runs:
       uses: ./.github/workflows/pre-commit.yml
       with:
         runner: ${{ inputs.runner }}
-        python_version: ${{ inputs.python_version }}
+        python-version: ${{ inputs.python-version }}

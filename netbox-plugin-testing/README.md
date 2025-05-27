@@ -28,28 +28,28 @@ jobs:
   test:
     uses: Onemind-Services-LLC/actions/.github/workflows/netbox-plugin-tests.yml@master
     with:
-      plugin_name: 'your_plugin_name'   # Required: Repository/directory name with underscores
-      netbox_version: 'v4.2.9'          # Required: NetBox version to test against
-      python_version: '3.12'            # Optional: Python version to use (default: 3.12)
-      runner: 'ubuntu-22.04-sh'         # Optional: GitHub runner to use (default: ubuntu-22.04-sh)
+      plugin-name: 'your_netbox_plugin'  # Required: Repository/directory name with underscores
+      netbox-version: 'v4.2.9'           # Required: NetBox version to test against
+      python-version: '3.12'             # Optional: Python version to use (default: 3.12)
+      runner: 'ubuntu-22.04-sh'          # Optional: GitHub runner to use (default: ubuntu-22.04-sh)
     secrets:
-      git_token: ${{ secrets.GIT_TOKEN }}
+      git-token: ${{ secrets.git-token }}
 ```
 
 ## Parameters
 
-| Parameter        | Description                                                     | Required | Default             | Type   |
-|------------------|-----------------------------------------------------------------|----------|---------------------|--------|
-| `plugin_name`    | The name of the NetBox plugin (also used as the directory name) | Yes      | -                   | string |
-| `netbox_version` | NetBox version to test against                                  | Yes      | -                   | string |
-| `python_version` | Python version to use                                           | No       | `'3.12'`            | string |
+| Parameter          | Description                                                     | Required | Default               | Type   |
+| ------------------ | --------------------------------------------------------------- | -------- | --------------------- | ------ |
+| `plugin-name`    | The name of the NetBox plugin (also used as the directory name) | Yes      | -                     | string |
+| `netbox-version` | NetBox version to test against                                  | Yes      | -                     | string |
+| `python-version` | Python version to use                                           | No       | `'3.12'`            | string |
 | `runner`         | GitHub runner to use for the workflow                           | No       | `'ubuntu-22.04-sh'` | string |
 
 ## Secrets
 
-| Secret      | Description                                     | Required |
-|-------------|-------------------------------------------------|----------|
-| `git_token` | GitHub token for accessing private repositories | Yes      |
+| Secret        | Description                                     | Required |
+| ------------- | ----------------------------------------------- | -------- |
+| `git-token` | GitHub token for accessing private repositories | Yes      |
 
 ## Requirements
 
@@ -68,10 +68,10 @@ jobs:
   test:
     uses: Onemind-Services-LLC/actions/.github/workflows/netbox-plugin-tests.yml@master
     with:
-      plugin_name: 'my_netbox_plugin'
-      netbox_version: 'v4.2.9'
+      plugin-name: 'your_netbox_plugin'
+      netbox-version: 'v4.2.9'
     secrets:
-      git_token: ${{ secrets.GIT_TOKEN }}
+      git-token: ${{ secrets.git-token }}
 ```
 
 ### With Custom Python Version
@@ -81,11 +81,11 @@ jobs:
   test:
     uses: Onemind-Services-LLC/actions/.github/workflows/netbox-plugin-tests.yml@master
     with:
-      plugin_name: 'my_netbox_plugin'
-      netbox_version: 'v4.2.9'
-      python_version: '3.11'
+      plugin-name: 'your_netbox_plugin'
+      netbox-version: 'v4.2.9'
+      python-version: '3.11'
     secrets:
-      git_token: ${{ secrets.GIT_TOKEN }}
+      git-token: ${{ secrets.git-token }}
 ```
 
 ### With Custom Runner
@@ -95,11 +95,11 @@ jobs:
   test:
     uses: Onemind-Services-LLC/actions/.github/workflows/netbox-plugin-tests.yml@master
     with:
-      plugin_name: 'my_netbox_plugin'
-      netbox_version: 'v4.2.9'
+      plugin-name: 'your_netbox_plugin'
+      netbox-version: 'v4.2.9'
       runner: 'ubuntu-latest'
     secrets:
-      git_token: ${{ secrets.GIT_TOKEN }}
+      git-token: ${{ secrets.git-token }}
 ```
 
 ### Matrix Strategy with Multiple NetBox Versions
@@ -109,13 +109,13 @@ jobs:
   test:
     strategy:
       matrix:
-        netbox_version: [ 'v4.2.1', 'v4.2.2', 'v4.2.3' ]
+        netbox-version: [ 'v4.2.1', 'v4.2.2', 'v4.2.3' ]
     uses: Onemind-Services-LLC/actions/.github/workflows/netbox-plugin-tests.yml@master
     with:
-      plugin_name: 'my_netbox_plugin'
-      netbox_version: ${{ matrix.netbox_version }}
+      plugin-name: 'your_netbox_plugin'
+      netbox-version: ${{ matrix.netbox-version }}
     secrets:
-      git_token: ${{ secrets.GIT_TOKEN }}
+      git-token: ${{ secrets.git-token }}
 ```
 
 ### Complete Workflow Example
@@ -131,15 +131,15 @@ jobs:
   test:
     strategy:
       matrix:
-        netbox_version: [ 'v4.2.9', 'v4.1.0' ]
-        python_version: [ '3.11', '3.12' ]
+        netbox-version: [ 'v4.2.9', 'v4.1.0' ]
+        python-version: [ '3.11', '3.12' ]
     uses: Onemind-Services-LLC/actions/.github/workflows/netbox-plugin-tests.yml@master
     with:
-      plugin_name: 'my_netbox_plugin'
-      netbox_version: ${{ matrix.netbox_version }}
-      python_version: ${{ matrix.python_version }}
+      plugin-name: 'your_netbox_plugin'
+      netbox-version: ${{ matrix.netbox-version }}
+      python-version: ${{ matrix.python-version }}
     secrets:
-      git_token: ${{ secrets.GIT_TOKEN }}
+      git-token: ${{ secrets.git-token }}
 ```
 
 ## Sample Testing Configuration
@@ -164,11 +164,11 @@ DATABASE = {
 }
 
 PLUGINS = [
-    "your_plugin_name",  # Replace with your plugin name (with underscores)
+    "your_netbox_plugin",  # Replace with your plugin name (with underscores)
 ]
 
 PLUGINS_CONFIG = {  # type: ignore
-    "your_plugin_name": {}  # Replace with your plugin configuration
+    "your_netbox_plugin": {}  # Replace with your plugin configuration
 }
 
 REDIS = {
@@ -190,6 +190,14 @@ REDIS = {
 
 SECRET_KEY = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
 
+DEFAULT_PERMISSIONS = {}
+
+ALLOW_TOKEN_RETRIEVAL = True
+
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': True
+}
 ```
 
 ## Troubleshooting
@@ -200,7 +208,7 @@ SECRET_KEY = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
 **Solution**: Ensure your `testing_configuration/configuration.py` matches the service configuration.
 
 **Problem**: Plugin not found during testing
-**Solution**: Verify your `plugin_name` parameter matches your package name exactly (with underscores).
+**Solution**: Verify your `plugin-name` parameter matches your package name exactly (with underscores).
 
 **Problem**: Migration errors during testing
 **Solution**: Check that your plugin's migrations are compatible with the specified NetBox version.

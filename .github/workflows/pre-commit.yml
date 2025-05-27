@@ -3,7 +3,7 @@ name: Pre-commit Checks
 on:
   workflow_call:
     inputs:
-      python_version:
+      python-version:
         description: 'Python version to use, eg: 3.12'
         required: false
         default: '3.12'
@@ -25,7 +25,7 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
-          python-version: ${{ inputs.python_version }}
+          python-version: ${{ inputs.python-version }}
           cache: pip
 
       - uses: pre-commit/action@2c7b3805fd2a0fd8c1884dcaebf91fc102a13ecd
