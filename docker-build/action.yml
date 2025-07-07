@@ -1,0 +1,36 @@
+name: 'Docker Build'
+description: 'Build, push, and sign Docker images with configurable parameters'
+author: 'Prince Kumar <pkumar@onemindservices.com>'
+
+inputs:
+  images:
+    description: 'Docker images to build (multi-line string, one image per line)'
+    required: true
+  file:
+    description: 'Path to the Dockerfile'
+    required: false
+    default: './Dockerfile'
+  build-args:
+    description: 'Build arguments (multi-line string, KEY=VALUE format)'
+    required: false
+    default: ''
+  cache-from:
+    description: 'Cache source specification'
+    required: false
+    default: ''
+  cache-to:
+    description: 'Cache destination specification'
+    required: false
+    default: ''
+
+runs:
+  using: "composite"
+  steps:
+    - name: Run Docker Build Workflow
+      uses: ./.github/workflows/docker-build.yml
+      with:
+        images: ${{ inputs.images }}
+        file: ${{ inputs.file }}
+        build-args: ${{ inputs.build-args }}
+        cache-from: ${{ inputs.cache-from }}
+        cache-to: ${{ inputs.cache-to }}
