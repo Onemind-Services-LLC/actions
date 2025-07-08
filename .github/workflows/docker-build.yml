@@ -14,19 +14,16 @@ on:
         default: './Dockerfile'
       build-args:
         description: 'Build arguments (multi-line string, KEY=VALUE format)'
-        required: false
+        required: true
         type: string
-        default: 'SERVICE_VERSION=${{ steps.meta.outputs.version }}'
       cache-from:
         description: 'Cache source specification'
-        required: false
+        required: true
         type: string
-        default: ''
       cache-to:
         description: 'Cache destination specification'
-        required: false
+        required: true
         type: string
-        default: ''
 
 
 jobs:
