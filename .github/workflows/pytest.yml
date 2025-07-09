@@ -1,0 +1,64 @@
+name: Reusable Pytest Workflow
+
+on:
+  workflow_call:
+    inputs:
+      python-version:
+        description: 'Python version to use'
+        required: false
+        type: string
+        default: '3.12'
+      runner:
+        description: 'GitHub runner to use'
+        required: false
+        type: string
+        default: 'ubuntu-22.04'
+
+jobs:
+  unit_tests:
+    name: Run unit tests
+    runs-on: ${{ inputs.runner }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ inputs.python-version }}
+          cache: 'pip'
+
+      - name: Install dependencies
+        run: |
+          echo machine github.com login ${{ secrets.GIT_TOKEN }} > ~/.netrc
+          pip install -r requirements.txt
+          pip install pytest pytest-cov pytest-mock
+          rm ~/.netrc
+
+      - name: Setup environment
+        run: |
+          if [ -f "env/.env.ci" ]; then
+            cp env/.env.ci env/.env
+          fi
+
+      - name: Run tests
+        run: |
+          pytest \
+            --junitxml=pytest.xml \
+            --cov-report=term-missing:skip-covered \
+            --cov=app \
+            tests/
+
+      - name: Upload test results
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: pytest-results
+          path: pytest.xml
+
+      - name: Upload coverage reports
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: coverage-reports
+          path: .coverage
