@@ -14,16 +14,19 @@ on:
         default: './Dockerfile'
       build-args:
         description: 'Build arguments (multi-line string, KEY=VALUE format)'
-        required: true
+        required: false
         type: string
+        default: ''
       cache-from:
         description: 'Cache source specification'
-        required: true
+        required: false
         type: string
+        default: ''
       cache-to:
         description: 'Cache destination specification'
-        required: true
+        required: false
         type: string
+        default: ''
 
 
 jobs:
