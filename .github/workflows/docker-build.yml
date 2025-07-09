@@ -16,7 +16,7 @@ on:
         description: 'Build arguments (multi-line string, KEY=VALUE format)'
         required: false
         type: string
-        default: ''
+        default: 'SERVICE_VERSION=${{ steps.meta.outputs.version }}'
       cache-from:
         description: 'Cache source specification'
         required: false
