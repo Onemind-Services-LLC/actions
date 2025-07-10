@@ -64,9 +64,9 @@ jobs:
         with:
           images: ${{ inputs.images }}
           tags: |
-            type=ref,event=branch
-            type=ref,event=pr
+            type=ref, pattern=workflow_dispatch
             type=semver,pattern={{version}}
+            type=semver,pattern=v{{major}}
 
       - name: Build and push
         uses: docker/build-push-action@v6
