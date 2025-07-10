@@ -1,6 +1,7 @@
 # Docker Build Workflow
 
-A GitHub Actions reusable workflow for building, pushing, and signing Docker images with advanced caching and security features.
+A GitHub Actions reusable workflow for building, pushing, and signing Docker images with advanced caching and security
+features.
 
 ## Features
 
@@ -21,9 +22,9 @@ name: Build and Push Docker Images
 
 on:
   push:
-    branches: [main, develop]
+    branches: [ main, develop ]
   pull_request:
-    branches: [main]
+    branches: [ main ]
 
 jobs:
   build:
@@ -70,7 +71,7 @@ name: Multi-Registry Build
 
 on:
   push:
-    branches: [main]
+    branches: [ main ]
 
 jobs:
   build-staging:
@@ -97,26 +98,26 @@ jobs:
 
 ### Inputs
 
-| Parameter | Description | Required | Type | Default |
-|-----------|-------------|----------|------|---------|
-| `images` | Docker images to build (multi-line string, one image per line) | Yes | string | - |
-| `file` | Path to the Dockerfile | No | string | `'./Dockerfile'` |
-| `build-args` | Build arguments (multi-line string, KEY=VALUE format) | No | string | `''` |
-| `cache-from` | Cache source specification | No | string | `''` |
-| `cache-to` | Cache destination specification | No | string | `''` |
-| `registry` | Docker registry to push images to | No | string | `'registry.onemindservices.com'` |
+| Parameter    | Description                                                    | Required | Type   | Default                          |
+|--------------|----------------------------------------------------------------|----------|--------|----------------------------------|
+| `images`     | Docker images to build (multi-line string, one image per line) | Yes      | string | -                                |
+| `file`       | Path to the Dockerfile                                         | No       | string | `'./Dockerfile'`                 |
+| `build-args` | Build arguments (multi-line string, KEY=VALUE format)          | No       | string | `''`                             |
+| `cache-from` | Cache source specification                                     | No       | string | `''`                             |
+| `cache-to`   | Cache destination specification                                | No       | string | `''`                             |
+| `registry`   | Docker registry to push images to                              | No       | string | `'registry.onemindservices.com'` |
 
 ### Secrets
 
 The workflow requires `secrets: inherit` to access the following secrets:
 
-| Secret | Description | Required |
-|--------|-------------|----------|
-| `DOCKER_USERNAME` | Docker registry username | Yes |
-| `DOCKER_PASSWORD` | Docker registry password/token | Yes |
-| `GIT_TOKEN` | GitHub token for private repository access | Yes |
-| `COSIGN_PRIVATE_KEY` | Cosign private key for image signing | Yes |
-| `COSIGN_PASSWORD` | Password for Cosign private key | Yes |
+| Secret               | Description                                | Required |
+|----------------------|--------------------------------------------|----------|
+| `DOCKER_USERNAME`    | Docker registry username                   | Yes      |
+| `DOCKER_PASSWORD`    | Docker registry password/token             | Yes      |
+| `GIT_TOKEN`          | GitHub token for private repository access | Yes      |
+| `COSIGN_PRIVATE_KEY` | Cosign private key for image signing       | Yes      |
+| `COSIGN_PASSWORD`    | Password for Cosign private key            | Yes      |
 
 ## Image Tagging Strategy
 
@@ -204,15 +205,17 @@ The workflow automatically signs all built images using Cosign with the followin
 ### Cosign Setup
 
 1. **Generate a key pair**:
+
 ```bash
 cosign generate-key-pair
 ```
 
 2. **Add secrets to your repository**:
-   - `COSIGN_PRIVATE_KEY`: Contents of `cosign.key`
-   - `COSIGN_PASSWORD`: Password used to encrypt the private key
+    - `COSIGN_PRIVATE_KEY`: Contents of `cosign.key`
+    - `COSIGN_PASSWORD`: Password used to encrypt the private key
 
 3. **Verify signatures**:
+
 ```bash
 cosign verify --key cosign.pub registry.onemindservices.com/myapp/backend:main
 ```
@@ -277,16 +280,16 @@ CMD ["npm", "start"]
 ### Repository Secrets Setup
 
 1. **Docker Registry Credentials**:
-   - `DOCKER_USERNAME`: Service account username
-   - `DOCKER_PASSWORD`: Service account password or token
+    - `DOCKER_USERNAME`: Service account username
+    - `DOCKER_PASSWORD`: Service account password or token
 
 2. **GitHub Token**:
-   - `GIT_TOKEN`: Personal access token with repo access
-   - Scope: `repo` (for private repositories)
+    - `GIT_TOKEN`: Personal access token with repo access
+    - Scope: `repo` (for private repositories)
 
 3. **Cosign Keys**:
-   - `COSIGN_PRIVATE_KEY`: PEM-encoded private key
-   - `COSIGN_PASSWORD`: Key encryption password
+    - `COSIGN_PRIVATE_KEY`: PEM-encoded private key
+    - `COSIGN_PASSWORD`: Key encryption password
 
 ### Registry Security
 
@@ -305,23 +308,23 @@ tags: |
 ### Common Issues
 
 1. **Authentication Failed**:
-   - Verify `DOCKER_USERNAME` and `DOCKER_PASSWORD` are correct
-   - Check registry URL format
-   - Ensure service account has push permissions
+    - Verify `DOCKER_USERNAME` and `DOCKER_PASSWORD` are correct
+    - Check registry URL format
+    - Ensure service account has push permissions
 
 2. **Build Context Too Large**:
-   - Add `.dockerignore` file
-   - Use multi-stage builds
-   - Exclude unnecessary files
+    - Add `.dockerignore` file
+    - Use multi-stage builds
+    - Exclude unnecessary files
 
 3. **Cosign Signing Failed**:
-   - Verify `COSIGN_PRIVATE_KEY` format (PEM)
-   - Check `COSIGN_PASSWORD` is correct
-   - Ensure key pair was generated correctly
+    - Verify `COSIGN_PRIVATE_KEY` format (PEM)
+    - Check `COSIGN_PASSWORD` is correct
+    - Ensure key pair was generated correctly
 
 4. **Cache Issues**:
-   - Use `type=gha,mode=max` for better cache efficiency
-   - Clear cache with `actions/cache` action if needed
+    - Use `type=gha,mode=max` for better cache efficiency
+    - Clear cache with `actions/cache` action if needed
 
 ### Debug Mode
 
@@ -342,13 +345,13 @@ name: Microservices Build
 
 on:
   push:
-    branches: [main, develop]
+    branches: [ main, develop ]
 
 jobs:
   build-services:
     strategy:
       matrix:
-        service: [api, worker, frontend]
+        service: [ api, worker, frontend ]
     uses: ./.github/workflows/docker-build.yml
     with:
       images: |
@@ -369,7 +372,7 @@ name: Conditional Build
 
 on:
   push:
-    branches: [main, develop]
+    branches: [ main, develop ]
 
 jobs:
   build:
@@ -386,12 +389,14 @@ jobs:
 ### Build Time Optimization
 
 1. **Use build cache effectively**:
+
 ```yaml
 cache-from: type=gha
 cache-to: type=gha,mode=max
 ```
 
 2. **Optimize Dockerfile layers**:
+
 ```dockerfile
 # Copy dependency files first
 COPY package*.json ./
@@ -402,6 +407,7 @@ COPY . .
 ```
 
 3. **Use multi-stage builds**:
+
 ```dockerfile
 FROM node:18-alpine AS dependencies
 # Install dependencies
