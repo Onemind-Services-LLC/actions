@@ -18,6 +18,9 @@ jobs:
   unit_tests:
     name: Run unit tests
     runs-on: ${{ inputs.runner }}
+    permissions:
+      contents: read
+      id-token: write
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -43,22 +46,14 @@ jobs:
 
       - name: Run tests
         run: |
-          pytest \
-            --junitxml=pytest.xml \
-            --cov-report=term-missing:skip-covered \
-            --cov=app \
-            tests/
+          pytest tests/ --cov=app --cov-report=xml --cov-report=term-missing:skip-covered | tee pytest-coverage.txt
 
-      - name: Upload test results
-        uses: actions/upload-artifact@v4
-        if: always()
+      - name: Pytest coverage comment
+        uses: MishaKav/pytest-coverage-comment@main
+        id: coverageComment
         with:
-          name: pytest-results
-          path: pytest.xml
-
-      - name: Upload coverage reports
-        uses: actions/upload-artifact@v4
-        if: always()
-        with:
-          name: coverage-reports
-          path: .coverage
+          junitxml-path: pytest.xml
+          pytest-coverage-path: pytest-coverage.txt
+          default-branch: dev
+          junitxml-title: Coverage Summary
+          create-new-comment: 'true'
