@@ -19,6 +19,7 @@ jobs:
     name: Run unit tests
     runs-on: ${{ inputs.runner }}
     permissions:
+      pull-requests: write
       contents: read
       id-token: write
     steps:
