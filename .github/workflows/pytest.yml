@@ -57,4 +57,3 @@ jobs:
           pytest-coverage-path: pytest-coverage.txt
           default-branch: dev
           junitxml-title: Coverage Summary
-          create-new-comment: 'true'
