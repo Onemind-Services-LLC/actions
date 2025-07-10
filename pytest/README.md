@@ -28,7 +28,7 @@ on:
 
 jobs:
   test:
-    uses: ./.github/workflows/pytest-workflow.yml
+    uses: Onemind-Services-LLC/actions/.github/workflows/pytest-workflow.yml
     secrets: inherit
 ```
 
@@ -45,7 +45,7 @@ on:
 
 jobs:
   test:
-    uses: ./.github/workflows/pytest-workflow.yml
+    uses: Onemind-Services-LLC/actions/.github/workflows/pytest-workflow.yml
     with:
       python-version: '3.11'
       runner: 'ubuntu-latest'
@@ -68,7 +68,7 @@ jobs:
     strategy:
       matrix:
         python-version: [ '3.9', '3.10', '3.11', '3.12' ]
-    uses: ./.github/workflows/pytest-workflow.yml
+    uses: Onemind-Services-LLC/actions/.github/workflows/pytest-workflow.yml
     with:
       python-version: ${{ matrix.python-version }}
     secrets: inherit
@@ -226,7 +226,7 @@ on:
 
 jobs:
   test:
-    uses: ./.github/workflows/pytest-workflow.yml
+    uses: Onemind-Services-LLC/actions/.github/workflows/pytest-workflow.yml
     with:
       python-version: '3.11'
       runner: 'ubuntu-latest'
@@ -246,7 +246,7 @@ on:
 
 jobs:
   test:
-    uses: ./.github/workflows/pytest-workflow.yml
+    uses: Onemind-Services-LLC/actions/.github/workflows/pytest-workflow.yml
     with:
       python-version: '3.12'
     secrets: inherit

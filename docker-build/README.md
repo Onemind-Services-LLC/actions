@@ -28,7 +28,7 @@ on:
 
 jobs:
   build:
-    uses: ./.github/workflows/docker-build.yml
+    uses: Onemind-Services-LLC/actions/.github/workflows/docker-build.yml
     with:
       images: |
         myapp/backend
@@ -48,7 +48,7 @@ on:
 
 jobs:
   build:
-    uses: ./.github/workflows/docker-build.yml
+    uses: Onemind-Services-LLC/actions/.github/workflows/docker-build.yml
     with:
       images: |
         registry.onemindservices.com/myapp/backend
@@ -75,7 +75,7 @@ on:
 
 jobs:
   build-staging:
-    uses: ./.github/workflows/docker-build.yml
+    uses: Onemind-Services-LLC/actions/.github/workflows/docker-build.yml
     with:
       images: |
         staging.registry.com/myapp/backend
@@ -83,7 +83,7 @@ jobs:
     secrets: inherit
 
   build-production:
-    uses: ./.github/workflows/docker-build.yml
+    uses: Onemind-Services-LLC/actions/.github/workflows/docker-build.yml
     with:
       images: |
         registry.onemindservices.com/myapp/backend
@@ -352,7 +352,7 @@ jobs:
     strategy:
       matrix:
         service: [ api, worker, frontend ]
-    uses: ./.github/workflows/docker-build.yml
+    uses: Onemind-Services-LLC/actions/.github/workflows/docker-build.yml
     with:
       images: |
         registry.onemindservices.com/myapp/${{ matrix.service }}
@@ -376,7 +376,7 @@ on:
 
 jobs:
   build:
-    uses: ./.github/workflows/docker-build.yml
+    uses: Onemind-Services-LLC/actions/.github/workflows/docker-build.yml
     with:
       images: |
         ${{ github.ref == 'refs/heads/main' && 'registry.onemindservices.com/myapp/backend' || 'staging.registry.com/myapp/backend' }}
