@@ -38,17 +38,17 @@ jobs:
 
 ## Parameters
 
-| Parameter          | Description                                                     | Required | Default               | Type   |
-| ------------------ | --------------------------------------------------------------- | -------- | --------------------- | ------ |
-| `plugin-name`    | The name of the NetBox plugin (also used as the directory name) | Yes      | -                     | string |
-| `netbox-version` | NetBox version to test against                                  | Yes      | -                     | string |
+| Parameter        | Description                                                     | Required | Default             | Type   |
+|------------------|-----------------------------------------------------------------|----------|---------------------|--------|
+| `plugin-name`    | The name of the NetBox plugin (also used as the directory name) | Yes      | -                   | string |
+| `netbox-version` | NetBox version to test against                                  | Yes      | -                   | string |
 | `python-version` | Python version to use                                           | No       | `'3.12'`            | string |
 | `runner`         | GitHub runner to use for the workflow                           | No       | `'ubuntu-22.04-sh'` | string |
 
 ## Secrets
 
-| Secret        | Description                                     | Required |
-| ------------- | ----------------------------------------------- | -------- |
+| Secret      | Description                                     | Required |
+|-------------|-------------------------------------------------|----------|
 | `git-token` | GitHub token for accessing private repositories | Yes      |
 
 ## Requirements
