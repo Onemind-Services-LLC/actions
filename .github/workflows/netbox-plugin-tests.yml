@@ -88,6 +88,10 @@ jobs:
           
           python -m pip install --upgrade pip
           pip install -e .  # Install in development mode
+          
+          if [ -f requirements.txt ]; then
+            pip install -r requirements.txt
+          fi
 
       - name: Install NetBox Core Dependencies
         working-directory: netbox
