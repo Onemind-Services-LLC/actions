@@ -94,7 +94,7 @@ jobs:
         env:
           DOCKER_INFLUXDB_INIT_MODE: setup
           DOCKER_INFLUXDB_INIT_USERNAME: admin
-          DOCKER_INFLUXDB_INIT_PASSWORD: admin
+          DOCKER_INFLUXDB_INIT_PASSWORD: password
           DOCKER_INFLUXDB_INIT_ORG: test
           DOCKER_INFLUXDB_INIT_BUCKET: things
           DOCKER_INFLUXDB_INIT_ADMIN_TOKEN: admin
