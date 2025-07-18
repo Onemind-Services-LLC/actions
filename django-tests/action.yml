@@ -1,5 +1,5 @@
-name: 'Docker Build'
-description: 'Build, push, and sign Docker images with configurable parameters'
+name: 'Run Django Tests Workflow'
+description: 'Runs Django unit tests with configurable services and versions'
 author: 'Prince Kumar <pkumar@onemindservices.com>'
 
 inputs:
