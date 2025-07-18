@@ -165,7 +165,6 @@ jobs:
         continue-on-error: true
         uses: 5monkeys/cobertura-action@master
         with:
-          repo_token: ${{ secrets.GIT_TOKEN }}
           minimum_coverage: 80
           fail_below_threshold: false
           show_line: true
