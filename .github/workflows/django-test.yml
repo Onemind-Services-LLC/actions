@@ -1,0 +1,177 @@
+name: Django Unit Tests
+
+on:
+  workflow_call:
+    inputs:
+      python-version:
+        description: 'Python version to use'
+        required: false
+        type: string
+        default: '3.12'
+      
+      enable-postgresql:
+        description: 'Enable PostgreSQL service'
+        required: false
+        type: boolean
+        default: true
+      
+      enable-redis:
+        description: 'Enable Redis service'
+        required: false
+        type: boolean
+        default: true
+      
+      enable-minio:
+        description: 'Enable MinIO service'
+        required: false
+        type: boolean
+        default: false
+      
+      enable-tsdb:
+        description: 'Enable InfluxDB (TSDB) service'
+        required: false
+        type: boolean
+        default: false
+      
+      postgresql-version:
+        description: 'PostgreSQL version'
+        required: false
+        type: string
+        default: 'latest'
+
+      redis-version:
+        description: 'Redis version'
+        required: false
+        type: string
+        default: 'latest'
+
+      minio-version:
+        description: 'MinIO version'
+        required: false
+        type: string
+        default: 'latest'
+
+      influxdb-version:
+        description: 'InfluxDB version'
+        required: false
+        type: string
+        default: 'latest'
+
+      runner:
+        description: 'GitHub runner to use'
+        required: false
+        type: string
+        default: 'ubuntu-22.04-sh'
+
+jobs:
+  django-unit-tests:
+    name: Unit Test
+    runs-on: ${{ inputs.runner }}
+    strategy:
+      matrix:
+        python-version:
+          - ${{ inputs.python-version }}
+
+    services:
+      postgres:
+        image: ${{ inputs.enable-postgresql && format('registry.onemindservices.com/docker.io/library/postgres:{0}', inputs.postgresql-version) || '' }}
+        credentials:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: admin
+          POSTGRES_DB: app
+        ports:
+          - 5432:5432
+        options: ${{ inputs.enable-postgresql && '--health-cmd pg_isready --health-interval 10s --health-timeout 10s --health-retries 10' || '' }}
+
+      tsdb:
+        image: ${{ inputs.enable-tsdb && format('registry.onemindservices.com/docker.io/library/influxdb:{0}', inputs.influxdb-version) || '' }}
+        credentials:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+        env:
+          DOCKER_INFLUXDB_INIT_MODE: setup
+          DOCKER_INFLUXDB_INIT_USERNAME: admin
+          DOCKER_INFLUXDB_INIT_PASSWORD: admin
+          DOCKER_INFLUXDB_INIT_ORG: test
+          DOCKER_INFLUXDB_INIT_BUCKET: things
+          DOCKER_INFLUXDB_INIT_ADMIN_TOKEN: admin
+        ports:
+          - 8086:8086
+        options: ${{ inputs.enable-tsdb && '--health-cmd "curl -f http://localhost:8086" --health-interval 10s --health-timeout 5s --health-retries 30' || '' }}
+
+      redis:
+        image: ${{ inputs.enable-redis && format('registry.onemindservices.com/docker.io/bitnami/redis:{0}', inputs.redis-version) || '' }}
+        credentials:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+        env:
+          REDIS_PASSWORD: password
+        ports:
+          - 6379:6379
+        options: ${{ inputs.enable-redis && '--health-cmd "redis-cli ping" --health-interval 10s --health-timeout 10s --health-retries 10' || '' }}
+
+      minio:
+        image: ${{ inputs.enable-minio && format('registry.onemindservices.com/docker.io/bitnami/minio:{0}', inputs.minio-version) || '' }}
+        credentials:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+        env:
+          MINIO_ROOT_USER: minioadmin
+          MINIO_ROOT_PASSWORD: minioadmin
+        ports:
+          - 9001:9000
+          - 9002:9001
+        options: ${{ inputs.enable-minio && '--health-cmd "curl -f http://localhost:9000/minio/health/live" --health-interval 10s --health-timeout 10s --health-retries 10' || '' }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Install dependencies
+        run: |
+          echo machine github.com login ${{ secrets.GIT_TOKEN }} > ~/.netrc
+          pip install -r requirements_dev.txt
+          pip install -r requirements.txt
+          rm ~/.netrc
+          cp .env.test .env
+
+      - name: Check migrations
+        run: python manage.py makemigrations --check
+
+      - name: Database migrations
+        run: python manage.py migrate
+
+      - name: Collect static files
+        run: python manage.py collectstatic --noinput
+
+      - name: Run Django checks
+        run: python manage.py check
+
+      - name: Run Tests
+        run: coverage run manage.py test --debug-mode --buffer --timing --no-color
+
+      - name: Generate coverage xml
+        run: coverage xml
+
+      - name: Coverage Reporter
+        if: ${{ github.event_name == 'pull_request' }}
+        continue-on-error: true
+        uses: 5monkeys/cobertura-action@master
+        with:
+          repo_token: ${{ secrets.GIT_TOKEN }}
+          minimum_coverage: 80
+          fail_below_threshold: false
+          show_line: true
+          show_branch: true
+          show_class_names: true
+          show_missing: true
+          link_missing_lines: true
+          link_missing_lines_source_dir: true
+          only_changed_files: true
