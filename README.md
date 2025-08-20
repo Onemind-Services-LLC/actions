@@ -36,6 +36,12 @@ Reusable workflow to lint, test, package, and push Helm charts (on tags).
 
 [View Documentation](./helm-charts-ci/README.md)
 
+### Cosign Sign (Composite)
+
+Composite action to sign Docker images and Helm charts with Sigstore Cosign (key-based or keyless).
+
+[View Documentation](./cosign-sign/README.md)
+
 ## Usage
 
 To use these actions in your repository, reference them in your workflow file:

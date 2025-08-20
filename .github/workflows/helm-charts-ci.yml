@@ -40,15 +40,10 @@ on:
       docker-password:
         description: Password/Token for registry login
         required: false
-      cosign-private-key:
-        description: Cosign private key material (PEM) for signing
-        required: true
-      cosign-password:
-        description: Password for the cosign private key (if encrypted)
-        required: false
 
 permissions:
   contents: read
+  id-token: write
 
 jobs:
   lint-test:
@@ -163,36 +158,11 @@ jobs:
             helm push "$pkg" "oci://$REGISTRY/$NAMESPACE"
           done
 
-      - name: Install Cosign
-        if: needs.lint-test.outputs.changed == 'true'
-        uses: sigstore/cosign-installer@d58896d6a1865668819e1d91763c7751a165e159
-
       - name: Sign charts with Cosign
         if: needs.lint-test.outputs.changed == 'true'
-        env:
-          OUT_DIR: ${{ runner.temp }}/helm-repo
-          REGISTRY: ${{ inputs.registry }}
-          NAMESPACE: ${{ inputs.oci-namespace }}
-          COSIGN_PRIVATE_KEY: ${{ secrets.cosign-private-key }}
-          COSIGN_PASSWORD: ${{ secrets.cosign-password }}
-        run: |
-          set -euo pipefail
-          if [[ -z "${COSIGN_PRIVATE_KEY:-}" ]]; then
-            echo "COSIGN_PRIVATE_KEY secret is required to sign charts" >&2
-            exit 1
-          fi
-          shopt -s nullglob
-          pkgs=("$OUT_DIR"/*.tgz)
-          if (( ${#pkgs[@]} == 0 )); then
-            echo "No packaged charts found to sign. Skipping."
-            exit 0
-          fi
-          for pkg in "${pkgs[@]}"; do
-            base=$(basename "$pkg" .tgz)
-            # split at last hyphen to allow hyphens in name
-            name=${base%-*}
-            version=${base##*-}
-            ref="oci://$REGISTRY/$NAMESPACE/$name:$version"
-            echo "Signing $ref"
-            cosign sign --yes --key env://COSIGN_PRIVATE_KEY "$ref"
-          done
+        uses: Onemind-Services-LLC/actions/cosign-sign@master
+        with:
+          mode: helm
+          registry: ${{ inputs.registry }}
+          oci-namespace: ${{ inputs.oci-namespace }}
+          chart-packages-dir: ${{ runner.temp }}/helm-repo
