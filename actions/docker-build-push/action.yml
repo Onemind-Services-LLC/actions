@@ -14,14 +14,15 @@ inputs:
     required: false
     default: ''
   cache-image:
+    description: Registry reference to use for Buildx cache (e.g., ghcr.io/org/app:buildcache-main)
     required: true
     default: ''
   annotations:
-    description: Additional newline-separated OCI annotations to merge with metadata-action output
+    description: Additional newline-separated OCI annotations to merge with docker/metadata-action output
     required: false
     default: ''
   meta-tags:
-    description: docker/metadata-action tags rules
+    description: docker/metadata-action tag rules
     required: false
     default: |
       type=ref,event=branch
@@ -41,7 +42,7 @@ inputs:
 
 outputs:
   digest:
-    description: Built image digest from buildx
+    description: Built image digest from docker/build-push-action
     value: ${{ steps.build.outputs.digest }}
 
 runs:

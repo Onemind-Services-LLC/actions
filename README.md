@@ -42,6 +42,18 @@ Composite action to sign Docker images and Helm charts with Sigstore Cosign (key
 
 [View Documentation](./actions/cosign-sign/README.md)
 
+### Docker Build, Push, and Sign (Composite)
+
+Composite action to build with Buildx, optionally push, and keyless-sign Docker images.
+
+[View Documentation](./actions/docker-build-push/README.md)
+
+### Docker Build + Push + Sign (Reusable)
+
+Reusable workflow that uses `docker/metadata-action` to generate tags/labels and then builds, pushes, and keyless-signs images via the composite.
+
+[View Workflow](./.github/workflows/docker-build-push.yml)
+
 ## Usage
 
 To use these actions in your repository, reference them in your workflow file:
