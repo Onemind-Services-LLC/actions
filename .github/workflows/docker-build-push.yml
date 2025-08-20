@@ -1,0 +1,109 @@
+name: Docker Build + Push + Sign
+
+on:
+  workflow_call:
+    inputs:
+      runner:
+        description: GitHub runner label
+        required: false
+        default: 'ubuntu-22.04-sh'
+        type: string
+      image:
+        description: Base image name (e.g., registry.example.com/org/app)
+        required: true
+        type: string
+      context:
+        description: Build context path
+        required: false
+        default: '.'
+        type: string
+      file:
+        description: Dockerfile path
+        required: false
+        default: 'Dockerfile'
+        type: string
+      meta-tags:
+        description: docker/metadata-action tags rules (newline-separated)
+        required: false
+        default: |
+          type=ref,event=branch
+          type=ref,event=pr
+          type=ref,event=tag
+          type=sha
+        type: string
+      build-args:
+        description: Newline-separated build args (KEY=VALUE)
+        required: false
+        default: ''
+        type: string
+      platforms:
+        description: Comma-separated platforms (e.g., linux/amd64,linux/arm64)
+        required: false
+        default: ''
+        type: string
+      cache-from:
+        description: Buildx cache-from value
+        required: false
+        default: ''
+        type: string
+      cache-to:
+        description: Buildx cache-to value
+        required: false
+        default: ''
+        type: string
+      provenance:
+        description: Build provenance mode (e.g., mode=max)
+        required: false
+        default: ''
+        type: string
+      sbom:
+        description: Generate SBOM (true/false)
+        required: false
+        default: ''
+        type: string
+      annotations-levels:
+        description: DOCKER_METADATA_ANNOTATIONS_LEVELS (e.g., manifest,index)
+        required: false
+        default: 'manifest'
+        type: string
+    secrets:
+      registry:
+        description: Registry hostname for login
+        required: true
+      username:
+        description: Registry username
+        required: true
+      password:
+        description: Registry password/token
+        required: true
+
+permissions:
+  contents: read
+  id-token: write
+
+jobs:
+  build:
+    name: Build
+    runs-on: ${{ inputs.runner }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Build, push, sign
+        uses: Onemind-Services-LLC/actions/actions/docker-build-push@master
+        with:
+          images: ${{ inputs.image }}
+          meta-tags: ${{ inputs.meta-tags }}
+          annotations-levels: ${{ inputs.annotations-levels }}
+          context: ${{ inputs.context }}
+          file: ${{ inputs.file }}
+          push: ${{ github.event_name != 'pull_request' }}
+          build-args: ${{ inputs.build-args }}
+          platforms: ${{ inputs.platforms }}
+          cache-from: ${{ inputs.cache-from }}
+          cache-to: ${{ inputs.cache-to }}
+          provenance: ${{ inputs.provenance }}
+          sbom: ${{ inputs.sbom }}
+          registry: ${{ secrets.registry }}
+          username: ${{ secrets.username }}
+          password: ${{ secrets.password }}
