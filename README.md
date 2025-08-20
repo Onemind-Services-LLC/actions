@@ -30,6 +30,12 @@ Composite action to install and build a Node.js project using npm with caching a
 
 [View Documentation](./npm-install-build/README.md)
 
+### Helm Charts CI
+
+Reusable workflow to lint, test, package, and push Helm charts (on tags).
+
+[View Documentation](./helm-charts-ci/README.md)
+
 ## Usage
 
 To use these actions in your repository, reference them in your workflow file:
