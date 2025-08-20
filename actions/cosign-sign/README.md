@@ -29,7 +29,7 @@ Helm-specific:
 
 ```yaml
 - name: Sign image(s)
-  uses: Onemind-Services-LLC/actions/cosign-sign@master
+  uses: Onemind-Services-LLC/actions/actions/cosign-sign@master
   with:
     mode: docker
     docker-images: |
@@ -45,7 +45,7 @@ permissions:
   id-token: write
 
 - name: Sign image(s) (keyless)
-  uses: Onemind-Services-LLC/actions/cosign-sign@master
+  uses: Onemind-Services-LLC/actions/actions/cosign-sign@master
   with:
     mode: docker
     docker-images: ghcr.io/acme/app:latest
@@ -59,7 +59,7 @@ After packaging and pushing charts (e.g., to `oci://registry/ns`):
 
 ```yaml
 - name: Sign packaged charts
-  uses: Onemind-Services-LLC/actions/cosign-sign@master
+  uses: Onemind-Services-LLC/actions/actions/cosign-sign@master
   with:
     mode: helm
     registry: registry.onemindservices.com

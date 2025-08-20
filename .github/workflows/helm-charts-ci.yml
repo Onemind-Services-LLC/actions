@@ -160,7 +160,7 @@ jobs:
 
       - name: Sign charts with Cosign
         if: needs.lint-test.outputs.changed == 'true'
-        uses: Onemind-Services-LLC/actions/cosign-sign@master
+        uses: Onemind-Services-LLC/actions/actions/cosign-sign@master
         with:
           mode: helm
           registry: ${{ inputs.registry }}

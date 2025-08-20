@@ -85,7 +85,7 @@ jobs:
           INPUT: ${{ inputs.extra-env }}
 
       - name: Install & Build (npm)
-        uses: Onemind-Services-LLC/actions/npm-install-build@master
+        uses: Onemind-Services-LLC/actions/actions/npm-install-build@master
         with:
           node-version: ${{ inputs.node-version }}
           working-directory: ${{ inputs.working-directory }}

@@ -26,7 +26,7 @@ jobs:
       - uses: actions/checkout@v4
 
       - name: Install & Build
-        uses: Onemind-Services-LLC/actions/npm-install-build@master
+        uses: Onemind-Services-LLC/actions/actions/npm-install-build@master
         with:
           node-version: '18'
           working-directory: '.'
@@ -43,4 +43,3 @@ jobs:
 - This action does not run tests; it only installs and builds.
 - For private registries, `actions/setup-node` configures `.npmrc` and `NODE_AUTH_TOKEN` is provided to the npm commands.
 - Ensure `package-lock.json` exists for best cache efficiency.
-

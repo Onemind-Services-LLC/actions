@@ -22,25 +22,25 @@ code quality and consistency across your repositories.
 
 A reusable workflow to build a Next.js app, generate bundle analysis, upload an artifact, optionally compare to the base branch, and comment on PRs.
 
-[View Documentation](./nextjs-bundle-analyzer/README.md)
+[View Documentation](./actions/nextjs-bundle-analyzer/README.md)
 
 ### NPM Install & Build (Composite)
 
 Composite action to install and build a Node.js project using npm with caching and optional private registry auth.
 
-[View Documentation](./npm-install-build/README.md)
+[View Documentation](./actions/npm-install-build/README.md)
 
 ### Helm Charts CI
 
 Reusable workflow to lint, test, package, and push Helm charts (on tags).
 
-[View Documentation](./helm-charts-ci/README.md)
+[View Documentation](./actions/helm-charts-ci/README.md)
 
 ### Cosign Sign (Composite)
 
 Composite action to sign Docker images and Helm charts with Sigstore Cosign (key-based or keyless).
 
-[View Documentation](./cosign-sign/README.md)
+[View Documentation](./actions/cosign-sign/README.md)
 
 ## Usage
 
