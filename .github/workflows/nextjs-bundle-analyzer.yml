@@ -1,0 +1,158 @@
+name: Next.js Bundle Analysis
+
+on:
+  workflow_call:
+    inputs:
+      runner:
+        description: GitHub runner label
+        required: false
+        default: 'ubuntu-22.04-sh'
+        type: string
+      node-version:
+        description: Node.js version to use
+        required: false
+        default: '18'
+        type: string
+      registry-url:
+        description: Optional npm registry URL for scoped/private packages
+        required: false
+        default: ''
+        type: string
+      registry-scope:
+        description: Optional npm scope (e.g., '@your-scope') for auth
+        required: false
+        default: ''
+        type: string
+      working-directory:
+        description: Directory containing the Next.js app
+        required: false
+        default: '.'
+        type: string
+      install-command:
+        description: Install command to run
+        required: false
+        default: 'npm ci --no-audit'
+        type: string
+      build-command:
+        description: Build command to run
+        required: false
+        default: 'npm run build'
+        type: string
+      extra-env:
+        description: Newline-delimited KEY=VALUE pairs exported to GITHUB_ENV
+        required: false
+        default: ''
+        type: string
+    secrets:
+      github-token:
+        description: GitHub token used for artifact access and PR comments
+        required: false
+      npm-token:
+        description: NPM auth token for private registry access
+        required: false
+
+permissions:
+  contents: read
+  actions: read
+  pull-requests: write
+
+jobs:
+  analyze:
+    name: Analyze Bundle
+    runs-on: ${{ inputs.runner }}
+    env:
+      NEXT_TELEMETRY_DISABLED: 1
+    defaults:
+      run:
+        working-directory: ${{ inputs.working-directory }}
+    steps:
+      - name: Ensure PR context
+        if: ${{ github.event_name != 'pull_request' }}
+        run: |
+          echo "This reusable workflow must be invoked from a pull_request event." >&2
+          exit 1
+
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+
+      - name: Apply extra environment variables
+        if: inputs.extra-env != ''
+        run: |
+          printf "%s\n" "$INPUT" >> "$GITHUB_ENV"
+        env:
+          INPUT: ${{ inputs.extra-env }}
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ inputs.node-version }}
+          cache: npm
+          cache-dependency-path: ${{ inputs.working-directory }}/package-lock.json
+          registry-url: ${{ inputs.registry-url }}
+          scope: ${{ inputs.registry-scope }}
+          always-auth: ${{ inputs.registry-url != '' }}
+
+      - name: Install dependencies
+        run: ${{ inputs.install-command }}
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.npm-token }}
+
+      - name: Build
+        run: ${{ inputs.build-command }}
+
+      - name: Analyze bundle
+        run: npx -y nextjs-bundle-analysis report
+
+      - name: Upload analysis artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: next-bundle-analysis
+          path: .next/analyze/__bundle_analysis.json
+          overwrite: true
+
+      - name: Download base branch artifact
+        uses: dawidd6/action-download-artifact@v8
+        with:
+          branch: ${{ github.event.pull_request.base.ref }}
+          path: .next/analyze/base
+          github_token: ${{ secrets.github-token }}
+          if_no_artifact_found: warn
+
+      - name: Compare with base
+        run: npx -y nextjs-bundle-analysis compare
+        continue-on-error: true
+
+      - name: Get Comment Body
+        id: get-comment-body
+        run: |
+          echo "body<<EOF" >> $GITHUB_OUTPUT
+          cat .next/analyze/__bundle_analysis_comment.txt >> $GITHUB_OUTPUT
+          echo EOF >> $GITHUB_OUTPUT
+
+      - name: Find Comment
+        id: fc
+        uses: peter-evans/find-comment@v3
+        with:
+          issue-number: ${{ github.event.pull_request.number }}
+          body-includes: '<!-- __NEXTJS_BUNDLE -->'
+          token: ${{ secrets.github-token }}
+
+      - name: Create Comment
+        if: steps.fc.outputs.comment-id == 0
+        uses: peter-evans/create-or-update-comment@v4
+        with:
+          issue-number: ${{ github.event.pull_request.number }}
+          body: ${{ steps.get-comment-body.outputs.body }}
+          token: ${{ secrets.github-token }}
+
+      - name: Update Comment
+        if: steps.fc.outputs.comment-id != 0
+        uses: peter-evans/create-or-update-comment@v4
+        with:
+          issue-number: ${{ github.event.pull_request.number }}
+          body: ${{ steps.get-comment-body.outputs.body }}
+          comment-id: ${{ steps.fc.outputs.comment-id }}
+          edit-mode: replace
+          token: ${{ secrets.github-token }}
