@@ -18,6 +18,18 @@ code quality and consistency across your repositories.
 
 [View Documentation](./pre-commit-checks/README.md)
 
+### Next.js Bundle Analysis
+
+A reusable workflow to build a Next.js app, generate bundle analysis, upload an artifact, optionally compare to the base branch, and comment on PRs.
+
+[View Documentation](./nextjs-bundle-analyzer/README.md)
+
+### NPM Install & Build (Composite)
+
+Composite action to install and build a Node.js project using npm with caching and optional private registry auth.
+
+[View Documentation](./npm-install-build/README.md)
+
 ## Usage
 
 To use these actions in your repository, reference them in your workflow file:
@@ -44,4 +56,27 @@ jobs:
     with:
       runner: 'ubuntu-22.04-sh'                # Optional: Runner environment (default: ubuntu-22.04-sh)
       python-version: '3.12'                   # Optional: Python version (default: 3.12)
+```
+
+### Next.js Bundle Analysis
+
+```yaml
+jobs:
+  analyze:
+    uses: Onemind-Services-LLC/actions/.github/workflows/nextjs-bundle-analyzer.yml@master
+    permissions:
+      contents: read
+      actions: read
+      pull-requests: write
+    with:
+      runner: 'ubuntu-22.04-sh'                # Optional: Runner (default: ubuntu-22.04-sh)
+      node-version: '18'
+      extra-env: |
+        NEXT_PUBLIC_API_URL=${{ secrets.NEXT_PUBLIC_API_URL }}
+      # Optional registry auth for private packages
+      # registry-url: 'https://registry.npmjs.org'
+      # registry-scope: '@your-scope'
+    secrets:
+      github-token: ${{ secrets.GITHUB_TOKEN }}
+      # npm-token: ${{ secrets.NPM_TOKEN }}
 ```
