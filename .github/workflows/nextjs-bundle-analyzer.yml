@@ -84,23 +84,16 @@ jobs:
         env:
           INPUT: ${{ inputs.extra-env }}
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
+      - name: Install & Build (npm)
+        uses: Onemind-Services-LLC/actions/npm-install-build@master
         with:
           node-version: ${{ inputs.node-version }}
-          cache: npm
-          cache-dependency-path: ${{ inputs.working-directory }}/package-lock.json
+          working-directory: ${{ inputs.working-directory }}
+          install-command: ${{ inputs.install-command }}
+          build-command: ${{ inputs.build-command }}
           registry-url: ${{ inputs.registry-url }}
-          scope: ${{ inputs.registry-scope }}
-          always-auth: ${{ inputs.registry-url != '' }}
-
-      - name: Install dependencies
-        run: ${{ inputs.install-command }}
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.npm-token }}
-
-      - name: Build
-        run: ${{ inputs.build-command }}
+          registry-scope: ${{ inputs.registry-scope }}
+          npm-token: ${{ secrets.npm-token }}
 
       - name: Analyze bundle
         run: npx -y nextjs-bundle-analysis report
