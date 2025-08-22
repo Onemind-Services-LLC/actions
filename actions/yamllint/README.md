@@ -6,7 +6,7 @@ Lint YAML files using yamllint with a self-contained virtual environment. Suitab
 
 - `config_file` (optional): Path to yamllint configuration. Default: `.yamllint.yaml`.
 - `file_or_dir` (optional): File or directory to lint (space-separated allowed). Default: `.`
-- `format` (optional): Output format (`standard`, `parsable`, `github`, `colored`, `auto`). Default: `colored`.
+- `format` (optional): Output format (`standard`, `parsable`, `github`, `colored`, `auto`). Default: `github`.
 - `fail-on-warnings` (optional): Treat warnings as failures. Default: `false`.
 
 ## Usage
