@@ -1,12 +1,16 @@
 # Repository Guidelines
 
+This document outlines how to work in this monorepo of reusable GitHub Actions and workflows. For detailed catalogs:
+
+- Actions Overview: `actions/README.md`
+- Workflows Overview: `.github/README.md`
+
 ## Project Structure & Module Organization
 
-- `.github/workflows/`: Reusable workflows (`netbox-plugin-tests.yml`, `pre-commit.yml`).
-- `netbox-plugin-testing/`: Composite action wrapper + docs for NetBox plugin tests.
-- `pre-commit-checks/`: Composite action wrapper + docs for pre-commit.
+- `actions/`: Composite actions (each directory contains an action + README). See `actions/README.md` for the full list.
+- `.github/workflows/`: Reusable workflows (e.g., `docker-build-push.yml`, `netbox-plugin-tests.yml`, `pre-commit.yml`). See `.github/README.md`.
 - `.github/pull_request_template.md`: Required PR checklist and Jira link format.
-- `README.md`: High-level usage and links to module docs.
+- `README.md`: High-level usage and entry points to module docs.
 
 ## Build, Test, and Development Commands
 
@@ -15,7 +19,8 @@
 - Dry-run workflows with `act` (optional):
   - `act -W .github/workflows/pre-commit.yml -j pre-commit`
   - `act -W .github/workflows/netbox-plugin-tests.yml -j test` (requires Docker services)
-- Best practice: consume the workflows from a sandbox repo and open a PR to verify end-to-end.
+  - `act -W .github/workflows/docker-build-push.yml -j build` (requires Docker Buildx)
+- Best practice: consume the actions/workflows from a sandbox repo and open a PR to verify end-to-end.
 
 ## Coding Style & Naming Conventions
 
@@ -27,7 +32,7 @@
 
 ## Testing Guidelines
 
-- This repo has no unit tests; validation happens by running the reusable workflows.
+- This repo has no unit tests; validation happens by running the reusable workflows or consuming the composite actions in a sandbox repo.
 - For `netbox-plugin-tests.yml`, ensure a plugin repo provides `testing_configuration/configuration.py` and matches the required services.
 - Use matrix or sample invocations in a test repo before changing defaults.
 - Verify documentation examples by copy-pasting into a scratch workflow.
