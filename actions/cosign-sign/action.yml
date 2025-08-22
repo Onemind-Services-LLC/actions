@@ -36,7 +36,7 @@ runs:
     - name: Install Cosign
       uses: sigstore/cosign-installer@d58896d6a1865668819e1d91763c7751a165e159
 
-    - name: Validate inputs
+    - name: Validate Inputs
       shell: bash
       run: |
         set -euo pipefail
@@ -46,7 +46,7 @@ runs:
           exit 1
         fi
 
-    - name: Sign Docker images
+    - name: Sign Docker Images
       if: inputs.mode == 'docker'
       shell: bash
       env:
@@ -67,7 +67,7 @@ runs:
         done
         cosign sign --yes "${refs[@]}"
 
-    - name: Sign Helm charts
+    - name: Sign Helm Charts
       if: inputs.mode == 'helm' && inputs.chart-packages-dir != ''
       shell: bash
       env:

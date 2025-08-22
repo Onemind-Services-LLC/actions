@@ -51,7 +51,7 @@ runs:
     - name: Set up Docker Buildx
       uses: docker/setup-buildx-action@v3
 
-    - name: Docker meta
+    - name: Docker Meta
       id: meta
       uses: docker/metadata-action@v5
       with:
@@ -68,7 +68,7 @@ runs:
         password: ${{ inputs.password }}
 
 
-    - name: Merge annotations
+    - name: Merge Annotations
       id: annotations
       shell: bash
       run: |
@@ -89,7 +89,7 @@ runs:
         cat merged_annotations.txt >> "$GITHUB_OUTPUT"
         echo "EOF" >> "$GITHUB_OUTPUT"
 
-    - name: Build and push
+    - name: Build and Push
       id: build
       uses: docker/build-push-action@v6
       with:
@@ -105,9 +105,9 @@ runs:
         cache-from: type=registry,ref=${{ inputs.cache-image }},ignore-error=true
         cache-to: type=registry,ref=${{ inputs.cache-image }},mode=max,ignore-error=true
 
-    - name: Sign images
+    - name: Sign Images
       if: inputs.push == 'true' && steps.build.outputs.digest
-      uses: Onemind-Services-LLC/actions/actions/cosign-sign@master
+      uses: ./actions/cosign-sign
       with:
         mode: docker
         docker-images: ${{ steps.meta.outputs.tags }}
