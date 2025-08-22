@@ -11,10 +11,31 @@ See also: [Actions Overview](../actions/README.md)
 - File: `.github/workflows/docker-build-push.yml`
 - Purpose: Build with Buildx, generate tags/labels, optionally push, and keyless‑sign images.
 - Permissions: `contents: read`, `id-token: write` (for keyless signing).
-- Inputs: `runner`, `push`, `image`, `meta-tags`, `annotations`, `build-args`, `cache-image`.
+- Inputs: `runner`, `push`, `image`, `meta-tags`, `annotations`, `build-args`, `build-secrets`, `cache-image`.
 - Secrets: `registry`, `username`, `password`.
 - Usage:
   `uses: Onemind-Services-LLC/actions/.github/workflows/docker-build-push.yml@v1`
+
+Example usage with build secrets:
+
+```yaml
+permissions:
+  contents: read
+  id-token: write
+
+jobs:
+  build:
+    uses: Onemind-Services-LLC/actions/.github/workflows/docker-build-push.yml@v1
+    with:
+      image: ghcr.io/acme/app
+      cache-image: ghcr.io/acme/app:buildcache-${{ github.ref_name }}
+      build-secrets: |
+        GIT_AUTH_TOKEN=${{ secrets.GIT_AUTH_TOKEN }}
+    secrets:
+      registry: ghcr.io
+      username: ${{ github.actor }}
+      password: ${{ secrets.GITHUB_TOKEN }}
+```
 
 ## Helm Charts CI
 

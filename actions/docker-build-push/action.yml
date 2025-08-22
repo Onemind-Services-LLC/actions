@@ -13,6 +13,10 @@ inputs:
     description: Newline-separated build args (KEY=VALUE)
     required: false
     default: ''
+  build-secrets:
+    description: Newline-separated build secrets (KEY=VALUE). Passed to Buildx as secrets.
+    required: false
+    default: ''
   cache-image:
     description: Registry reference to use for Buildx cache (e.g., ghcr.io/org/app:buildcache-main)
     required: true
@@ -95,6 +99,7 @@ runs:
         push: ${{ inputs.push == 'true' }}
         tags: ${{ steps.meta.outputs.tags }}
         build-args: ${{ inputs.build-args }}
+        secrets: ${{ inputs.build-secrets }}
         labels: ${{ steps.meta.outputs.labels }}
         annotations: ${{ steps.annotations.outputs.annotations }}
         provenance: mode=max

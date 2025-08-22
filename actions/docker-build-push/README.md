@@ -13,6 +13,7 @@ Builds a container image using Docker Buildx, generates tags/labels with `docker
 - images: Newline-separated base image reference(s) (e.g., `ghcr.io/org/app`). Used by `docker/metadata-action` to generate tags. Required.
 - push: Whether to push after build (enables SBOM, provenance, signing). Default `true`.
 - build-args: Newline-separated `KEY=VALUE` build args. Optional.
+- build-secrets: Newline-separated `KEY=VALUE` build secrets passed to Buildx as secrets. Values should reference caller secrets. Optional.
 - annotations: Additional OCI annotations (newline-separated). Merged with `docker/metadata-action` output. Optional.
 - meta-tags: `docker/metadata-action` tag rules (newline-separated). Defaults include branch/PR/tag/semver/SHA. Optional.
 - cache-image: Registry reference used by Buildx cache (e.g., `ghcr.io/org/app:buildcache-main`). Required.
@@ -49,6 +50,8 @@ jobs:
           push: 'true'
           build-args: |
             GIT_SHA=${{ github.sha }}
+          build-secrets: |
+            GIT_AUTH_TOKEN=${{ secrets.GIT_AUTH_TOKEN }}
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
@@ -105,3 +108,4 @@ Security tips:
 - Pin third-party actions by version or commit SHA; avoid `@master` in production.
 - Do not echo secrets; prefer using `secrets.GITHUB_TOKEN` for GHCR pushes when possible.
 - Limit workflow permissions to the minimum required.
+ - Prefer Buildx `secrets` over `build-args` for sensitive values. Access in Dockerfile via `RUN --mount=type=secret,id=GIT_AUTH_TOKEN`.

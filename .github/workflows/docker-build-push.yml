@@ -36,6 +36,11 @@ on:
         required: false
         default: ''
         type: string
+      build-secrets:
+        description: Newline-separated build secrets (KEY=VALUE). Forwarded to Buildx as secrets.
+        required: false
+        default: ''
+        type: string
       cache-image:
         description: Registry reference used by Buildx cache (e.g., ghcr.io/org/app:buildcache-main)
         required: true
@@ -95,6 +100,7 @@ jobs:
           annotations: ${{ inputs.annotations }}
           push: ${{ steps.decide-push.outputs.value }}
           build-args: ${{ inputs.build-args }}
+          build-secrets: ${{ inputs.build-secrets }}
           cache-image: ${{ inputs.cache-image }}
           registry: ${{ secrets.registry }}
           username: ${{ secrets.username }}
