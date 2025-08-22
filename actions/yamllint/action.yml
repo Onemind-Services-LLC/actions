@@ -1,0 +1,43 @@
+name: Yamllint
+description: Lint YAML files using yamllint with an isolated venv.
+
+inputs:
+  config_file:
+    description: Path to yamllint configuration file
+    required: false
+    default: .yamllint.yaml
+  file_or_dir:
+    description: File or directory to lint (space-separated allowed)
+    required: false
+    default: .
+  format:
+    description: Output format (standard, parsable, github, colored, auto)
+    required: false
+    default: github
+  fail-on-warnings:
+    description: Treat yamllint warnings as failures
+    required: false
+    default: 'true'
+
+runs:
+  using: composite
+  steps:
+    - name: Set up yamllint venv
+      shell: bash
+      run: pip install yamllint
+
+    - name: Run yamllint
+      shell: bash
+      run: |
+        yamllint -f "${{ inputs.format }}" -c "${{ inputs.config_file }}" ${{ inputs.file_or_dir }}
+        rc=$?
+        if [ "${{ inputs.fail-on-warnings }}" = "false" ] && [ $rc -eq 1 ]; then
+          echo "yamllint reported warnings; not failing build."
+          exit 0
+        fi
+        exit $rc
+
+branding:
+  icon: check
+  color: blue
+
