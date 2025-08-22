@@ -6,14 +6,14 @@ Set up Python, optionally upgrade `pip`, and install dependencies from `requirem
 
 - **python-version**: Python version to use (default: `3.12`).
 - **working-directory**: Directory to run installs from (default: `.`).
-- **github-token**: Optional token for private GitHub dependencies. Creates a temporary `~/.netrc` for git/pip and removes it at the end.
+- **github-token**: Optional token for private GitHub dependencies. Configures a temporary git URL rewrite to authenticate `https://github.com/` fetches as `https://x-access-token:<token>@github.com/` and cleans it up at the end.
 - **upgrade-pip**: Upgrade pip before installs (default: `false`).
 - **extra-install-commands**: Extra commands to execute for installing system or Python deps (e.g., `sudo apt-get install -y libpq-dev`).
 
 ## Behavior
 
 - Uses `actions/setup-python@v5` to install the requested Python version.
-- If provided, configures a temporary `~/.netrc` with the GitHub token for private repo access and cleans it up afterward.
+- If provided, configures a temporary git URL rewrite using the token for private repo access and cleans it up afterward.
 - Installs from the following files if they exist in the repo root:
   - `requirements.txt`
   - `requirements-dev.txt`
