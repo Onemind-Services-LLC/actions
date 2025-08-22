@@ -4,8 +4,8 @@ Generates a GitHub App installation token using `actions/create-github-app-token
 
 ## Inputs
 
-- app-id: GitHub App ID. Optional; defaults to `vars.APP_ID`.
-- private-key: GitHub App private key (PEM). Optional; defaults to `secrets.APP_PRIVATE_KEY`. Escaped newlines (\\n) are supported.
+- app-id: GitHub App ID.
+- private-key: GitHub App private key (PEM).
 - owner: Owner of the installation. Optional; defaults to `github.repository_owner` when omitted.
 - repositories: Comma or newline-separated list of repositories. Optional.
   - If `owner` is set and `repositories` is empty, the token is scoped to all repositories in the owner's installation.
@@ -34,6 +34,9 @@ jobs:
         # Pin to a tag or commit SHA in production for supply-chain security
         uses: Onemind-Services-LLC/actions/actions/create-repo-token@master
         id: repo-token
+        with:
+          app-id: ${{ vars.APP_ID }}
+          private-key: ${{ secrets.APP_PRIVATE_KEY }}
 
       - name: Use token without printing it
         env:
@@ -50,6 +53,8 @@ Create a token for multiple repositories in the current owner's installation:
         uses: Onemind-Services-LLC/actions/actions/create-repo-token@master
         id: repo-token
         with:
+          app-id: ${{ vars.APP_ID }}
+          private-key: ${{ secrets.APP_PRIVATE_KEY }}
           owner: ${{ github.repository_owner }}
           repositories: |
             repo1
@@ -63,18 +68,9 @@ Create a token for all repositories in the current owner's installation:
         uses: Onemind-Services-LLC/actions/actions/create-repo-token@master
         id: repo-token
         with:
-          owner: ${{ github.repository_owner }}
-```
-
-Alternatively, pass explicit app credentials:
-
-```yaml
-      - name: Create token explicitly
-        uses: Onemind-Services-LLC/actions/actions/create-repo-token@master
-        id: repo-token
-        with:
           app-id: ${{ vars.APP_ID }}
           private-key: ${{ secrets.APP_PRIVATE_KEY }}
+          owner: ${{ github.repository_owner }}
 ```
 
 Security tips:

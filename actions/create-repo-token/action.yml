@@ -4,10 +4,10 @@ description: Create a GitHub App installation token scoped to the current reposi
 inputs:
   app-id:
     description: GitHub App ID used to create the installation token. Defaults to `vars.APP_ID`.
-    required: false
+    required: true
   private-key:
     description: Private key (PEM) for the GitHub App. Defaults to `secrets.APP_PRIVATE_KEY`.
-    required: false
+    required: true
   owner:
     description: Owner of the installation. If omitted, defaults to current repository owner.
     required: false
@@ -30,8 +30,8 @@ runs:
       id: app_token
       uses: actions/create-github-app-token@v2
       with:
-        app-id: ${{ inputs.app-id || vars.APP_ID }}
-        private-key: ${{ inputs.private-key || secrets.APP_PRIVATE_KEY }}
+        app-id: ${{ inputs.app-id }}
+        private-key: ${{ inputs.private-key }}
         owner: ${{ inputs.owner }}
         repositories: ${{ inputs.repositories }}
         skip-token-revoke: ${{ inputs.skip-token-revoke }}

@@ -16,7 +16,6 @@ inputs:
   cache-image:
     description: Registry reference to use for Buildx cache (e.g., ghcr.io/org/app:buildcache-main)
     required: true
-    default: ''
   annotations:
     description: Additional newline-separated OCI annotations to merge with docker/metadata-action output
     required: false
@@ -105,7 +104,7 @@ runs:
 
     - name: Sign Images
       if: inputs.push == 'true' && steps.build.outputs.digest
-      uses: ./actions/cosign-sign
+      uses: Onemind-Services-LLC/actions/actions/cosign-sign@master
       with:
         mode: docker
         docker-images: ${{ steps.meta.outputs.tags }}

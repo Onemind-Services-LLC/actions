@@ -39,7 +39,6 @@ on:
       cache-image:
         description: Registry reference used by Buildx cache (e.g., ghcr.io/org/app:buildcache-main)
         required: true
-        default: ''
         type: string
     secrets:
       registry:
