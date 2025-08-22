@@ -1,0 +1,44 @@
+name: "Cypress Test"
+description: "Run Cypress tests (component or e2e) with optional server start, waits, and artifact upload on failure"
+inputs:
+  browser:
+    description: "Browser to run (chrome|edge|firefox)"
+    required: true
+  install:
+    description: "Run installation (npm ci) via Cypress action"
+    default: "true"
+    required: false
+  component:
+    description: "Run in component test mode (false for e2e)"
+    default: "true"
+    required: false
+  start:
+    description: "Command to start the app/server for e2e"
+    required: false
+  wait-on:
+    description: "URL(s) to wait on before running tests"
+    required: false
+  wait-on-timeout:
+    description: "Timeout (seconds) for wait-on"
+    required: false
+    default: "300"
+runs:
+  using: "composite"
+  steps:
+    - name: Run Cypress tests
+      uses: cypress-io/github-action@v6
+      with:
+        component: ${{ inputs.component }}
+        install: ${{ inputs.install }}
+        browser: ${{ inputs.browser }}
+        start: ${{ inputs.start }}
+        wait-on: ${{ inputs.wait-on }}
+        wait-on-timeout: ${{ inputs.wait-on-timeout }}
+      env:
+        FORCE_FIREFOX_CDP: ${{ inputs.browser == 'firefox' && '1' || '' }}
+    - name: Upload screenshots on failure
+      if: ${{ failure() }}
+      uses: actions/upload-artifact@v4
+      with:
+        name: cypress-screenshots-${{ inputs.browser }}
+        path: cypress/screenshots
