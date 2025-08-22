@@ -10,6 +10,7 @@ Reusable composite GitHub Actions maintained in this repository. Each action inc
 - Create Repository Token: Create a GitHub App installation token scoped to specific repos. [Docs](create-repo-token/README.md)
 - Python Setup & Install: Set up Python, optionally upgrade pip, and install from requirements files with optional private auth and extra commands. [Docs](python-setup-install/README.md)
 - Django Test Runner: Run Django checks, migrations, collectstatic, tests, and generate coverage XML. [Docs](django-test-runner/README.md)
+- Yamllint: Lint YAML files using yamllint with an isolated virtual environment; configurable format and failure mode. [Docs](yamllint/README.md)
 
 ## Versioning
 

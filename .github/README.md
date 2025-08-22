@@ -61,3 +61,29 @@ See also: [Actions Overview](../actions/README.md)
 - Jobs and steps use clear, Title Case names.
 - Minimal permissions by default; elevate only as needed.
 - Pin third‑party actions by version/commit; avoid `@master`.
+
+## Local CI (Repo-only)
+
+- File: `.github/workflows/ci.yml`
+- Purpose: Lint YAML across this repository using the internal Yamllint composite action.
+- Scope: Repo-only; guarded with `if: github.repository == 'Onemind-Services-LLC/actions'` to avoid running when this workflow is referenced elsewhere.
+- Usage: Not reusable. Use the composite action directly in your repo instead (see below).
+
+## Yamllint Action Usage
+
+Use the composite action provided in this repo to lint YAML in your own workflows:
+
+```yaml
+jobs:
+  yamllint:
+    runs-on: ubuntu-22.04-sh
+    steps:
+      - uses: actions/checkout@v4
+      - name: Yamllint
+        uses: Onemind-Services-LLC/actions/actions/yamllint@v1
+        with:
+          config_file: .yamllint.yaml
+          file_or_dir: .
+          format: github
+          fail-on-warnings: 'false'
+```

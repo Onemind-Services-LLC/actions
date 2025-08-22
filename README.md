@@ -14,3 +14,8 @@ Notes
 - Pin third‑party actions by version/commit; avoid `@master`.
 - Keep permissions minimal; add `id-token: write` only when needed.
 - Do not print secrets; prefer `GITHUB_TOKEN` where possible.
+
+## YAML Linting
+
+- Composite Action: Yamllint action for linting YAML using an isolated venv. See [actions/yamllint/README.md](actions/yamllint/README.md) for inputs and usage.
+- Repo CI: Minimal workflow at `.github/workflows/ci.yml` runs the Yamllint action against this repo using `.yamllint.yaml`.
