@@ -102,5 +102,6 @@ jobs:
       # registry-scope: '@your-scope'
     secrets:
       github-token: ${{ secrets.GITHUB_TOKEN }}
-      # npm-token: ${{ secrets.NPM_TOKEN }}
+
+Note: This workflow now generates a GitHub App installation token internally for npm auth (via `create-repo-token`). Ensure the caller repository defines `APP_ID` (Repository variable) and `APP_PRIVATE_KEY` (Repository secret) for the GitHub App.
 ```
