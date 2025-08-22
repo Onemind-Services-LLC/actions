@@ -1,0 +1,101 @@
+name: Docker Build + Push + Sign
+
+on:
+  workflow_call:
+    inputs:
+      runner:
+        description: GitHub runner label
+        required: false
+        default: 'ubuntu-22.04-sh'
+        type: string
+      push:
+        description: "Whether to push images (override). Accepts 'true' or 'false'. If omitted, defaults to pushing only on the repository's default branch."
+        required: false
+        default: ''
+        type: string
+      image:
+        description: Base image name (e.g., registry.example.com/org/app)
+        required: true
+        type: string
+      meta-tags:
+        description: docker/metadata-action tags rules (newline-separated)
+        required: false
+        default: |
+          type=ref,event=branch
+          type=ref,event=pr
+          type=ref,event=tag
+          type=sha
+        type: string
+      annotations:
+        description: Additional newline-separated OCI annotations to merge with docker/metadata-action output
+        required: false
+        default: ''
+        type: string
+      build-args:
+        description: Newline-separated build args (KEY=VALUE)
+        required: false
+        default: ''
+        type: string
+      cache-image:
+        description: Registry reference used by Buildx cache (e.g., ghcr.io/org/app:buildcache-main)
+        required: true
+        type: string
+    secrets:
+      registry:
+        description: Registry hostname for login
+        required: true
+      username:
+        description: Registry username
+        required: true
+      password:
+        description: Registry password/token
+        required: true
+
+permissions:
+  contents: read
+  id-token: write
+
+jobs:
+  build:
+    name: Build
+    runs-on: ${{ inputs.runner }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Decide whether to push
+        id: decide-push
+        shell: bash
+        env:
+          INPUT_PUSH: ${{ inputs.push }}
+          DEFAULT_BRANCH: ${{ github.event.repository.default_branch }}
+          REF_NAME: ${{ github.ref_name }}
+        run: |
+          if [[ -n "${INPUT_PUSH}" ]]; then
+            case "${INPUT_PUSH}" in
+              true|false)
+                echo "value=${INPUT_PUSH}" >> "$GITHUB_OUTPUT" ;;
+              *)
+                echo "Invalid inputs.push: '${INPUT_PUSH}'. Expected 'true' or 'false'." >&2
+                exit 1 ;;
+            esac
+          else
+            if [[ "${REF_NAME}" == "${DEFAULT_BRANCH}" ]]; then
+              echo "value=true" >> "$GITHUB_OUTPUT"
+            else
+              echo "value=false" >> "$GITHUB_OUTPUT"
+            fi
+          fi
+
+      - name: Build, push, sign
+        uses: Onemind-Services-LLC/actions/actions/docker-build-push@master
+        with:
+          images: ${{ inputs.image }}
+          meta-tags: ${{ inputs.meta-tags }}
+          annotations: ${{ inputs.annotations }}
+          push: ${{ steps.decide-push.outputs.value }}
+          build-args: ${{ inputs.build-args }}
+          cache-image: ${{ inputs.cache-image }}
+          registry: ${{ secrets.registry }}
+          username: ${{ secrets.username }}
+          password: ${{ secrets.password }}

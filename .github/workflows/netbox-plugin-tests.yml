@@ -22,11 +22,6 @@ on:
         type: string
         default: 'ubuntu-22.04-sh'
 
-    secrets:
-      git-token:
-        description: 'GitHub token for accessing private repositories'
-        required: true
-
 jobs:
   test:
     name: Run Tests
@@ -58,6 +53,13 @@ jobs:
           --health-retries 5
 
     steps:
+      - name: Create App Token
+        id: repo-token
+        uses: Onemind-Services-LLC/actions/actions/create-repo-token@master
+        with:
+          app-id: ${{ vars.APP_ID }}
+          private-key: ${{ secrets.APP_PRIVATE_KEY }}
+
       - name: Install System Dependencies
         run: |
           sudo apt-get update
@@ -84,7 +86,7 @@ jobs:
       - name: Install Plugin Dependencies
         working-directory: ${{ inputs.plugin-name }}
         run: |
-          echo machine github.com login ${{ secrets.git-token }} > ~/.netrc
+          echo machine github.com login ${{ steps.repo-token.outputs.token }} > ~/.netrc
           
           python -m pip install --upgrade pip
           pip install -e .  # Install in development mode

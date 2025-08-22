@@ -1,0 +1,30 @@
+extends: default
+
+yaml-files:
+  - "*.yaml"
+  - "*.yml"
+
+rules:
+  document-start: disable
+  truthy: disable
+
+  indentation:
+    spaces: 2
+    indent-sequences: consistent
+
+  line-length:
+    max: 140
+    allow-non-breakable-words: true
+    level: warning
+
+  comments:
+    min-spaces-from-content: 1
+
+  trailing-spaces:
+    level: warning
+
+  new-line-at-end-of-file:
+    level: warning
+
+  empty-lines:
+    level: warning

@@ -1,0 +1,20 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  ci:
+    name: CI
+    if: github.repository == 'Onemind-Services-LLC/actions'
+    runs-on: ubuntu-22.04-sh
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Run yamllint
+        uses: Onemind-Services-LLC/actions/actions/yamllint@master

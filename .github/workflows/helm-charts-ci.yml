@@ -1,0 +1,163 @@
+name: Helm Charts CI
+
+on:
+  workflow_call:
+    inputs:
+      runner:
+        description: GitHub runner label
+        required: false
+        default: 'ubuntu-22.04-sh'
+        type: string
+      python-version:
+        description: Python version for chart-testing
+        required: false
+        default: '3.x'
+        type: string
+      charts-dir:
+        description: Directory containing chart subfolders
+        required: false
+        default: 'charts'
+        type: string
+      registry:
+        description: OCI registry hostname
+        required: false
+        default: 'registry.onemindservices.com'
+        type: string
+      oci-namespace:
+        description: OCI namespace/repo path under the registry
+        required: false
+        default: 'charts'
+        type: string
+    secrets:
+      docker-username:
+        description: Username for registry login
+        required: false
+      docker-password:
+        description: Password/Token for registry login
+        required: false
+
+permissions:
+  contents: read
+  id-token: write
+
+jobs:
+  lint-test:
+    name: Lint & Test Charts
+    runs-on: ${{ inputs.runner }}
+    outputs:
+      changed: ${{ steps.list-changed.outputs.changed }}
+      changed-dirs: ${{ steps.list-changed.outputs.changed_dirs }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+
+      - name: Set up Helm
+        uses: azure/setup-helm@1a275c3b69536ee54be43f2070a358922e12c8d4 # v4.3.1
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ inputs.python-version }}
+          check-latest: true
+
+      - name: Set up chart-testing
+        uses: helm/chart-testing-action@0d28d3144d3a25ea2cc349d6e59901c4ff469b3b # v2.7.0
+
+      - name: Run chart-testing (list-changed)
+        id: list-changed
+        run: |
+          changed=$(ct list-changed \
+            --target-branch "${{ github.event.repository.default_branch }}" \
+            --chart-dirs "${{ inputs.charts-dir }}")
+          if [[ -n "$changed" ]]; then
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+            # Normalize to newline-separated list
+            printf "%s\n" "$changed" > "$RUNNER_TEMP/changed.txt"
+            echo "changed_dirs<<EOF" >> "$GITHUB_OUTPUT"
+            cat "$RUNNER_TEMP/changed.txt" >> "$GITHUB_OUTPUT"
+            echo EOF >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Run chart-testing (lint)
+        if: steps.list-changed.outputs.changed == 'true'
+        run: |
+          ct lint \
+            --target-branch "${{ github.event.repository.default_branch }}" \
+            --chart-dirs "${{ inputs.charts-dir }}"
+
+  release:
+    name: Package & Push Charts
+    runs-on: ${{ inputs.runner }}
+    needs: lint-test
+    if: startsWith(github.ref, 'refs/tags/')
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+
+      - name: Set up Helm
+        uses: azure/setup-helm@1a275c3b69536ee54be43f2070a358922e12c8d4 # v4.3.1
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ inputs.python-version }}
+          check-latest: true
+
+      - name: Set up chart-testing
+        uses: helm/chart-testing-action@0d28d3144d3a25ea2cc349d6e59901c4ff469b3b # v2.7.0
+
+      - name: Login to Registry
+        if: needs.lint-test.outputs.changed == 'true'
+        uses: docker/login-action@184bdaa0721073962dff0199f1fb9940f07167d1 # v3.5.0
+        with:
+          registry: ${{ inputs.registry }}
+          username: ${{ secrets.docker-username }}
+          password: ${{ secrets.docker-password }}
+
+      - name: Package charts
+        if: needs.lint-test.outputs.changed == 'true'
+        env:
+          CHARTS_DIR: ${{ inputs.charts-dir }}
+          OUT_DIR: ${{ runner.temp }}/helm-repo
+          CHANGED_DIRS: ${{ needs.lint-test.outputs.changed-dirs }}
+        run: |
+          mkdir -p "$OUT_DIR"
+          if [[ -z "$CHANGED_DIRS" ]]; then
+            echo "No changed charts to package. Skipping." && exit 0
+          fi
+          while IFS= read -r dir; do
+            [[ -z "$dir" ]] && continue
+            # If ct emits relative paths under charts-dir, ensure they exist
+            if [[ -d "$dir" ]]; then
+              rm -rf "$dir/tmpcharts" "$dir/charts"/* || true
+              helm package "$dir" --destination "$OUT_DIR"
+            else
+              echo "Warning: Skipping missing chart directory: $dir"
+            fi
+          done <<< "$CHANGED_DIRS"
+
+      - name: Push charts
+        if: needs.lint-test.outputs.changed == 'true'
+        env:
+          OUT_DIR: ${{ runner.temp }}/helm-repo
+          REGISTRY: ${{ inputs.registry }}
+          NAMESPACE: ${{ inputs.oci-namespace }}
+        run: |
+          shopt -s nullglob
+          for pkg in "$OUT_DIR"/*.tgz; do
+            echo "Pushing $pkg"
+            helm push "$pkg" "oci://$REGISTRY/$NAMESPACE"
+          done
+
+      - name: Sign charts with Cosign
+        if: needs.lint-test.outputs.changed == 'true'
+        uses: Onemind-Services-LLC/actions/actions/cosign-sign@master
+        with:
+          mode: helm
+          registry: ${{ inputs.registry }}
+          oci-namespace: ${{ inputs.oci-namespace }}
+          chart-packages-dir: ${{ runner.temp }}/helm-repo
