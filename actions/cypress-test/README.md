@@ -4,15 +4,20 @@ Wraps `cypress-io/github-action` to run Cypress component or e2e tests, with opt
 
 ## Inputs
 
+- node-version: Node.js version to use (default: `22.x`).
+- working-directory: Project directory (default: `.`).
+- registry-url: npm registry URL for private/scoped packages (optional).
+- registry-scope: npm scope for auth, e.g., `@your-scope` (optional).
+- npm-token: npm auth token for private registry access (optional).
 - browser: Browser to run (`chrome`, `edge`, `firefox`). Required.
 - component: Run in component test mode (`false` for e2e). Default `true`.
-- start: Command to start the app/server for e2e. Optional.
-- wait-on: URL(s) to wait for before running tests. Optional.
-- wait-on-timeout: Timeout in seconds for waits. Default `300`.
+- start: Command to start the app/server for e2e (optional).
+- wait-on: URL(s) to wait for before running tests (optional).
+- wait-on-timeout: Timeout in seconds for waits (default: `300`).
 
 ## Usage
 
-### Component Example
+### Component tests
 
 ```yaml
 jobs:
@@ -27,7 +32,7 @@ jobs:
           component: true
 ```
 
-### E2E Example
+### E2E tests with server + wait-on
 
 ```yaml
 jobs:
@@ -45,7 +50,26 @@ jobs:
           wait-on-timeout: 300
 ```
 
+### Private npm registry (optional)
+
+```yaml
+jobs:
+  cypress-e2e-private:
+    runs-on: ubuntu-22.04-sh
+    steps:
+      - uses: actions/checkout@v4
+      - name: Run Cypress with private deps
+        uses: Onemind-Services-LLC/actions/actions/cypress-test@master
+        with:
+          browser: chrome
+          # Optional registry auth
+          registry-url: https://registry.npmjs.org
+          registry-scope: '@your-scope'
+          npm-token: ${{ secrets.NPM_TOKEN }}
+```
+
 ## Notes
 
+- Uses pinned `cypress-io/github-action` to run tests; it installs dependencies in the working directory.
 - When `browser: firefox`, `FORCE_FIREFOX_CDP=1` is set automatically to enable CDP.
-- On failure, screenshots from `cypress/screenshots` upload as `cypress-screenshots-<browser>`.
+- On failure, screenshots from `cypress/screenshots` are uploaded as `cypress-screenshots-<browser>`.
