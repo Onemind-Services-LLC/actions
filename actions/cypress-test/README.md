@@ -5,7 +5,6 @@ Wraps `cypress-io/github-action` to run Cypress component or e2e tests, with opt
 ## Inputs
 
 - browser: Browser to run (`chrome`, `edge`, `firefox`). Required.
-- install: Run installation via the Cypress action. Default `true`.
 - component: Run in component test mode (`false` for e2e). Default `true`.
 - start: Command to start the app/server for e2e. Optional.
 - wait-on: URL(s) to wait for before running tests. Optional.
@@ -25,7 +24,6 @@ jobs:
         uses: Onemind-Services-LLC/actions/actions/cypress-test@master
         with:
           browser: chrome
-          install: true
           component: true
 ```
 
@@ -42,7 +40,6 @@ jobs:
         with:
           browser: firefox
           component: false
-          install: true
           start: npm run local:test
           wait-on: http://localhost:3000
           wait-on-timeout: 300
