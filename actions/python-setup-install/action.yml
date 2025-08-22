@@ -41,12 +41,7 @@ runs:
     - name: Configure GitHub Token
       if: ${{ inputs.github-token != '' }}
       shell: bash
-      run: |
-        umask 077
-        cat > ~/.netrc <<EOF
-        machine github.com
-          login ${{ inputs.github-token }}
-        EOF
+      run: echo machine github.com login ${{ inputs.github-token }} > ~/.netrc
 
     - name: Upgrade Pip
       if: ${{ inputs.upgrade-pip == 'true' }}
