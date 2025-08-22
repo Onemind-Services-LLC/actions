@@ -54,6 +54,37 @@ Reusable workflow that uses `docker/metadata-action` to generate tags/labels and
 
 [View Workflow](./.github/workflows/docker-build-push.yml)
 
+Example usage:
+
+```yaml
+jobs:
+  docker:
+    uses: Onemind-Services-LLC/actions/.github/workflows/docker-build-push.yml@master
+    permissions:
+      contents: read
+      id-token: write
+      packages: write
+    with:
+      runner: 'ubuntu-22.04-sh'
+      image: ghcr.io/your-org/your-app
+      # push: 'true'  # Optional override. If omitted, pushes only on default branch.
+      cache-image: ghcr.io/your-org/your-app:buildcache-main
+      meta-tags: |
+        type=ref,event=branch
+        type=ref,event=tag
+        type=sha
+      # annotations: |
+      #   org.opencontainers.image.revision=${{ github.sha }}
+    secrets:
+      registry: ghcr.io
+      username: ${{ github.actor }}
+      password: ${{ secrets.GITHUB_TOKEN }}
+```
+
+Notes:
+- push: Provide 'true' or 'false' to override. When omitted, the workflow defaults to pushing only when `github.ref_name` equals the repository's default branch.
+- cache-image: Required. Used for Buildx cache import/export (registry reference).
+
 ## Usage
 
 To use these actions in your repository, reference them in your workflow file:
