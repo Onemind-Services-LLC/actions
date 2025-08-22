@@ -4,10 +4,6 @@ inputs:
   browser:
     description: "Browser to run (chrome|edge|firefox)"
     required: true
-  install:
-    description: "Run installation (npm ci) via Cypress action"
-    default: "true"
-    required: false
   component:
     description: "Run in component test mode (false for e2e)"
     default: "true"
@@ -25,20 +21,33 @@ inputs:
 runs:
   using: "composite"
   steps:
+    - uses: browser-actions/setup-chrome@b94431e051d1c52dcbe9a7092a4f10f827795416 #v2.1.0
+      if: ${{ inputs.browser == 'chrome' }}
+      with:
+        install-dependencies: true
+
+    - uses: browser-actions/setup-firefox@5914774dda97099441f02628f8d46411fcfbd208 # v1.7.0
+      if: ${{ inputs.browser == 'firefox' }}
+
+    - uses: browser-actions/setup-edge@5a55d8fc0f012aa6e16b582df5bf9d6274bda7da # v1.1.1
+      if: ${{ inputs.browser == 'edge' }}
+
     - name: Run Cypress tests
-      uses: cypress-io/github-action@v6
+      uses: cypress-io/github-action@b8ba51a856ba5f4c15cf39007636d4ab04f23e3c # v6.10.2
       with:
         component: ${{ inputs.component }}
-        install: ${{ inputs.install }}
+        install: true
         browser: ${{ inputs.browser }}
         start: ${{ inputs.start }}
         wait-on: ${{ inputs.wait-on }}
         wait-on-timeout: ${{ inputs.wait-on-timeout }}
       env:
         FORCE_FIREFOX_CDP: ${{ inputs.browser == 'firefox' && '1' || '' }}
+
     - name: Upload screenshots on failure
       if: ${{ failure() }}
       uses: actions/upload-artifact@v4
       with:
         name: cypress-screenshots-${{ inputs.browser }}
         path: cypress/screenshots
+        if-no-files-found: ignore
