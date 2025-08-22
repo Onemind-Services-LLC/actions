@@ -38,6 +38,8 @@ runs:
       uses: actions/setup-python@v5
       with:
         python-version: ${{ inputs.python-version }}
+        cache: 'pip'
+        cache-dependency-path: ${{ inputs.working-directory }}/requirements.txt
 
     - name: Configure GitHub Token
       if: ${{ inputs.github-token != '' }}
