@@ -63,13 +63,37 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: Decide whether to push
+        id: decide-push
+        shell: bash
+        env:
+          INPUT_PUSH: ${{ inputs.push }}
+          DEFAULT_BRANCH: ${{ github.event.repository.default_branch }}
+          REF_NAME: ${{ github.ref_name }}
+        run: |
+          if [[ -n "${INPUT_PUSH}" ]]; then
+            case "${INPUT_PUSH}" in
+              true|false)
+                echo "value=${INPUT_PUSH}" >> "$GITHUB_OUTPUT" ;;
+              *)
+                echo "Invalid inputs.push: '${INPUT_PUSH}'. Expected 'true' or 'false'." >&2
+                exit 1 ;;
+            esac
+          else
+            if [[ "${REF_NAME}" == "${DEFAULT_BRANCH}" ]]; then
+              echo "value=true" >> "$GITHUB_OUTPUT"
+            else
+              echo "value=false" >> "$GITHUB_OUTPUT"
+            fi
+          fi
+
       - name: Build, push, sign
         uses: Onemind-Services-LLC/actions/actions/docker-build-push@master
         with:
           images: ${{ inputs.image }}
           meta-tags: ${{ inputs.meta-tags }}
           annotations: ${{ inputs.annotations }}
-          push: ${{ inputs.push != '' && fromJSON(inputs.push) || (inputs.push == '' && (github.ref_name == github.event.repository.default_branch)) }}
+          push: ${{ steps.decide-push.outputs.value }}
           build-args: ${{ inputs.build-args }}
           cache-image: ${{ inputs.cache-image }}
           registry: ${{ secrets.registry }}

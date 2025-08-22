@@ -67,6 +67,9 @@ jobs:
       - name: Create App Token
         id: repo-token
         uses: Onemind-Services-LLC/actions/actions/create-repo-token@master
+        with:
+          app-id: ${{ vars.APP_ID }}
+          private-key: ${{ secrets.APP_PRIVATE_KEY }}
 
       - name: Ensure PR context
         if: ${{ github.event_name != 'pull_request' }}

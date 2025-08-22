@@ -3,13 +3,13 @@ description: Create a GitHub App installation token scoped to the current reposi
 
 inputs:
   app-id:
-    description: GitHub App ID used to create the installation token. Defaults to `vars.APP_ID`.
+    description: GitHub App ID used to create the installation token.
     required: true
   private-key:
-    description: Private key (PEM) for the GitHub App. Defaults to `secrets.APP_PRIVATE_KEY`.
+    description: Private key (PEM) for the GitHub App.
     required: true
   owner:
-    description: Owner of the installation. If omitted, defaults to current repository owner.
+    description: Owner of the installation. If omitted and `repositories` is provided, defaults to the current repository owner. When both `owner` and `repositories` are omitted, the token is scoped to the current repository only.
     required: false
   repositories:
     description: Comma or newline-separated list of repositories to scope the token to.
@@ -26,14 +26,49 @@ outputs:
 runs:
   using: composite
   steps:
+    - name: Resolve owner and repositories
+      id: resolve
+      shell: bash
+      env:
+        INPUT_OWNER: ${{ inputs.owner }}
+        INPUT_REPOSITORIES: ${{ inputs.repositories }}
+        DEFAULT_OWNER: ${{ github.repository_owner }}
+      run: |
+        owner="$INPUT_OWNER"
+        repos_raw="${INPUT_REPOSITORIES:-}"
+
+        # If repositories are provided but owner is omitted, default owner to current repository owner
+        if [[ -z "${owner}" && -n "${repos_raw//[[:space:],]/}" ]]; then
+          owner="$DEFAULT_OWNER"
+        fi
+
+        # Normalize repositories: support comma or newline separated values; trim blanks
+        repos_normalized=""
+        if [[ -n "${repos_raw}" ]]; then
+          repos_normalized=$(printf '%s' "${repos_raw}" \
+            | tr ',\r' '\n' \
+            | sed -e 's/^\s\+//; s/\s\+$//' \
+            | awk 'NF')
+        fi
+
+        {
+          echo "owner=${owner}"
+          # Multi-line outputs are supported by writing directly to $GITHUB_OUTPUT
+          if [[ -n "${repos_normalized}" ]]; then
+            printf 'repositories<<__EOF__\n%s\n__EOF__\n' "${repos_normalized}"
+          else
+            echo 'repositories='
+          fi
+        } >> "$GITHUB_OUTPUT"
+
     - name: Create GitHub App token
       id: app_token
       uses: actions/create-github-app-token@v2
       with:
         app-id: ${{ inputs.app-id }}
         private-key: ${{ inputs.private-key }}
-        owner: ${{ inputs.owner }}
-        repositories: ${{ inputs.repositories }}
+        owner: ${{ steps.resolve.outputs.owner }}
+        repositories: ${{ steps.resolve.outputs.repositories }}
         skip-token-revoke: ${{ inputs.skip-token-revoke }}
 
     - name: Mask token

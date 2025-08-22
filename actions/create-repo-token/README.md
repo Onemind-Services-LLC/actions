@@ -6,7 +6,7 @@ Generates a GitHub App installation token using `actions/create-github-app-token
 
 - app-id: GitHub App ID.
 - private-key: GitHub App private key (PEM).
-- owner: Owner of the installation. Optional; defaults to `github.repository_owner` when omitted.
+- owner: Owner of the installation. Optional; when `repositories` is provided and `owner` is omitted, defaults to `github.repository_owner`. When both `owner` and `repositories` are omitted, the token is scoped to only the current repository.
 - repositories: Comma or newline-separated list of repositories. Optional.
   - If `owner` is set and `repositories` is empty, the token is scoped to all repositories in the owner's installation.
   - If both `owner` and `repositories` are empty, the token is scoped to only the current repository.
