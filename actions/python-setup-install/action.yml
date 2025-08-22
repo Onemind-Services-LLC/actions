@@ -8,7 +8,7 @@ inputs:
   python-version:
     description: Python version to set up (e.g., '3.12', '3.11').
     required: false
-    default: '3.12'
+    default: '3.x'
   working-directory:
     description: Directory to run installs from
     required: false

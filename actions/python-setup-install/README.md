@@ -4,7 +4,7 @@ Set up Python, optionally upgrade `pip`, and install dependencies from `requirem
 
 ## Inputs
 
-- **python-version**: Python version to use (default: `3.12`).
+- **python-version**: Python version to use (default: `3.x`).
 - **working-directory**: Directory to run installs from (default: `.`).
 - **github-token**: Optional token for private GitHub dependencies. Configures a temporary git URL rewrite to authenticate `https://github.com/` fetches as `https://x-access-token:<token>@github.com/` and cleans it up at the end.
 - **upgrade-pip**: Upgrade pip before installs (default: `false`).
