@@ -50,15 +50,17 @@ on:
         required: false
         default: 'false'
         type: string
-    secrets:
       app-id:
-        description: GitHub App ID used to mint installation tokens
+        description: GitHub App ID used to mint installation tokens (only when org-token is 'true')
+        required: false
+        type: string
+      registry:
+        description: Registry hostname for login (e.g., ghcr.io)
         required: true
+        type: string
+    secrets:
       private-key:
         description: GitHub App private key (PEM) used to mint installation tokens
-        required: true
-      registry:
-        description: Registry hostname for login
         required: true
       username:
         description: Registry username
@@ -107,7 +109,7 @@ jobs:
         if: inputs.org-token == 'true'
         uses: Onemind-Services-LLC/actions/actions/create-repo-token@master
         with:
-          app-id: ${{ secrets.app-id }}
+          app-id: ${{ inputs.app-id }}
           private-key: ${{ secrets.private-key }}
           owner: Onemind-Services-LLC
 
@@ -136,6 +138,6 @@ jobs:
           build-args: ${{ inputs.build-args }}
           build-secrets: ${{ steps.merged_secrets.outputs.value }}
           cache-image: ${{ inputs.cache-image }}
-          registry: ${{ secrets.registry }}
+          registry: ${{ inputs.registry }}
           username: ${{ secrets.username }}
           password: ${{ secrets.password }}
