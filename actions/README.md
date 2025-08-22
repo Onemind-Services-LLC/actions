@@ -1,0 +1,21 @@
+# Composite Actions
+
+Reusable composite GitHub Actions maintained in this repository. Each action includes its own README with inputs, outputs, and examples.
+
+## Available Actions
+
+- NPM Install & Build: Install dependencies and build a Node.js project with npm caching and optional private registry auth. [Docs](npm-install-build/README.md)
+- Docker Build, Push, and Sign: Build with Docker Buildx, optionally push, and keyless‑sign Docker images. [Docs](docker-build-push/README.md)
+- Cosign Sign: Keyless signing for Docker images or Helm charts using Sigstore Cosign. [Docs](cosign-sign/README.md)
+- Create Repository Token: Create a GitHub App installation token scoped to specific repos. [Docs](create-repo-token/README.md)
+
+## Versioning
+
+- Reference actions using a tagged release (e.g., `@v1`) or a commit SHA.
+- Avoid `@master` in production workflows.
+
+## Conventions
+
+- Inputs include clear descriptions and sensible defaults.
+- Steps are small, composable, and pinned to versions.
+- YAML and Markdown use 2‑space indentation.
