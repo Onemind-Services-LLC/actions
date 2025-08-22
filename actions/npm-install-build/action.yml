@@ -10,10 +10,18 @@ inputs:
     description: Directory containing the project
     required: false
     default: '.'
+  install:
+    description: Whether to run the install step
+    required: false
+    default: 'true'
   install-command:
     description: Install command to run
     required: false
     default: 'npm ci --no-audit'
+  build:
+    description: Whether to run the build step
+    required: false
+    default: 'true'
   build-command:
     description: Build command to run
     required: false
@@ -45,6 +53,7 @@ runs:
         always-auth: ${{ inputs.registry-url != '' }}
 
     - name: Install Dependencies
+      if: ${{ inputs.install == 'true' }}
       shell: bash
       working-directory: ${{ inputs.working-directory }}
       run: ${{ inputs.install-command }}
@@ -52,6 +61,7 @@ runs:
         NODE_AUTH_TOKEN: ${{ inputs.npm-token }}
 
     - name: Build
+      if: ${{ inputs.build == 'true' }}
       shell: bash
       working-directory: ${{ inputs.working-directory }}
       run: ${{ inputs.build-command }}

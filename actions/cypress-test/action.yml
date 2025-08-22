@@ -1,6 +1,26 @@
 name: "Cypress Test"
 description: "Run Cypress tests (component or e2e) with optional server start, waits, and artifact upload on failure"
 inputs:
+  node-version:
+    description: Node.js version to use
+    required: false
+    default: '22.x'
+  working-directory:
+    description: Directory containing the project
+    required: false
+    default: '.'
+  registry-url:
+    description: Optional npm registry URL for scoped/private packages
+    required: false
+    default: ''
+  registry-scope:
+    description: Optional npm scope (e.g., '@your-scope') for auth
+    required: false
+    default: ''
+  npm-token:
+    description: NPM auth token for private registry access
+    required: false
+    default: ''
   browser:
     description: "Browser to run (chrome|edge|firefox)"
     required: true
@@ -21,6 +41,16 @@ inputs:
 runs:
   using: "composite"
   steps:
+    - name: Setup Node.js
+      uses: Onemind-Services-LLC/actions/actions/npm-install-build@master
+      with:
+        node-version: ${{ inputs.node-version }}
+        install: false
+        build: false
+        registry-url: ${{ inputs.registry-url }}
+        scope: ${{ inputs.registry-scope }}
+        always-auth: ${{ inputs.registry-url != '' }}
+
     - uses: browser-actions/setup-chrome@b94431e051d1c52dcbe9a7092a4f10f827795416 #v2.1.0
       if: ${{ inputs.browser == 'chrome' }}
       with:
@@ -41,6 +71,7 @@ runs:
         start: ${{ inputs.start }}
         wait-on: ${{ inputs.wait-on }}
         wait-on-timeout: ${{ inputs.wait-on-timeout }}
+        working-directory: ${{ inputs.working-directory }}
       env:
         FORCE_FIREFOX_CDP: ${{ inputs.browser == 'firefox' && '1' || '' }}
 
