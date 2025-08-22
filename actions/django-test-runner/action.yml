@@ -10,6 +10,62 @@ inputs:
     description: Optional DJANGO_SETTINGS_MODULE to export for commands
     required: false
     default: ''
+  coverage-report:
+    description: Post a Cobertura coverage report comment on PRs
+    required: false
+    default: 'false'
+  coverage-file:
+    description: Path to coverage XML file
+    required: false
+    default: 'coverage.xml'
+  coverage-reporter-token:
+    description: Token for cobertura reporter (defaults to GITHUB_TOKEN)
+    required: true
+    default: ''
+  coverage-minimum:
+    description: Minimum coverage percentage threshold
+    required: false
+    default: '80'
+  coverage-fail-below-threshold:
+    description: Fail when below minimum coverage
+    required: false
+    default: 'true'
+  coverage-show-line:
+    description: Show line coverage column
+    required: false
+    default: 'true'
+  coverage-show-branch:
+    description: Show branch coverage column
+    required: false
+    default: 'true'
+  coverage-show-class-names:
+    description: Show class names instead of file names
+    required: false
+    default: 'false'
+  coverage-show-missing:
+    description: Show missing lines per module
+    required: false
+    default: 'true'
+  coverage-only-changed-files:
+    description: Only show coverage for changed files on PRs
+    required: false
+    default: 'false'
+  coverage-skip-covered:
+    description: Skip files with 100% coverage
+    required: false
+    default: 'true'
+  coverage-report-name:
+    description: Unique name for the report/comment
+    required: false
+    default: ''
+  coverage-pull-request-number:
+    description: Pull request number when not using pull_request trigger
+    required: false
+    default: ''
+  coverage-continue-on-error:
+    description: Continue on error when posting report
+    required: false
+    default: 'true'
   verbosity:
     description: Django command verbosity (0-3)
     required: false
@@ -70,6 +126,24 @@ runs:
       shell: bash
       working-directory: ${{ inputs.working-directory }}
       run: coverage xml ${{ inputs.coverage-args }}
+
+    - name: Coverage Reporter
+      if: ${{ inputs.coverage-report == 'true' }}
+      continue-on-error: ${{ inputs.coverage-continue-on-error == 'true' }}
+      uses: 5monkeys/cobertura-action@ee5787cc56634acddedc51f21c7947985531e6eb #v14
+      with:
+        repo_token: ${{ inputs.coverage-reporter-token }}
+        path: ${{ inputs.coverage-file }}
+        skip_covered: ${{ inputs.coverage-skip-covered }}
+        minimum_coverage: ${{ inputs.coverage-minimum }}
+        fail_below_threshold: ${{ inputs.coverage-fail-below-threshold }}
+        show_line: ${{ inputs.coverage-show-line }}
+        show_branch: ${{ inputs.coverage-show-branch }}
+        show_class_names: ${{ inputs.coverage-show-class-names }}
+        show_missing: ${{ inputs.coverage-show-missing }}
+        only_changed_files: ${{ inputs.coverage-only-changed-files }}
+        report_name: ${{ inputs.coverage-report-name }}
+        pull_request_number: ${{ inputs.coverage-pull-request-number }}
 
 branding:
   icon: check-circle
