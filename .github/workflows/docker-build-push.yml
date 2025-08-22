@@ -122,7 +122,7 @@ jobs:
         run: |
           {
             if [ -n "${USER_SECRETS}" ]; then printf '%s\n' "${USER_SECRETS}"; fi
-            if [ -n "${ORG_TOKEN:-}" ]; then printf 'GITHUB_TOKEN=%s\n' "${ORG_TOKEN}"; fi
+            if [ -n "${ORG_TOKEN:-}" ]; then printf 'github_token=%s\n' "${ORG_TOKEN}"; fi
           } | awk 'NF' > merged_secrets.txt
           echo "value<<EOF" >> "$GITHUB_OUTPUT"
           cat merged_secrets.txt >> "$GITHUB_OUTPUT"
