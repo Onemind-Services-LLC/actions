@@ -57,19 +57,19 @@ runs:
         python -m pip install --upgrade pip
 
     - name: Install From requirements.txt
-      if: ${{ hashFiles('requirements.txt') != '' }}
+      if: hashFiles(format('{0}/requirements.txt', inputs.working-directory))
       shell: bash
       working-directory: ${{ inputs.working-directory }}
       run: pip install -r requirements.txt
 
     - name: Install From requirements-dev.txt
-      if: ${{ hashFiles('requirements-dev.txt') != '' }}
+      if: hashFiles(format('{0}/requirements-dev.txt', inputs.working-directory))
       shell: bash
       working-directory: ${{ inputs.working-directory }}
       run: pip install -r requirements-dev.txt
 
     - name: Install From requirements_dev.txt
-      if: ${{ hashFiles('requirements_dev.txt') != '' }}
+      if: hashFiles(format('{0}/requirements_dev.txt', inputs.working-directory))
       shell: bash
       working-directory: ${{ inputs.working-directory }}
       run: pip install -r requirements_dev.txt
