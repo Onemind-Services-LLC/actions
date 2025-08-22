@@ -4,7 +4,7 @@ Installs dependencies and builds a Node.js project using npm with caching and op
 
 ## Inputs
 
-- node-version: Node.js version (default: `18`).
+- node-version: Node.js version (default: `22.x`).
 - working-directory: Project directory (default: `.`).
 - install-command: Install command (default: `npm ci --no-audit`).
 - build-command: Build command (default: `npm run build`).
@@ -28,7 +28,7 @@ jobs:
       - name: Install & Build
         uses: Onemind-Services-LLC/actions/actions/npm-install-build@master
         with:
-          node-version: '18'
+          node-version: '22'
           working-directory: '.'
           # install-command: 'npm ci --prefer-offline'
           # build-command: 'npm run build -- --debug'
