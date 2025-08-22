@@ -96,7 +96,7 @@ jobs:
             fi
           fi
 
-      - name: Create repository token (optional)
+      - name: Create repository token
         id: org_token
         if: inputs.org-token == 'true'
         uses: Onemind-Services-LLC/actions/actions/create-repo-token@master
