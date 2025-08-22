@@ -13,11 +13,6 @@ on:
         required: false
         default: '3.x'
         type: string
-      ct-version:
-        description: helm/chart-testing-action version
-        required: false
-        default: 'v2.7.0'
-        type: string
       charts-dir:
         description: Directory containing chart subfolders
         required: false
@@ -59,7 +54,7 @@ jobs:
           fetch-depth: 0
 
       - name: Set up Helm
-        uses: azure/setup-helm@v4
+        uses: azure/setup-helm@1a275c3b69536ee54be43f2070a358922e12c8d4 # v4.3.1
 
       - name: Set up Python
         uses: actions/setup-python@v5
@@ -68,7 +63,7 @@ jobs:
           check-latest: true
 
       - name: Set up chart-testing
-        uses: helm/chart-testing-action@${{ inputs.ct-version }}
+        uses: helm/chart-testing-action@0d28d3144d3a25ea2cc349d6e59901c4ff469b3b # v2.7.0
 
       - name: Run chart-testing (list-changed)
         id: list-changed
@@ -104,7 +99,7 @@ jobs:
           fetch-depth: 0
 
       - name: Set up Helm
-        uses: azure/setup-helm@v4
+        uses: azure/setup-helm@1a275c3b69536ee54be43f2070a358922e12c8d4 # v4.3.1
 
       - name: Set up Python
         uses: actions/setup-python@v5
@@ -113,11 +108,11 @@ jobs:
           check-latest: true
 
       - name: Set up chart-testing
-        uses: helm/chart-testing-action@${{ inputs.ct-version }}
+        uses: helm/chart-testing-action@0d28d3144d3a25ea2cc349d6e59901c4ff469b3b # v2.7.0
 
       - name: Login to Registry
         if: needs.lint-test.outputs.changed == 'true'
-        uses: docker/login-action@v3
+        uses: docker/login-action@184bdaa0721073962dff0199f1fb9940f07167d1 # v3.5.0
         with:
           registry: ${{ inputs.registry }}
           username: ${{ secrets.docker-username }}

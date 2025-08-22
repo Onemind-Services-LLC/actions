@@ -108,7 +108,7 @@ jobs:
           overwrite: true
 
       - name: Download base branch artifact
-        uses: dawidd6/action-download-artifact@v8
+        uses: dawidd6/action-download-artifact@ac66b43f0e6a346234dd65d4d0c8fbb31cb316e5 # v11
         with:
           branch: ${{ github.event.pull_request.base.ref }}
           path: .next/analyze/base
@@ -128,7 +128,7 @@ jobs:
 
       - name: Find Comment
         id: fc
-        uses: peter-evans/find-comment@v3
+        uses: peter-evans/find-comment@3eae4d37986fb5a8592848f6a574fdf654e61f9e # v3.1.0
         with:
           issue-number: ${{ github.event.pull_request.number }}
           body-includes: '<!-- __NEXTJS_BUNDLE -->'
@@ -136,7 +136,7 @@ jobs:
 
       - name: Create Comment
         if: steps.fc.outputs.comment-id == 0
-        uses: peter-evans/create-or-update-comment@v4
+        uses: peter-evans/create-or-update-comment@71345be0265236311c031f5c7866368bd1eff043 # v4.0.0
         with:
           issue-number: ${{ github.event.pull_request.number }}
           body: ${{ steps.get-comment-body.outputs.body }}
@@ -144,7 +144,7 @@ jobs:
 
       - name: Update Comment
         if: steps.fc.outputs.comment-id != 0
-        uses: peter-evans/create-or-update-comment@v4
+        uses: peter-evans/create-or-update-comment@71345be0265236311c031f5c7866368bd1eff043 # v4.0.0
         with:
           issue-number: ${{ github.event.pull_request.number }}
           body: ${{ steps.get-comment-body.outputs.body }}
