@@ -12,7 +12,7 @@ See also: [Actions Overview](../actions/README.md)
 - Purpose: Build with Buildx, generate tags/labels, optionally push, and keyless‑sign images.
 - Permissions: `contents: read`, `id-token: write` (for keyless signing).
 - Inputs: `runner`, `push`, `image`, `meta-tags`, `annotations`, `build-args`, `build-secrets`, `cache-image`, `org-token`.
-- Secrets: `registry`, `username`, `password`.
+- Secrets: `app-id`, `private-key`, `registry`, `username`, `password`.
 - Usage:
   `uses: Onemind-Services-LLC/actions/.github/workflows/docker-build-push.yml@v1`
 
@@ -33,13 +33,15 @@ jobs:
       build-secrets: |
         NPM_TOKEN=${{ secrets.NPM_TOKEN }}
     secrets:
+      app-id: ${{ secrets.ORG_APP_ID }}
+      private-key: ${{ secrets.ORG_APP_PRIVATE_KEY }}
       registry: ghcr.io
       username: ${{ github.actor }}
       password: ${{ secrets.GITHUB_TOKEN }}
 ```
 
 Notes:
-- When `org-token: 'true'`, the workflow generates a GitHub App installation token and merges it into build secrets as `GITHUB_TOKEN=...`. This requires the caller to provide `vars.APP_ID` and `secrets.APP_PRIVATE_KEY`.
+- When `org-token: 'true'`, the workflow uses the provided GitHub App credentials (`secrets.app-id`, `secrets.private-key`) to mint an installation token and merges it into build secrets as `GITHUB_TOKEN=...`.
 - Any user-provided `build-secrets` are merged with the generated token; duplicate keys are not de-duplicated (last write wins).
 ```
 
