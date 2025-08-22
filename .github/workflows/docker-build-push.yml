@@ -45,6 +45,11 @@ on:
         description: Registry reference used by Buildx cache (e.g., ghcr.io/org/app:buildcache-main)
         required: true
         type: string
+      org-token:
+        description: "If 'true', generate a GitHub App installation token and pass as build secret GITHUB_TOKEN=..."
+        required: false
+        default: 'false'
+        type: string
     secrets:
       registry:
         description: Registry hostname for login
@@ -91,6 +96,30 @@ jobs:
             fi
           fi
 
+      - name: Create repository token (optional)
+        id: org_token
+        if: inputs.org-token == 'true'
+        uses: Onemind-Services-LLC/actions/actions/create-repo-token@master
+        with:
+          app-id: ${{ vars.APP_ID }}
+          private-key: ${{ secrets.APP_PRIVATE_KEY }}
+          owner: Onemind-Services-LLC
+
+      - name: Merge user build-secrets with org token
+        id: merged_secrets
+        shell: bash
+        env:
+          USER_SECRETS: ${{ inputs.build-secrets }}
+          ORG_TOKEN: ${{ steps.org_token.outputs.token }}
+        run: |
+          {
+            if [ -n "${USER_SECRETS}" ]; then printf '%s\n' "${USER_SECRETS}"; fi
+            if [ -n "${ORG_TOKEN:-}" ]; then printf 'GITHUB_TOKEN=%s\n' "${ORG_TOKEN}"; fi
+          } | awk 'NF' > merged_secrets.txt
+          echo "value<<EOF" >> "$GITHUB_OUTPUT"
+          cat merged_secrets.txt >> "$GITHUB_OUTPUT"
+          echo "EOF" >> "$GITHUB_OUTPUT"
+
       - name: Build, push, sign
         uses: Onemind-Services-LLC/actions/actions/docker-build-push@master
         with:
@@ -99,7 +128,7 @@ jobs:
           annotations: ${{ inputs.annotations }}
           push: ${{ steps.decide-push.outputs.value }}
           build-args: ${{ inputs.build-args }}
-          build-secrets: ${{ inputs.build-secrets }}
+          build-secrets: ${{ steps.merged_secrets.outputs.value }}
           cache-image: ${{ inputs.cache-image }}
           registry: ${{ secrets.registry }}
           username: ${{ secrets.username }}
