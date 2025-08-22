@@ -57,8 +57,6 @@ runs:
       with:
         images: ${{ inputs.images }}
         tags: ${{ inputs.meta-tags }}
-      env:
-        DOCKER_METADATA_ANNOTATIONS_LEVELS: manifest
 
     - name: Login to Registry
       uses: docker/login-action@184bdaa0721073962dff0199f1fb9940f07167d1 # v3.5.0
