@@ -5,6 +5,7 @@ Set up Python, optionally upgrade `pip`, and install dependencies from `requirem
 ## Inputs
 
 - **python-version**: Python version to use (default: `3.12`).
+- **working-directory**: Directory to run installs from (default: `.`).
 - **github-token**: Optional token for private GitHub dependencies. Creates a temporary `~/.netrc` for git/pip and removes it at the end.
 - **upgrade-pip**: Upgrade pip before installs (default: `false`).
 - **extra-install-commands**: Extra commands to execute for installing system or Python deps (e.g., `sudo apt-get install -y libpq-dev`).
@@ -36,6 +37,7 @@ jobs:
         with:
           python-version: '3.12'
           upgrade-pip: 'true'
+          working-directory: '.'
 ```
 
 ### With Private GitHub Dependencies and Extra Commands
@@ -47,6 +49,7 @@ jobs:
     python-version: '3.11'
     github-token: ${{ secrets.GITHUB_TOKEN }}
     upgrade-pip: 'true'
+    working-directory: backend
     extra-install-commands: |
       sudo apt-get update
       sudo apt-get install -y libpq-dev
