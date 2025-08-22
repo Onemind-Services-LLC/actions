@@ -6,19 +6,36 @@ Run Django checks, apply migrations, collect static files, and execute tests wit
 
 - **working-directory**: Directory containing `manage.py` (default: `.`).
 - **django-settings-module**: Optional `DJANGO_SETTINGS_MODULE` to export for commands.
-- **python-executable**: Python executable to use (default: `python`).
 - **verbosity**: Django command verbosity (default: `3`).
 - **test-args**: Extra args appended to `manage.py test`.
 - **coverage-args**: Extra args appended to `coverage xml`.
 
+### Optional Coverage Report
+
+- **coverage-report**: Enable Cobertura coverage comment (default: `false`).
+- **coverage-file**: Path/glob to coverage XML (default: `coverage.xml`).
+- **coverage-reporter-token**: Token for reporter (required by this action). Pass a repo-scoped token such as `${{ secrets.GIT_TOKEN }}`.
+- **coverage-skip-covered**: Skip files with 100% coverage (default: `true`).
+- **coverage-minimum**: Minimum coverage percentage (default: `80`).
+- **coverage-fail-below-threshold**: Fail job if below minimum (default: `true`).
+- **coverage-show-line**: Show line coverage column (default: `true`).
+- **coverage-show-branch**: Show branch coverage column (default: `true`).
+- **coverage-show-class-names**: Show class names instead of file names (default: `false`).
+- **coverage-show-missing**: Show missing lines per module (default: `true`).
+- **coverage-only-changed-files**: Only show coverage for changed files (default: `false`).
+- **coverage-report-name**: Unique name for the report/comment (default: empty).
+- **coverage-pull-request-number**: Use when workflow trigger isn’t `pull_request` (default: empty).
+- **coverage-continue-on-error**: Continue on reporting errors (default: `true`).
+
 ## What it does
 
-- Ensures `coverage` is installed (installs via pip if missing).
+- Installs `coverage` via pip.
 - Runs `makemigrations --check --dry-run` to enforce committed migrations.
 - Runs `migrate -v <verbosity>`.
 - Runs `collectstatic --noinput`.
 - Runs `check -v <verbosity>`.
-- Runs tests via `python -m coverage run manage.py test` and generates `coverage.xml` via `python -m coverage xml`.
+- Runs tests via `coverage run manage.py test` and generates `coverage.xml` via `coverage xml`.
+- Optionally posts a Cobertura report comment using `5monkeys/cobertura-action@v14` (pinned) when `coverage-report: 'true'`.
 
 ## Examples
 
@@ -39,19 +56,35 @@ Run Django checks, apply migrations, collect static files, and execute tests wit
     test-args: "--pattern='test_*.py'"
 ```
 
-### In a subdirectory and custom Python
+### With coverage report
+
+```yaml
+- name: Django Test Runner
+  uses: OWNER/REPO/actions/django-test-runner@v1
+  with:
+    coverage-report: 'true'
+    coverage-reporter-token: ${{ secrets.GIT_TOKEN }}
+    coverage-minimum: '80'
+    coverage-fail-below-threshold: 'true'
+    coverage-show-line: 'true'
+    coverage-show-branch: 'true'
+    coverage-show-class-names: 'false'
+    coverage-show-missing: 'true'
+    coverage-only-changed-files: 'false'
+```
+
+### In a subdirectory and custom verbosity
 
 ```yaml
 - name: Django Test Runner
   uses: OWNER/REPO/actions/django-test-runner@v1
   with:
     working-directory: backend
-    python-executable: python3
     verbosity: '2'
 ```
 
 ## Notes
 
-- Assumes dependencies and services (e.g., database, cache) are available. Use your workflow to provision services before invoking this action.
-- If you rely on environment variables (database URLs, secrets), set them at the job or step level of your workflow.
-- Uses `bash` shell and `python -m coverage` to ensure the interpreter’s environment is used.
+- Ensure DB/cache services are available before this action.
+- Set any required environment variables (e.g., DB credentials) at job or step level.
+- The coverage reporter runs whenever `coverage-report: 'true'`. If you want it only on PRs, guard the job or step in your workflow.
