@@ -16,7 +16,8 @@ inputs:
   github-token:
     description: >-
       GitHub token used for authenticating private dependencies. If provided,
-      a temporary ~/.netrc is created for git/pip and removed at the end.
+      configures a temporary git URL rewrite so https://github.com/ requests
+      use https://x-access-token:<token>@github.com/ for authentication.
     required: false
     default: ''
   upgrade-pip:
@@ -41,7 +42,9 @@ runs:
     - name: Configure GitHub Token
       if: ${{ inputs.github-token != '' }}
       shell: bash
-      run: echo machine github.com login ${{ inputs.github-token }} > ~/.netrc
+      env:
+        TOKEN: ${{ inputs.github-token }}
+      run: git config --global url."https://x-access-token:${TOKEN}@github.com/".insteadOf "https://github.com/"
 
     - name: Upgrade Pip
       if: ${{ inputs.upgrade-pip == 'true' }}
@@ -71,11 +74,6 @@ runs:
       shell: bash
       working-directory: ${{ inputs.working-directory }}
       run: ${{ inputs.extra-install-commands }}
-
-    - name: Cleanup Credentials
-      if: ${{ always() && inputs.github-token != '' }}
-      shell: bash
-      run: rm -f ~/.netrc
 
 branding:
   icon: package
