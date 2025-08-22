@@ -75,10 +75,7 @@ runs:
       run: |
         meta_annotations=${{ toJSON(steps.meta.outputs.annotations) }}
         user_annotations=${{ toJSON(inputs.annotations) }}
-        # Strip surrounding quotes added by toJSON
-        meta_annotations=${meta_annotations:1:${#meta_annotations}-2}
-        user_annotations=${user_annotations:1:${#user_annotations}-2}
-        # Expand escaped newlines
+        # Expand escaped newlines produced by toJSON
         meta_annotations=${meta_annotations//\\n/$'\n'}
         user_annotations=${user_annotations//\\n/$'\n'}
         {
