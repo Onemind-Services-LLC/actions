@@ -1,0 +1,41 @@
+name: Create Repository Token
+description: Create a GitHub App installation token scoped to the current repository.
+
+inputs:
+  app-id:
+    description: GitHub App ID used to create the installation token. Defaults to `vars.APP_ID`.
+    required: false
+  private-key:
+    description: Private key (PEM) for the GitHub App. Defaults to `secrets.APP_PRIVATE_KEY`.
+    required: false
+  owner:
+    description: Owner of the installation. If omitted, defaults to current repository owner.
+    required: false
+  repositories:
+    description: Comma or newline-separated list of repositories to scope the token to.
+    required: false
+  skip-token-revoke:
+    description: If true, do not revoke the token when the job completes.
+    required: false
+
+outputs:
+  token:
+    description: The repository-scoped GitHub App installation token.
+    value: ${{ steps.app_token.outputs.token }}
+
+runs:
+  using: composite
+  steps:
+    - name: Create GitHub App token
+      id: app_token
+      uses: actions/create-github-app-token@v2
+      with:
+        app-id: ${{ inputs.app-id || vars.APP_ID }}
+        private-key: ${{ inputs.private-key || secrets.APP_PRIVATE_KEY }}
+        owner: ${{ inputs.owner }}
+        repositories: ${{ inputs.repositories }}
+        skip-token-revoke: ${{ inputs.skip-token-revoke }}
+
+    - name: Mask token
+      shell: bash
+      run: echo "::add-mask::${{ steps.app_token.outputs.token }}"
