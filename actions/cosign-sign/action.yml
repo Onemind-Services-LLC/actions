@@ -39,7 +39,6 @@ runs:
     - name: Validate Inputs
       shell: bash
       run: |
-        set -euo pipefail
         mode='${{ inputs.mode }}'
         if [[ "$mode" != 'docker' && "$mode" != 'helm' ]]; then
           echo "Invalid mode: $mode (expected 'docker' or 'helm')" >&2
@@ -53,7 +52,6 @@ runs:
         IMAGES: ${{ inputs.docker-images }}
         DIGEST: ${{ inputs.docker-digest }}
       run: |
-        set -euo pipefail
         if [[ -z "${IMAGES// /}" || -z "$DIGEST" ]]; then
           echo "No docker images or digest provided; nothing to sign." >&2
           exit 0
@@ -75,7 +73,6 @@ runs:
         REGISTRY: ${{ inputs.registry }}
         NAMESPACE: ${{ inputs.oci-namespace }}
       run: |
-        set -euo pipefail
         if [[ -z "$REGISTRY" || -z "$NAMESPACE" ]]; then
           echo "registry and oci-namespace are required to derive Helm refs from packages" >&2
           exit 1

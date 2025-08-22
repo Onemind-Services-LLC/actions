@@ -42,7 +42,6 @@ runs:
       if: ${{ inputs.github-token != '' }}
       shell: bash
       run: |
-        set -euo pipefail
         umask 077
         cat > ~/.netrc <<EOF
         machine github.com
@@ -52,9 +51,7 @@ runs:
     - name: Upgrade Pip
       if: ${{ inputs.upgrade-pip == 'true' }}
       shell: bash
-      run: |
-        set -euo pipefail
-        python -m pip install --upgrade pip
+      run: pip install --upgrade pip
 
     - name: Install From requirements.txt
       if: hashFiles(format('{0}/requirements.txt', inputs.working-directory))
@@ -83,9 +80,7 @@ runs:
     - name: Cleanup Credentials
       if: ${{ always() && inputs.github-token != '' }}
       shell: bash
-      run: |
-        set -euo pipefail
-        rm -f ~/.netrc
+      run: rm -f ~/.netrc
 
 branding:
   icon: package
