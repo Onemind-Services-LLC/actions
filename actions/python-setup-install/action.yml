@@ -1,0 +1,90 @@
+name: Python Setup and Install
+description: >-
+  Set up Python, optionally upgrade pip, and install dependencies from
+  requirements files if present. Supports extra install commands and an
+  optional GitHub token for private dependencies.
+
+inputs:
+  python-version:
+    description: Python version to set up (e.g., '3.12', '3.11').
+    required: false
+    default: '3.12'
+  github-token:
+    description: >-
+      GitHub token used for authenticating private dependencies. If provided,
+      a temporary ~/.netrc is created for git/pip and removed at the end.
+    required: false
+    default: ''
+  upgrade-pip:
+    description: Upgrade pip before installs.
+    required: false
+    default: 'false'
+  extra-install-commands:
+    description: >-
+      Extra commands to execute for installing system or Python deps
+      (e.g., 'sudo apt-get update && sudo apt-get install -y libpq-dev').
+    required: false
+    default: ''
+
+runs:
+  using: composite
+  steps:
+    - name: Set Up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: ${{ inputs.python-version }}
+
+    - name: Configure GitHub Token
+      if: ${{ inputs.github-token != '' }}
+      shell: bash
+      run: |
+        set -euo pipefail
+        umask 077
+        cat > ~/.netrc <<EOF
+        machine github.com
+          login ${{ inputs.github-token }}
+        EOF
+
+    - name: Upgrade Pip
+      if: ${{ inputs.upgrade-pip == 'true' }}
+      shell: bash
+      run: |
+        set -euo pipefail
+        python -m pip install --upgrade pip
+
+    - name: Install From requirements.txt
+      if: ${{ hashFiles('requirements.txt') != '' }}
+      shell: bash
+      run: |
+        set -euo pipefail
+        pip install -r requirements.txt
+
+    - name: Install From requirements-dev.txt
+      if: ${{ hashFiles('requirements-dev.txt') != '' }}
+      shell: bash
+      run: |
+        set -euo pipefail
+        pip install -r requirements-dev.txt
+
+    - name: Install From requirements_dev.txt
+      if: ${{ hashFiles('requirements_dev.txt') != '' }}
+      shell: bash
+      run: |
+        set -euo pipefail
+        pip install -r requirements_dev.txt
+
+    - name: Run Extra Install Commands
+      if: ${{ inputs.extra-install-commands != '' }}
+      shell: bash
+      run: ${{ inputs.extra-install-commands }}
+
+    - name: Cleanup Credentials
+      if: ${{ inputs.github-token != '' }}
+      shell: bash
+      run: |
+        set -euo pipefail
+        rm -f ~/.netrc
+
+branding:
+  icon: package
+  color: blue
