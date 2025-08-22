@@ -9,6 +9,10 @@ inputs:
     description: Python version to set up (e.g., '3.12', '3.11').
     required: false
     default: '3.12'
+  working-directory:
+    description: Directory to run installs from
+    required: false
+    default: '.'
   github-token:
     description: >-
       GitHub token used for authenticating private dependencies. If provided,
@@ -55,31 +59,29 @@ runs:
     - name: Install From requirements.txt
       if: ${{ hashFiles('requirements.txt') != '' }}
       shell: bash
-      run: |
-        set -euo pipefail
-        pip install -r requirements.txt
+      working-directory: ${{ inputs.working-directory }}
+      run: pip install -r requirements.txt
 
     - name: Install From requirements-dev.txt
       if: ${{ hashFiles('requirements-dev.txt') != '' }}
       shell: bash
-      run: |
-        set -euo pipefail
-        pip install -r requirements-dev.txt
+      working-directory: ${{ inputs.working-directory }}
+      run: pip install -r requirements-dev.txt
 
     - name: Install From requirements_dev.txt
       if: ${{ hashFiles('requirements_dev.txt') != '' }}
       shell: bash
-      run: |
-        set -euo pipefail
-        pip install -r requirements_dev.txt
+      working-directory: ${{ inputs.working-directory }}
+      run: pip install -r requirements_dev.txt
 
     - name: Run Extra Install Commands
       if: ${{ inputs.extra-install-commands != '' }}
       shell: bash
+      working-directory: ${{ inputs.working-directory }}
       run: ${{ inputs.extra-install-commands }}
 
     - name: Cleanup Credentials
-      if: ${{ inputs.github-token != '' }}
+      if: ${{ always() && inputs.github-token != '' }}
       shell: bash
       run: |
         set -euo pipefail

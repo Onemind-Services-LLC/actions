@@ -1,0 +1,77 @@
+name: Django Test Runner
+description: Run Django checks, migrations, collectstatic, and tests with coverage.
+
+inputs:
+  working-directory:
+    description: Directory containing manage.py
+    required: false
+    default: '.'
+  django-settings-module:
+    description: Optional DJANGO_SETTINGS_MODULE to export for commands
+    required: false
+    default: ''
+  verbosity:
+    description: Django command verbosity (0-3)
+    required: false
+    default: '3'
+  test-args:
+    description: Extra arguments passed to `manage.py test`
+    required: false
+    default: ''
+  coverage-args:
+    description: Extra arguments passed to `coverage xml`
+    required: false
+    default: ''
+
+runs:
+  using: composite
+  steps:
+    - name: Install Coverage
+      shell: bash
+      working-directory: ${{ inputs.working-directory }}
+      run: pip install coverage
+
+    - name: Check migrations
+      shell: bash
+      working-directory: ${{ inputs.working-directory }}
+      env:
+        DJANGO_SETTINGS_MODULE: ${{ inputs.django-settings-module }}
+      run: python manage.py makemigrations --check --dry-run
+
+    - name: Database migrations
+      shell: bash
+      working-directory: ${{ inputs.working-directory }}
+      env:
+        DJANGO_SETTINGS_MODULE: ${{ inputs.django-settings-module }}
+      run: python manage.py migrate -v ${{ inputs.verbosity }}
+
+    - name: Collect static files
+      shell: bash
+      working-directory: ${{ inputs.working-directory }}
+      env:
+        DJANGO_SETTINGS_MODULE: ${{ inputs.django-settings-module }}
+      run: python manage.py collectstatic --noinput
+
+    - name: Run Django checks
+      shell: bash
+      working-directory: ${{ inputs.working-directory }}
+      env:
+        DJANGO_SETTINGS_MODULE: ${{ inputs.django-settings-module }}
+      run: python manage.py check -v ${{ inputs.verbosity }}
+
+    - name: Run tests with coverage
+      shell: bash
+      working-directory: ${{ inputs.working-directory }}
+      env:
+        DJANGO_SETTINGS_MODULE: ${{ inputs.django-settings-module }}
+      run: coverage run manage.py test ${{ inputs.test-args }}
+
+    - name: Generate coverage XML
+      shell: bash
+      working-directory: ${{ inputs.working-directory }}
+      run: coverage xml ${{ inputs.coverage-args }}
+
+branding:
+  icon: check-circle
+  color: purple
+
