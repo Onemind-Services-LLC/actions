@@ -5,7 +5,7 @@ Run Django checks, apply migrations, collect static files, and execute tests wit
 ## Inputs
 
 - **working-directory**: Directory containing `manage.py` (default: `.`).
-- **django-settings-module**: Optional `DJANGO_SETTINGS_MODULE` to export for commands.
+- **django-settings-module**: Required `DJANGO_SETTINGS_MODULE` to export for commands.
 - **verbosity**: Django command verbosity (default: `3`).
 - **test-args**: Extra args appended to `manage.py test`.
 - **coverage-args**: Extra args appended to `coverage xml`.
@@ -44,6 +44,8 @@ Run Django checks, apply migrations, collect static files, and execute tests wit
 ```yaml
 - name: Django Test Runner
   uses: OWNER/REPO/actions/django-test-runner@v1
+  with:
+    django-settings-module: myproj.settings
 ```
 
 ### With settings module and extra test args

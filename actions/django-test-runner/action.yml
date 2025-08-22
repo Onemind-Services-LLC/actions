@@ -7,9 +7,8 @@ inputs:
     required: false
     default: '.'
   django-settings-module:
-    description: Optional DJANGO_SETTINGS_MODULE to export for commands
-    required: false
-    default: ''
+    description: Required DJANGO_SETTINGS_MODULE to export for commands
+    required: true
   coverage-report:
     description: Post a Cobertura coverage report comment on PRs
     required: false
