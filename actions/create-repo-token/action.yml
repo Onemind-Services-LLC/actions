@@ -71,7 +71,3 @@ runs:
         owner: ${{ steps.resolve.outputs.owner }}
         repositories: ${{ steps.resolve.outputs.repositories }}
         skip-token-revoke: ${{ inputs.skip-token-revoke }}
-
-    - name: Mask token
-      shell: bash
-      run: echo "::add-mask::${{ steps.app_token.outputs.token }}"
