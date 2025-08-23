@@ -174,7 +174,34 @@ jobs:
 - Permissions: default minimal.
 - Inputs: `python-version`, `runs-on`.
 - Usage:
-  `uses: Onemind-Services-LLC/actions/.github/workflows/pre-commit.yml@master`
+`uses: Onemind-Services-LLC/actions/.github/workflows/pre-commit.yml@master`
+
+## Prettier Check
+
+- File: `.github/workflows/prettier-check.yml`
+- Purpose: Run Prettier in check mode with caching over a configurable glob.
+- Permissions: `contents: read`.
+- Inputs: `runs-on`, `node-version`, `working-directory`, `patterns`.
+- Usage:
+  `uses: Onemind-Services-LLC/actions/.github/workflows/prettier-check.yml@master`
+
+Example usage:
+
+```yaml
+permissions:
+  contents: read
+
+jobs:
+  prettier:
+    name: Prettier Check
+    uses: Onemind-Services-LLC/actions/.github/workflows/prettier-check.yml@master
+    with:
+      runs-on: ubuntu-22.04-sh
+      node-version: '22'
+      # working-directory: '.'
+      # Override patterns if needed; default checks JS/TS/JSON/CSS/SCSS
+      # patterns: '**/*.+(js|jsx|ts|tsx|json|css|scss)'
+```
 
 ## Conventions
 

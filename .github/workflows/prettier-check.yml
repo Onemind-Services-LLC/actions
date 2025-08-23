@@ -1,0 +1,53 @@
+name: Prettier Check
+
+on:
+  workflow_call:
+    inputs:
+      runs-on:
+        description: Runner label
+        required: false
+        default: ubuntu-22.04-sh
+        type: string
+      node-version:
+        description: Node.js version
+        required: false
+        default: '22.x'
+        type: string
+      working-directory:
+        description: Directory to run Prettier in
+        required: false
+        default: '.'
+        type: string
+      patterns:
+        description: Glob of files to check
+        required: false
+        default: '**/*.+(js|jsx|ts|tsx|json|css|scss)'
+        type: string
+
+permissions:
+  contents: read
+
+jobs:
+  prettier:
+    name: Prettier Check
+    runs-on: ${{ inputs.runs-on }}
+    defaults:
+      run:
+        working-directory: ${{ inputs.working-directory }}
+        shell: bash
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Setup Node
+        uses: Onemind-Services-LLC/actions/actions/npm-install-build@master
+        with:
+          node-version: ${{ inputs.node-version }}
+          install: false
+          build: false
+
+      - name: Run Prettier Check
+        run: |
+          npx --yes prettier \
+            --cache \
+            --check '${{ inputs.patterns }}'
