@@ -3,6 +3,10 @@ name: NetBox Plugin Tests
 on:
   workflow_call:
     inputs:
+      app-id:
+        description: 'The GitHub App ID to use for checkout of private repositories'
+        required: true
+        type: string
       plugin-name:
         description: 'The name of the NetBox plugin, eg: netbox_secrets'
         required: true
@@ -26,6 +30,10 @@ on:
         required: false
         type: string
         default: 'ubuntu-22.04-sh'
+    secrets:
+      private-key:
+        description: 'The private key for the GitHub App to use for checkout of private repositories'
+        required: true
 
 env:
   ACTIONS_WORKING_DIRECTORY: actions
@@ -69,8 +77,8 @@ jobs:
         id: repo-token
         uses: Onemind-Services-LLC/actions/actions/create-repo-token@master
         with:
-          app-id: ${{ vars.APP_ID }}
-          private-key: ${{ secrets.APP_PRIVATE_KEY }}
+          app-id: ${{ inputs.app-id }}
+          private-key: ${{ secrets.private-key }}
 
       - name: Checkout NetBox Repository
         uses: actions/checkout@v5
