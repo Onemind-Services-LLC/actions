@@ -24,6 +24,10 @@ inputs:
     description: Additional newline-separated OCI annotations to merge with docker/metadata-action output
     required: false
     default: ''
+  labels:
+    description: Additional newline-separated labels to merge with docker/metadata-action output
+    required: false
+    default: ''
   meta-tags:
     description: docker/metadata-action tag rules
     required: false
@@ -76,11 +80,26 @@ runs:
     - name: Docker Meta
       id: meta
       uses: docker/metadata-action@v5
+      env:
+        # Attach annotations at both manifest and index levels for broad registry compatibility
+        DOCKER_METADATA_ANNOTATIONS_LEVELS: manifest,index
       with:
         images: ${{ inputs.images }}
         tags: ${{ inputs.meta-tags }}
-        labels: ${{ inputs.labels }}
-        annotations: ${{ inputs.annotations }}
+        # Merge core OCI metadata derived from the GitHub context with any caller-supplied labels
+        labels: |
+          org.opencontainers.image.authors=${{ github.repository_owner }}
+          org.opencontainers.image.vendor=${{ github.repository_owner }}
+          org.opencontainers.image.documentation=${{ github.server_url }}/${{ github.repository }}#readme
+          org.opencontainers.image.ref.name=${{ github.ref_name }}
+          ${{ inputs.labels }}
+        # Emit the same core values as annotations; metadata-action will place them at the configured levels
+        annotations: |
+          org.opencontainers.image.authors=${{ github.repository_owner }}
+          org.opencontainers.image.vendor=${{ github.repository_owner }}
+          org.opencontainers.image.documentation=${{ github.server_url }}/${{ github.repository }}#readme
+          org.opencontainers.image.ref.name=${{ github.ref_name }}
+          ${{ inputs.annotations }}
 
     - name: Login to Registry
       uses: docker/login-action@184bdaa0721073962dff0199f1fb9940f07167d1 # v3.5.0
