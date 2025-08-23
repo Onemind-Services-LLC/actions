@@ -43,7 +43,6 @@ jobs:
 Notes:
 - When `org-token: 'true'`, the workflow uses the provided GitHub App credentials (`inputs.app-id`, `secrets.private-key`) to mint an installation token and merges it into build secrets as `GITHUB_TOKEN=...`.
 - Any user-provided `build-secrets` are merged with the generated token; duplicate keys are not de-duplicated (last write wins).
-```
 
 ## Helm Charts CI
 
