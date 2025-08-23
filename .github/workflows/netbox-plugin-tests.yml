@@ -73,19 +73,19 @@ jobs:
           private-key: ${{ secrets.APP_PRIVATE_KEY }}
 
       - name: Checkout NetBox Repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
           repository: "netbox-community/netbox"
           path: netbox
           ref: ${{ inputs.netbox-version }}
 
       - name: Checkout Plugin Repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
           path: ${{ inputs.plugin-name }}
 
       - name: Checkout Actions Repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
           repository: "Onemind-Services-LLC/actions"
           path: ${{ env.ACTIONS_WORKING_DIRECTORY }}

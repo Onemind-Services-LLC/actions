@@ -16,7 +16,7 @@ jobs:
   lint:
     runs-on: ubuntu-22.04-sh
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - name: Yamllint
         uses: Onemind-Services-LLC/actions/actions/yamllint@master
         with:

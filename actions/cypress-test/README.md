@@ -24,7 +24,7 @@ jobs:
   cypress-component:
     runs-on: ubuntu-22.04-sh
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - name: Run unit tests (Cypress component)
         uses: Onemind-Services-LLC/actions/actions/cypress-test@master
         with:
@@ -39,7 +39,7 @@ jobs:
   cypress-e2e:
     runs-on: ubuntu-22.04-sh
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - name: Run e2e tests
         uses: Onemind-Services-LLC/actions/actions/cypress-test@master
         with:
@@ -57,7 +57,7 @@ jobs:
   cypress-e2e-private:
     runs-on: ubuntu-22.04-sh
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - name: Run Cypress with private deps
         uses: Onemind-Services-LLC/actions/actions/cypress-test@master
         with:

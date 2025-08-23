@@ -30,7 +30,7 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
       - name: Python Setup & Install
         uses: OWNER/REPO/actions/python-setup-install@v1
@@ -66,7 +66,7 @@ jobs:
       matrix:
         python-version: ['3.10', '3.11', '3.12']
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
       - name: Python Setup & Install
         uses: OWNER/REPO/actions/python-setup-install@v1
