@@ -8,7 +8,7 @@ on:
         required: false
         default: '3.12'
         type: string
-      runner:
+      runs-on:
         description: 'GitHub runner to use'
         required: false
         type: string
@@ -17,7 +17,7 @@ on:
 jobs:
   pre-commit:
     name: Run pre-commit hooks
-    runs-on: ${{ inputs.runner }}
+    runs-on: ${{ inputs.runs-on }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v5

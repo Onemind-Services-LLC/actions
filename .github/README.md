@@ -11,7 +11,7 @@ See also: [Actions Overview](../actions/README.md)
 - File: `.github/workflows/docker-build-push.yml`
 - Purpose: Build with Buildx, generate tags/labels, optionally push, and keyless‑sign images.
 - Permissions: `contents: read`, `id-token: write` (for keyless signing).
-- Inputs: `runner`, `push`, `image`, `meta-tags`, `annotations`, `build-args`, `build-secrets`, `cache-image`, `org-token`, `app-id`, `registry`.
+- Inputs: `runs-on`, `push`, `image`, `meta-tags`, `annotations`, `build-args`, `build-secrets`, `cache-image`, `org-token`, `app-id`, `registry`.
 - Secrets: `private-key`, `username`, `password`.
 - Usage:
   `uses: Onemind-Services-LLC/actions/.github/workflows/docker-build-push.yml@v1`
@@ -49,7 +49,7 @@ Notes:
 - File: `.github/workflows/helm-charts-ci.yml`
 - Purpose: Lint/test charts on PRs and package/push on tags; optional keyless signing.
 - Permissions: `contents: read`, `id-token: write` (for signing).
-- Inputs: `runner`, `python-version`, `charts-dir`, `registry`, `oci-namespace`.
+- Inputs: `runs-on`, `python-version`, `charts-dir`, `registry`, `oci-namespace`.
 - Secrets: `docker-username`, `docker-password` (optional for authenticated push).
 - Usage:
   `uses: Onemind-Services-LLC/actions/.github/workflows/helm-charts-ci.yml@v1`
@@ -59,7 +59,7 @@ Notes:
 - File: `.github/workflows/netbox-plugin-tests.yml`
 - Purpose: Spin up Redis/Postgres, install NetBox + plugin, and run tests.
 - Permissions: default; uses an installation token for private deps.
-- Inputs: `app-id`, `plugin-name`, `plugin-configuration`, `netbox-version`, `python-version`, `runner`.
+- Inputs: `app-id`, `plugin-name`, `plugin-configuration`, `netbox-version`, `python-version`, `runs-on`.
 - Secrets: `private-key` (GitHub App private key used to mint an installation token).
 - Usage:
   `uses: Onemind-Services-LLC/actions/.github/workflows/netbox-plugin-tests.yml@v1`
@@ -88,7 +88,7 @@ jobs:
       plugin-configuration: '{"my_netbox_plugin": {"enabled": true}}'
       netbox-version: v4.3.6
       python-version: '3.12'
-      runner: ubuntu-22.04-sh
+      runs-on: ubuntu-22.04-sh
     secrets:
       private-key: ${{ secrets.APP_PRIVATE_KEY }}
 ```
@@ -98,7 +98,7 @@ jobs:
 - File: `.github/workflows/nextjs-bundle-analyzer.yml`
 - Purpose: Build a Next.js app, upload bundle analysis, compare with base, and comment on PRs.
 - Permissions: `contents: read`, `actions: read`, `pull-requests: write`.
-- Inputs: `runner`, `node-version`, `registry-url`, `registry-scope`, `working-directory`, `install-command`, `build-command`, `extra-env`.
+- Inputs: `runs-on`, `node-version`, `registry-url`, `registry-scope`, `working-directory`, `install-command`, `build-command`, `extra-env`.
 - Secrets: `github-token` (for artifact access and PR comments).
 - Usage:
   `uses: Onemind-Services-LLC/actions/.github/workflows/nextjs-bundle-analyzer.yml@v1`
@@ -108,7 +108,7 @@ jobs:
 - File: `.github/workflows/pre-commit.yml`
 - Purpose: Run pre-commit hooks with cached Python setup.
 - Permissions: default minimal.
-- Inputs: `python-version`, `runner`.
+- Inputs: `python-version`, `runs-on`.
 - Usage:
   `uses: Onemind-Services-LLC/actions/.github/workflows/pre-commit.yml@v1`
 

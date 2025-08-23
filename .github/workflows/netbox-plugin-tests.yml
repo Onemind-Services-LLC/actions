@@ -26,7 +26,7 @@ on:
         required: false
         default: '3.12'
         type: string
-      runner:
+      runs-on:
         description: 'GitHub runner to use'
         required: false
         type: string
@@ -35,6 +35,11 @@ on:
       private-key:
         description: 'The private key for the GitHub App to use for checkout of private repositories'
         required: true
+
+# Add concurrency group to control job running
+concurrency:
+  group: ${{ github.event_name }}-${{ github.ref }}-${{ github.actor }}
+  cancel-in-progress: true
 
 env:
   ACTIONS_WORKING_DIRECTORY: actions
@@ -48,11 +53,11 @@ jobs:
     name: Pre-commit
     uses: Onemind-Services-LLC/actions/.github/workflows/pre-commit.yml@master
     with:
-      runner: ${{ inputs.runner }}
+      runs-on: ${{ inputs.runs-on }}
 
   test:
     name: Run Tests
-    runs-on: ${{ inputs.runner }}
+    runs-on: ${{ inputs.runs-on }}
 
     services:
       redis:
