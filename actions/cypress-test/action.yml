@@ -51,8 +51,7 @@ runs:
         registry-scope: ${{ inputs.registry-scope }}
         npm-token: ${{ inputs.npm-token }}
 
-    - name: Install Chrome Dependencies
-      if: ${{ inputs.browser == 'chrome' }}
+    - name: Install Dependencies
       shell: bash
       run: |
         sudo apt-get update
