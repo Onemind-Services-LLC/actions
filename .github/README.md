@@ -261,6 +261,33 @@ jobs:
       # update-command: "npx --yes update-browserslist-db@latest"
 ```
 
+## JavaScript Quality Checks
+
+- File: `.github/workflows/js-quality-checks.yml`
+- Purpose: Run Prettier check, ESLint check, and Browserslist lock check in a single job.
+- Permissions: `contents: read`.
+- Inputs: `runs-on`, `node-version`, `working-directory`, `patterns`, `eslint-args`.
+- Usage:
+  `uses: Onemind-Services-LLC/actions/.github/workflows/js-quality-checks.yml@master`
+
+Example usage:
+
+```yaml
+permissions:
+  contents: read
+
+jobs:
+  js_quality:
+    name: JS Quality
+    uses: Onemind-Services-LLC/actions/.github/workflows/js-quality-checks.yml@master
+    with:
+      runs-on: ubuntu-22.04-sh
+      node-version: '22.x'
+      working-directory: '.'
+      # patterns: '**/*.+(js|jsx|ts|tsx|json|css|scss)'
+      # eslint-args: '.'
+```
+
 ## Conventions
 
 - Filenames use kebab‑case (e.g., `pre-commit.yml`).
