@@ -62,6 +62,8 @@ runs:
     - id: setup-chrome
       uses: browser-actions/setup-chrome@b94431e051d1c52dcbe9a7092a4f10f827795416 # v2.1.0
       if: ${{ inputs.browser == 'chrome' }}
+      with:
+        chrome-version: 'stable'
 
     - name: Expose Chrome binary on PATH
       if: ${{ inputs.browser == 'chrome' }}
