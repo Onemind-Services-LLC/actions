@@ -36,6 +36,37 @@ jobs:
       private-key: ${{ secrets.APP_PRIVATE_KEY }}
 ```
 
+## Cypress E2E Tests
+
+- File: `.github/workflows/cypress-e2e-tests.yml`
+- Purpose: Run Cypress end-to-end tests across a browser matrix. Minimal design matching standard steps.
+- Permissions: `contents: read`.
+- Inputs: `runs-on`, `browsers` (JSON array), `start`, `wait-on`, `wait-on-timeout`, `registry-url`, `registry-scope`, `working-directory`, `node-version`, `app-id`.
+- Secrets: `private-key` (GitHub App private key used to mint an installation token).
+- Usage:
+  `uses: Onemind-Services-LLC/actions/.github/workflows/cypress-e2e-tests.yml@master`
+
+Example usage based on your sample:
+
+```yaml
+permissions:
+  contents: read
+
+jobs:
+  e2e:
+    name: End to End tests
+    uses: Onemind-Services-LLC/actions/.github/workflows/cypress-e2e-tests.yml@master
+    with:
+      runs-on: ubuntu-22.04-sh
+      browsers: '["chrome","edge","firefox"]'
+      start: npm run local:test
+      wait-on: http://localhost:3000
+      registry-scope: '@onemind-services-llc'
+      registry-url: 'https://npm.pkg.github.com'
+    secrets:
+      private-key: ${{ secrets.APP_PRIVATE_KEY }}
+```
+
 
 
 
