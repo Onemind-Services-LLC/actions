@@ -79,6 +79,8 @@ runs:
       with:
         images: ${{ inputs.images }}
         tags: ${{ inputs.meta-tags }}
+        labels: ${{ inputs.labels }}
+        annotations: ${{ inputs.annotations }}
 
     - name: Login to Registry
       uses: docker/login-action@184bdaa0721073962dff0199f1fb9940f07167d1 # v3.5.0
@@ -86,24 +88,6 @@ runs:
         registry: ${{ inputs.registry }}
         username: ${{ inputs.username }}
         password: ${{ inputs.password }}
-
-
-    - name: Merge Annotations
-      id: annotations
-      shell: bash
-      run: |
-        meta_annotations=${{ toJSON(steps.meta.outputs.annotations) }}
-        user_annotations=${{ toJSON(inputs.annotations) }}
-        # Expand escaped newlines produced by toJSON
-        meta_annotations=${meta_annotations//\\n/$'\n'}
-        user_annotations=${user_annotations//\\n/$'\n'}
-        {
-          if [ -n "$meta_annotations" ]; then printf '%s\n' "$meta_annotations"; fi
-          if [ -n "$user_annotations" ]; then printf '%s\n' "$user_annotations"; fi
-        } | awk 'NF' > merged_annotations.txt
-        echo "annotations<<EOF" >> "$GITHUB_OUTPUT"
-        cat merged_annotations.txt >> "$GITHUB_OUTPUT"
-        echo "EOF" >> "$GITHUB_OUTPUT"
 
     - name: Build and Push
       id: build
@@ -116,7 +100,7 @@ runs:
         build-args: ${{ inputs.build-args }}
         secrets: ${{ inputs.build-secrets }}
         labels: ${{ steps.meta.outputs.labels }}
-        annotations: ${{ steps.annotations.outputs.annotations }}
+        annotations: ${{ steps.meta.outputs.annotations }}
         provenance: mode=max
         sbom: ${{ inputs.push == 'true' }}
         cache-from: type=registry,ref=${{ inputs.cache-image }},ignore-error=true
