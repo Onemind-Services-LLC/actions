@@ -36,7 +36,7 @@ Run Django checks, apply migrations, collect static files, and execute tests wit
 - Runs `collectstatic --noinput`.
 - Runs `check -v <verbosity>`.
 - Runs tests via `coverage run manage.py test` and generates `coverage.xml` via `coverage xml`.
-- Optionally posts a Cobertura report comment using `5monkeys/cobertura-action@v14` (pinned) when `coverage-report: 'true'`.
+- Optionally posts a Cobertura report comment using `5monkeys/cobertura-action@master4` (pinned) when `coverage-report: 'true'`.
 
 ## Examples
 
@@ -44,7 +44,7 @@ Run Django checks, apply migrations, collect static files, and execute tests wit
 
 ```yaml
 - name: Django Test Runner
-  uses: OWNER/REPO/actions/django-test-runner@v1
+  uses: OWNER/REPO/actions/django-test-runner@master
   with:
     django-settings-module: myproj.settings
 ```
@@ -53,7 +53,7 @@ Run Django checks, apply migrations, collect static files, and execute tests wit
 
 ```yaml
 - name: Django Test Runner
-  uses: OWNER/REPO/actions/django-test-runner@v1
+  uses: OWNER/REPO/actions/django-test-runner@master
   with:
     django-settings-module: myproj.settings.test
     test-args: "--pattern='test_*.py'"
@@ -63,7 +63,7 @@ Run Django checks, apply migrations, collect static files, and execute tests wit
 
 ```yaml
 - name: Django Test Runner
-  uses: OWNER/REPO/actions/django-test-runner@v1
+  uses: OWNER/REPO/actions/django-test-runner@master
   with:
     coverage-report: 'true'
     coverage-reporter-token: ${{ secrets.GIT_TOKEN }}
@@ -80,7 +80,7 @@ Run Django checks, apply migrations, collect static files, and execute tests wit
 
 ```yaml
 - name: Django Test Runner
-  uses: OWNER/REPO/actions/django-test-runner@v1
+  uses: OWNER/REPO/actions/django-test-runner@master
   with:
     working-directory: backend
     verbosity: '2'
@@ -92,7 +92,7 @@ Some projects read an alternate env var for the Django settings module. Specify 
 
 ```yaml
 - name: Django Test Runner
-  uses: OWNER/REPO/actions/django-test-runner@v1
+  uses: OWNER/REPO/actions/django-test-runner@master
   with:
     django-settings-module: testing_configuration.configuration
     django-settings-module-key: NETBOX_CONFIGURATION

@@ -15,7 +15,7 @@ Reusable composite GitHub Actions maintained in this repository. Each action inc
 
 ## Versioning
 
-- Reference actions using a tagged release (e.g., `@v1`) or a commit SHA.
+- Reference actions using a tagged release (e.g., `@master`) or a commit SHA.
 - Avoid `@master` in production workflows.
 
 ## Conventions

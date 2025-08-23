@@ -33,7 +33,7 @@ jobs:
       - uses: actions/checkout@v5
 
       - name: Python Setup & Install
-        uses: OWNER/REPO/actions/python-setup-install@v1
+        uses: OWNER/REPO/actions/python-setup-install@master
         with:
           python-version: '3.12'
           upgrade-pip: 'true'
@@ -44,7 +44,7 @@ jobs:
 
 ```yaml
 - name: Python Setup & Install
-  uses: OWNER/REPO/actions/python-setup-install@v1
+  uses: OWNER/REPO/actions/python-setup-install@master
   with:
     python-version: '3.11'
     github-token: ${{ secrets.GITHUB_TOKEN }}
@@ -69,7 +69,7 @@ jobs:
       - uses: actions/checkout@v5
 
       - name: Python Setup & Install
-        uses: OWNER/REPO/actions/python-setup-install@v1
+        uses: OWNER/REPO/actions/python-setup-install@master
         with:
           python-version: ${{ matrix.python-version }}
           upgrade-pip: 'false'

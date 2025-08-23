@@ -2,7 +2,7 @@
 
 Overview of reusable workflows published from this repository. Consume via:
 
-`uses: Onemind-Services-LLC/actions/.github/workflows/<file>.yml@v1`
+`uses: Onemind-Services-LLC/actions/.github/workflows/<file>.yml@master`
 
 See also: [Actions Overview](../actions/README.md)
 
@@ -14,7 +14,7 @@ See also: [Actions Overview](../actions/README.md)
 - Inputs: `runs-on`, `browsers` (JSON array), `registry-url`, `registry-scope`, `working-directory`, `node-version`, `app-id`.
 - Secrets: `private-key` (GitHub App private key used to mint an installation token for npm auth).
 - Usage:
-  `uses: Onemind-Services-LLC/actions/.github/workflows/cypress-component-tests.yml@v1`
+  `uses: Onemind-Services-LLC/actions/.github/workflows/cypress-component-tests.yml@master`
 
 Example usage:
 
@@ -25,7 +25,7 @@ permissions:
 jobs:
   unit_test:
     name: Unit test
-    uses: Onemind-Services-LLC/actions/.github/workflows/cypress-component-tests.yml@v1
+    uses: Onemind-Services-LLC/actions/.github/workflows/cypress-component-tests.yml@master
     with:
       runs-on: ubuntu-22.04-sh
       browsers: '["chrome","edge","firefox"]'
@@ -44,7 +44,7 @@ jobs:
 - Inputs: `runs-on`, `push`, `image`, `meta-tags`, `annotations`, `build-args`, `build-secrets`, `cache-image`, `org-token`, `app-id`, `registry`.
 - Secrets: `private-key`, `username`, `password`.
 - Usage:
-  `uses: Onemind-Services-LLC/actions/.github/workflows/docker-build-push.yml@v1`
+  `uses: Onemind-Services-LLC/actions/.github/workflows/docker-build-push.yml@master`
 
 Example usage with build secrets:
 
@@ -55,7 +55,7 @@ permissions:
 
 jobs:
   build:
-    uses: Onemind-Services-LLC/actions/.github/workflows/docker-build-push.yml@v1
+    uses: Onemind-Services-LLC/actions/.github/workflows/docker-build-push.yml@master
     with:
       image: ghcr.io/acme/app
       cache-image: ghcr.io/acme/app:buildcache-${{ github.ref_name }}
@@ -82,7 +82,7 @@ Notes:
 - Inputs: `runs-on`, `python-version`, `charts-dir`, `registry`, `oci-namespace`.
 - Secrets: `docker-username`, `docker-password` (optional for authenticated push).
 - Usage:
-  `uses: Onemind-Services-LLC/actions/.github/workflows/helm-charts-ci.yml@v1`
+  `uses: Onemind-Services-LLC/actions/.github/workflows/helm-charts-ci.yml@master`
 
 ## NetBox Plugin Tests
 
@@ -92,7 +92,7 @@ Notes:
 - Inputs: `app-id`, `plugin-name`, `plugin-configuration`, `netbox-version`, `python-version`, `runs-on`.
 - Secrets: `private-key` (GitHub App private key used to mint an installation token).
 - Usage:
-  `uses: Onemind-Services-LLC/actions/.github/workflows/netbox-plugin-tests.yml@v1`
+  `uses: Onemind-Services-LLC/actions/.github/workflows/netbox-plugin-tests.yml@master`
 
 Notes:
 - Internally reuses composite actions pinned in this repo to `@master`:
@@ -111,7 +111,7 @@ permissions:
 
 jobs:
   test:
-    uses: Onemind-Services-LLC/actions/.github/workflows/netbox-plugin-tests.yml@v1
+    uses: Onemind-Services-LLC/actions/.github/workflows/netbox-plugin-tests.yml@master
     with:
       app-id: ${{ vars.APP_ID }}
       plugin-name: my_netbox_plugin
@@ -131,7 +131,7 @@ jobs:
 - Inputs: `runs-on`, `node-version`, `registry-url`, `registry-scope`, `working-directory`, `install-command`, `build-command`, `extra-env`.
 - Secrets: `github-token` (for artifact access and PR comments).
 - Usage:
-  `uses: Onemind-Services-LLC/actions/.github/workflows/nextjs-bundle-analyzer.yml@v1`
+  `uses: Onemind-Services-LLC/actions/.github/workflows/nextjs-bundle-analyzer.yml@master`
 
 ## Pre-commit Checks
 
@@ -140,7 +140,7 @@ jobs:
 - Permissions: default minimal.
 - Inputs: `python-version`, `runs-on`.
 - Usage:
-  `uses: Onemind-Services-LLC/actions/.github/workflows/pre-commit.yml@v1`
+  `uses: Onemind-Services-LLC/actions/.github/workflows/pre-commit.yml@master`
 
 ## Conventions
 
@@ -167,7 +167,7 @@ jobs:
     steps:
       - uses: actions/checkout@v5
       - name: Yamllint
-        uses: Onemind-Services-LLC/actions/actions/yamllint@v1
+        uses: Onemind-Services-LLC/actions/actions/yamllint@master
         with:
           config_file: .yamllint.yaml
           file_or_dir: .
