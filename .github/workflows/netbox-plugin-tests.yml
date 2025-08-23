@@ -58,6 +58,7 @@ jobs:
   test:
     name: Run Tests
     runs-on: ${{ inputs.runs-on }}
+    needs: lint
 
     services:
       redis:
