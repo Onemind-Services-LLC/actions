@@ -58,7 +58,7 @@ jobs:
             GIT_SHA=${{ github.sha }}
           build-secrets: |
             GIT_AUTH_TOKEN=${{ secrets.GIT_AUTH_TOKEN }}
-          authors: ACME, Inc. <eng@acme.example>
+          authors: ACME, Inc.
           context: .
           file: Dockerfile
           registry: ghcr.io
