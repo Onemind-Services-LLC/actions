@@ -15,6 +15,7 @@ Reusable composite GitHub Actions maintained in this repository. Each action inc
 - Prettier Check: Run Prettier in check mode with caching over a glob. [Docs](prettier-check/README.md)
 - ESLint Check: Run ESLint and fail on any issue. [Docs](eslint-check/README.md)
 - Browserslist Lock Check: Ensure updating Browserslist DB does not modify lockfiles. [Docs](browserslist-lock-check/README.md)
+- yq - Portable YAML Processor: Run pinned `mikefarah/yq` in Docker to create, read, update, delete, merge, and validate YAML. [Docs](yq/README.md)
 
 ## Versioning
 
