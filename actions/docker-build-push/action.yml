@@ -59,6 +59,17 @@ outputs:
 runs:
   using: composite
   steps:
+    - name: Verify OIDC permission
+      if: inputs.push == 'true'
+      shell: bash
+      run: |
+        set -euo pipefail
+        if [[ -z "${ACTIONS_ID_TOKEN_REQUEST_URL:-}" || -z "${ACTIONS_ID_TOKEN_REQUEST_TOKEN:-}" ]]; then
+          echo "Missing OIDC environment; ensure permissions: id-token: write is granted in the calling workflow" >&2
+          echo "Add to your workflow/job: permissions:\n  id-token: write" >&2
+          exit 1
+        fi
+
     - name: Set up Docker Buildx
       uses: docker/setup-buildx-action@v3
 

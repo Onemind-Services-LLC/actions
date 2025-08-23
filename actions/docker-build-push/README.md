@@ -8,6 +8,8 @@ Builds a container image using Docker Buildx, generates tags/labels with `docker
 - Provide registry credentials via inputs `registry`, `username`, and `password` (login is mandatory).
 - For GHCR, also grant `permissions: packages: write`. You may use `GITHUB_TOKEN` for `password` when pushing to GHCR in the same org.
 
+If `push: 'true'` and the calling job lacks `permissions: id-token: write`, the action fails early with a clear error so you can fix permissions before the build proceeds.
+
 ## Inputs
 
 - images: Newline-separated base image reference(s) (e.g., `ghcr.io/org/app`). Used by `docker/metadata-action` to generate tags. Required.
