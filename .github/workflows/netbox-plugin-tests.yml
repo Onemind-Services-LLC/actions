@@ -36,11 +36,6 @@ on:
         description: 'The private key for the GitHub App to use for checkout of private repositories'
         required: true
 
-# Add concurrency group to control job running
-concurrency:
-  group: ${{ github.event_name }}-${{ github.ref }}-${{ github.actor }}
-  cancel-in-progress: true
-
 env:
   ACTIONS_WORKING_DIRECTORY: actions
   NETBOX_WORKING_DIRECTORY: netbox
