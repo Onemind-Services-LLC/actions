@@ -40,7 +40,7 @@ inputs:
   authors:
     description: Comma-separated list of image authors
     required: false
-    default: 'Abhimanyu Saharan <asaharan@onemindservices.com>'
+    default: 'Abhimanyu Saharan'
   context:
     description: Build context (defaults to current directory)
     required: false
