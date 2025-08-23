@@ -33,7 +33,7 @@ runs:
       env:
         INPUT_OWNER: ${{ inputs.owner }}
         INPUT_REPOSITORIES: ${{ inputs.repositories }}
-        DEFAULT_OWNER: ${{ github.repository_owner }}
+        DEFAULT_OWNER: ${{ github.owner }}
       run: |
         owner="$INPUT_OWNER"
         repos_raw="${INPUT_REPOSITORIES:-}"
