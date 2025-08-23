@@ -81,6 +81,9 @@ jobs:
     name: Build
     runs-on: ${{ inputs.runs-on }}
     steps:
+      - name: Checkout repository
+        uses: actions/checkout@v5
+
       - name: Decide whether to push
         id: decide-push
         shell: bash
