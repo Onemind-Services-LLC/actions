@@ -65,6 +65,33 @@ Notes:
 - Usage:
   `uses: Onemind-Services-LLC/actions/.github/workflows/netbox-plugin-tests.yml@v1`
 
+Detailed docs: `.github/workflows/netbox-plugin-tests.md`
+
+Notes:
+- Internally reuses composite actions pinned to `@v1`:
+  - `actions/create-repo-token@v1` to mint an installation token.
+  - `actions/python-setup-install@v1` to set up Python and install deps for NetBox and the plugin.
+  - `actions/django-test-runner@v1` to run checks, migrations, collectstatic, and tests.
+- NetBox runs with `DJANGO_SETTINGS_MODULE=netbox.configuration`. Plugin test settings must be provided via `NETBOX_CONFIGURATION=testing_configuration.configuration` from your plugin repo.
+- Your plugin repository should include `testing_configuration/configuration.py` compatible with the NetBox version under test.
+
+Example usage:
+
+```yaml
+permissions:
+  contents: read
+
+jobs:
+  test:
+    uses: Onemind-Services-LLC/actions/.github/workflows/netbox-plugin-tests.yml@v1
+    with:
+      plugin-name: my_netbox_plugin
+      netbox-version: v4.3.0
+      python-version: '3.12'
+      runner: ubuntu-22.04-sh
+    secrets: {}
+```
+
 ## Next.js Bundle Analysis
 
 - File: `.github/workflows/nextjs-bundle-analyzer.yml`
