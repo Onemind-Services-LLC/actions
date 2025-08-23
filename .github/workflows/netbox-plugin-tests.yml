@@ -44,6 +44,12 @@ permissions:
   contents: read
 
 jobs:
+  lint:
+    name: Pre-commit
+    uses: Onemind-Services-LLC/actions/.github/workflows/pre-commit.yml@master
+    with:
+      runner: ${{ inputs.runner }}
+
   test:
     name: Run Tests
     runs-on: ${{ inputs.runner }}
