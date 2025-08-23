@@ -125,10 +125,16 @@ runs:
           echo "::error::Edge binary not executable or not found at $EDGE_PATH"
           exit 1
         fi
-        echo "Linking $EDGE_PATH to /usr/local/bin/msedge"
-        sudo ln -sf "$EDGE_PATH" /usr/local/bin/msedge
-        which msedge || true
-        msedge --version || true
+        echo "Linking $EDGE_PATH to /usr/local/bin/{edge,microsoft-edge,microsoft-edge-stable}"
+        sudo ln -sf "$EDGE_PATH" /usr/local/bin/edge
+        sudo ln -sf "$EDGE_PATH" /usr/local/bin/microsoft-edge
+        sudo ln -sf "$EDGE_PATH" /usr/local/bin/microsoft-edge-stable
+        which edge || true
+        which microsoft-edge || true
+        which microsoft-edge-stable || true
+        edge --version || true
+        microsoft-edge --version || true
+        microsoft-edge-stable --version || true
 
     - name: Run Cypress tests
       uses: cypress-io/github-action@b8ba51a856ba5f4c15cf39007636d4ab04f23e3c # v6.10.2
