@@ -6,13 +6,13 @@ inputs:
     description: Directory containing manage.py
     required: false
     default: '.'
-  django-settings-module:
-    description: Required DJANGO_SETTINGS_MODULE to export for commands
-    required: true
   django-settings-module-key:
     description: Env var name to export the settings module under
     required: false
     default: 'DJANGO_SETTINGS_MODULE'
+  django-settings-module:
+    description: Required DJANGO_SETTINGS_MODULE to export for commands
+    required: true
   coverage-report:
     description: Post a Cobertura coverage report comment on PRs
     required: false
