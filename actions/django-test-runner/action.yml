@@ -9,6 +9,10 @@ inputs:
   django-settings-module:
     description: Required DJANGO_SETTINGS_MODULE to export for commands
     required: true
+  django-settings-module-key:
+    description: Env var name to export the settings module under
+    required: false
+    default: 'DJANGO_SETTINGS_MODULE'
   coverage-report:
     description: Post a Cobertura coverage report comment on PRs
     required: false
@@ -81,6 +85,11 @@ inputs:
 runs:
   using: composite
   steps:
+    - name: Export Django settings to env
+      shell: bash
+      run: |
+        echo "${{ inputs.django-settings-module-key }}=${{ inputs.django-settings-module }}" >> "$GITHUB_ENV"
+
     - name: Install Coverage
       shell: bash
       working-directory: ${{ inputs.working-directory }}
@@ -89,36 +98,26 @@ runs:
     - name: Check migrations
       shell: bash
       working-directory: ${{ inputs.working-directory }}
-      env:
-        DJANGO_SETTINGS_MODULE: ${{ inputs.django-settings-module }}
       run: python manage.py makemigrations --check --dry-run
 
     - name: Database migrations
       shell: bash
       working-directory: ${{ inputs.working-directory }}
-      env:
-        DJANGO_SETTINGS_MODULE: ${{ inputs.django-settings-module }}
       run: python manage.py migrate -v ${{ inputs.verbosity }}
 
     - name: Collect static files
       shell: bash
       working-directory: ${{ inputs.working-directory }}
-      env:
-        DJANGO_SETTINGS_MODULE: ${{ inputs.django-settings-module }}
       run: python manage.py collectstatic --noinput
 
     - name: Run Django checks
       shell: bash
       working-directory: ${{ inputs.working-directory }}
-      env:
-        DJANGO_SETTINGS_MODULE: ${{ inputs.django-settings-module }}
       run: python manage.py check -v ${{ inputs.verbosity }}
 
     - name: Run tests with coverage
       shell: bash
       working-directory: ${{ inputs.working-directory }}
-      env:
-        DJANGO_SETTINGS_MODULE: ${{ inputs.django-settings-module }}
       run: coverage run manage.py test ${{ inputs.test-args }}
 
     - name: Generate coverage XML

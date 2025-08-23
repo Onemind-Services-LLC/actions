@@ -5,7 +5,8 @@ Run Django checks, apply migrations, collect static files, and execute tests wit
 ## Inputs
 
 - **working-directory**: Directory containing `manage.py` (default: `.`).
-- **django-settings-module**: Required `DJANGO_SETTINGS_MODULE` to export for commands.
+- **django-settings-module**: Settings module to export for Django commands.
+- **django-settings-module-key**: Env var name to export the settings module under (default: `DJANGO_SETTINGS_MODULE`).
 - **verbosity**: Django command verbosity (default: `3`).
 - **test-args**: Extra args appended to `manage.py test`.
 - **coverage-args**: Extra args appended to `coverage xml`.
@@ -83,6 +84,18 @@ Run Django checks, apply migrations, collect static files, and execute tests wit
   with:
     working-directory: backend
     verbosity: '2'
+```
+
+### Using a custom settings env var
+
+Some projects read an alternate env var for the Django settings module. Specify the key via `django-settings-module-key`:
+
+```yaml
+- name: Django Test Runner
+  uses: OWNER/REPO/actions/django-test-runner@v1
+  with:
+    django-settings-module: testing_configuration.configuration
+    django-settings-module-key: NETBOX_CONFIGURATION
 ```
 
 ## Notes
