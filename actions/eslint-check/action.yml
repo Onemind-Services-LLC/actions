@@ -1,0 +1,32 @@
+name: ESLint Check
+description: Run ESLint and fail on any issues (warnings are errors).
+
+inputs:
+  node-version:
+    description: Node.js version to use
+    required: false
+    default: '22.x'
+  working-directory:
+    description: Directory to run ESLint in
+    required: false
+    default: '.'
+  eslint-args:
+    description: Additional ESLint args or target paths
+    required: false
+    default: '.'
+
+runs:
+  using: composite
+  steps:
+    - name: Setup Node
+      uses: Onemind-Services-LLC/actions/actions/npm-install-build@master
+      with:
+        node-version: ${{ inputs.node-version }}
+        working-directory: ${{ inputs.working-directory }}
+        install: 'true'
+        build: 'false'
+
+    - name: Run ESLint
+      shell: bash
+      working-directory: ${{ inputs.working-directory }}
+      run: npx eslint --max-warnings=0 ${{ inputs.eslint-args }}

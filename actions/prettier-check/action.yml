@@ -1,0 +1,35 @@
+name: Prettier Check
+description: Run Prettier in check mode with caching over a configurable glob.
+
+inputs:
+  node-version:
+    description: Node.js version to use
+    required: false
+    default: '22.x'
+  working-directory:
+    description: Directory to run Prettier in
+    required: false
+    default: '.'
+  patterns:
+    description: Glob of files to check
+    required: false
+    default: '**/*.+(js|jsx|ts|tsx|json|css|scss)'
+
+runs:
+  using: composite
+  steps:
+    - name: Setup Node
+      uses: Onemind-Services-LLC/actions/actions/npm-install-build@master
+      with:
+        node-version: ${{ inputs.node-version }}
+        working-directory: ${{ inputs.working-directory }}
+        install: 'false'
+        build: 'false'
+
+    - name: Run Prettier Check
+      shell: bash
+      working-directory: ${{ inputs.working-directory }}
+      run: |
+        npx --yes prettier \
+          --cache \
+          --check '${{ inputs.patterns }}'

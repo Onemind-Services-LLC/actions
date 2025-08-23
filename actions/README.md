@@ -12,6 +12,9 @@ Reusable composite GitHub Actions maintained in this repository. Each action inc
 - Django Test Runner: Run Django checks, migrations, collectstatic, tests, and generate coverage XML. [Docs](django-test-runner/README.md)
 - Yamllint: Lint YAML files using yamllint with an isolated virtual environment; configurable format and failure mode. [Docs](yamllint/README.md)
 - Cypress Test: Run Cypress component or e2e tests with optional server start and wait-on; uploads screenshots on failure. [Docs](cypress-test/README.md)
+- Prettier Check: Run Prettier in check mode with caching over a glob. [Docs](prettier-check/README.md)
+- ESLint Check: Run ESLint and fail on any issue. [Docs](eslint-check/README.md)
+- Browserslist Lock Check: Ensure updating Browserslist DB does not modify lockfiles. [Docs](browserslist-lock-check/README.md)
 
 ## Versioning
 
