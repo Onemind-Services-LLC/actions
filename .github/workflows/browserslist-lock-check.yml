@@ -1,0 +1,94 @@
+name: Browserslist Lock Check
+
+on:
+  workflow_call:
+    inputs:
+      runs-on:
+        description: Runner label
+        required: false
+        default: ubuntu-22.04-sh
+        type: string
+      node-version:
+        description: Node.js version
+        required: false
+        default: '22.x'
+        type: string
+      working-directory:
+        description: Directory to run the check in
+        required: false
+        default: '.'
+        type: string
+      update-command:
+        description: Command to run the update
+        required: false
+        default: "npx --yes update-browserslist-db@latest"
+        type: string
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    name: Browserslist Lock Check
+    runs-on: ${{ inputs.runs-on }}
+    defaults:
+      run:
+        working-directory: ${{ inputs.working-directory }}
+        shell: bash
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Setup Node
+        uses: Onemind-Services-LLC/actions/actions/npm-install-build@master
+        with:
+          node-version: ${{ inputs.node-version }}
+          install: false
+          build: false
+
+      - name: Snapshot Lockfiles
+        id: snap
+        run: |
+          set -euo pipefail
+          locks=()
+          [[ -f package-lock.json ]] && locks+=(package-lock.json)
+          [[ -f yarn.lock ]] && locks+=(yarn.lock)
+          if [[ ${#locks[@]} -eq 0 ]]; then
+            echo "no_lockfiles=true" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          mkdir -p .browserslist-lock-snap
+          for f in "${locks[@]}"; do
+            cp "$f" ".browserslist-lock-snap/$f"
+          done
+
+      - name: Update Browserslist DB
+        if: steps.snap.outputs.no_lockfiles != 'true'
+        run: ${{ inputs.update-command }}
+
+      - name: Diff Lockfiles
+        if: steps.snap.outputs.no_lockfiles != 'true'
+        run: |
+          set -euo pipefail
+          status=0
+          for f in package-lock.json yarn.lock; do
+            if [[ -f "$f" ]]; then
+              if ! diff -u ".browserslist-lock-snap/$f" "$f" > diff.out 2>&1; then
+                echo "::error file=$f::Lockfile changed after update-browserslist-db"
+                echo "===== Diff for $f ====="
+                cat diff.out || true
+                status=1
+              fi
+            fi
+          done
+          if [[ $status -ne 0 ]]; then
+            echo "One or more lockfiles changed. Ensure Browserslist DB updates do not alter lockfiles (pin caniuse-lite/browserslist)."
+            exit 1
+          fi
+          echo "No lockfile changes detected."
+
+      - name: No Lockfiles Found
+        if: steps.snap.outputs.no_lockfiles == 'true'
+        run: |
+          echo "No package-lock.json or yarn.lock found. Skipping Browserslist lock check."
+

@@ -203,6 +203,32 @@ jobs:
       # patterns: '**/*.+(js|jsx|ts|tsx|json|css|scss)'
 ```
 
+## Browserslist Lock Check
+
+- File: `.github/workflows/browserslist-lock-check.yml`
+- Purpose: Run `update-browserslist-db` and fail if it modifies `package-lock.json` or `yarn.lock`.
+- Permissions: `contents: read`.
+- Inputs: `runs-on`, `node-version`, `working-directory`, `update-command`.
+- Usage:
+  `uses: Onemind-Services-LLC/actions/.github/workflows/browserslist-lock-check.yml@master`
+
+Example usage:
+
+```yaml
+permissions:
+  contents: read
+
+jobs:
+  browserslist:
+    name: Browserslist Lock Check
+    uses: Onemind-Services-LLC/actions/.github/workflows/browserslist-lock-check.yml@master
+    with:
+      runs-on: ubuntu-22.04-sh
+      node-version: '20'
+      # working-directory: '.'
+      # update-command: "npx --yes update-browserslist-db@latest"
+```
+
 ## Conventions
 
 - Filenames use kebab‑case (e.g., `pre-commit.yml`).
