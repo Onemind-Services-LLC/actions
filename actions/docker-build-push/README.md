@@ -1,25 +1,28 @@
 # Docker Build, Push, and Sign (Composite Action)
 
-Builds a container image using Docker Buildx, generates tags/labels with `docker/metadata-action`, optionally pushes it, and keyless-signs pushed images with Cosign (OIDC).
+Builds a container image with Docker Buildx, generates tags/labels via `docker/metadata-action`, optionally pushes it, and keyless‑signs pushed images using Cosign (OIDC).
 
 ## Requirements
 
-- Grant `permissions: id-token: write` for keyless signing.
-- Provide registry credentials via inputs `registry`, `username`, and `password` (login is mandatory).
-- For GHCR, also grant `permissions: packages: write`. You may use `GITHUB_TOKEN` for `password` when pushing to GHCR in the same org.
+- Grant `permissions: id-token: write` for keyless signing (Cosign OIDC).
+- Provide registry credentials via `registry`, `username`, and `password` (login is mandatory, even for build‑only, to enable registry cache).
+- GHCR: grant `permissions: packages: write` when pushing; `packages: read` is sufficient for build‑only. You may use `GITHUB_TOKEN` as `password` for same‑org registries.
 
-If `push: 'true'` and the calling job lacks `permissions: id-token: write`, the action fails early with a clear error so you can fix permissions before the build proceeds.
+If `push: 'true'` and the calling job lacks `permissions: id-token: write`, the action fails fast with a clear error before the build proceeds.
 
 ## Inputs
 
-- images: Newline-separated base image reference(s) (e.g., `ghcr.io/org/app`). Used by `docker/metadata-action` to generate tags. Required.
+- images: Newline‑separated base image reference(s) (e.g., `ghcr.io/org/app`). Used to generate tags. Required.
 - push: Whether to push after build (enables SBOM, provenance, signing). Default `true`.
-- build-args: Newline-separated `KEY=VALUE` build args. Optional.
-- build-secrets: Newline-separated `KEY=VALUE` build secrets passed to Buildx as secrets. Values should reference caller secrets. Optional.
-- annotations: Additional OCI annotations (newline-separated). Merged with `docker/metadata-action` output. Optional.
-- labels: Additional labels (newline-separated). Merged with `docker/metadata-action` output. Optional.
-- meta-tags: `docker/metadata-action` tag rules (newline-separated). Defaults include branch/PR/tag/semver/SHA. Optional.
-- cache-image: Registry reference used by Buildx cache (e.g., `ghcr.io/org/app:buildcache-main`). Required.
+- build-args: Newline‑separated `KEY=VALUE` build args. Optional.
+- build-secrets: Newline‑separated `KEY=VALUE` secrets passed to Buildx as `secrets`. Optional.
+- annotations: Additional OCI annotations (newline‑separated). Merged with metadata. Optional.
+- labels: Additional labels (newline‑separated). Merged with metadata. Optional.
+- meta-tags: `docker/metadata-action` tag rules (newline‑separated). Defaults include branch/PR/tag/semver/SHA. Optional.
+- cache-image: Registry reference for Buildx cache (e.g., `ghcr.io/org/app:buildcache-main`). Required.
+- authors: Comma‑separated image authors for OCI metadata. Default set to repo maintainer; override as needed. Optional.
+- context: Build context. Default `.`. Optional.
+- file: Dockerfile path relative to `context`. Default `Dockerfile`. Optional.
 - registry: Registry hostname for login (e.g., `ghcr.io`). Required.
 - username: Registry username (GHCR: your GitHub username). Required.
 - password: Registry password/token (GHCR: PAT or `GITHUB_TOKEN`). Required.
@@ -55,6 +58,9 @@ jobs:
             GIT_SHA=${{ github.sha }}
           build-secrets: |
             GIT_AUTH_TOKEN=${{ secrets.GIT_AUTH_TOKEN }}
+          authors: ACME, Inc. <eng@acme.example>
+          context: .
+          file: Dockerfile
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
@@ -79,8 +85,8 @@ Notes:
 - Defaults derived internally:
   - Build context: `.` and Dockerfile: `Dockerfile`.
   - Labels/annotations come from `docker/metadata-action` with `DOCKER_METADATA_ANNOTATIONS_LEVELS=manifest,index`.
-  - Added automatically (without hardcoding):
-    - `org.opencontainers.image.authors=${{ github.repository_owner }}`
+  - Added automatically:
+    - `org.opencontainers.image.authors=${{ inputs.authors }}`
     - `org.opencontainers.image.vendor=${{ github.repository_owner }}`
     - `org.opencontainers.image.documentation=${{ github.server_url }}/${{ github.repository }}#readme`
     - `org.opencontainers.image.ref.name=${{ github.ref_name }}`
@@ -96,21 +102,22 @@ Notes:
 ```yaml
 permissions:
   contents: read
+  packages: read   # GHCR: needed to authenticate and leverage registry cache
 
 jobs:
   build-only:
     runs-on: ubuntu-22.04-sh
     steps:
       - uses: actions/checkout@v5
-      - name: Build Only
+      - name: Build Only (no push)
         uses: Onemind-Services-LLC/actions/actions/docker-build-push@master
         with:
           images: ghcr.io/acme/app
           push: 'false'
           registry: ghcr.io
-          username: dummy
-          password: dummy
-          cache-image: ghcr.io/acme/app:buildcache-${{ github.sha }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+          cache-image: ghcr.io/acme/app:buildcache-${{ github.ref_name }}
 ```
 
 Security tips:
@@ -118,3 +125,8 @@ Security tips:
 - Do not echo secrets; prefer using `secrets.GITHUB_TOKEN` for GHCR pushes when possible.
 - Limit workflow permissions to the minimum required.
  - Prefer Buildx `secrets` over `build-args` for sensitive values. Access in Dockerfile via `RUN --mount=type=secret,id=GIT_AUTH_TOKEN`.
+
+Troubleshooting:
+- Missing OIDC error: add `permissions: id-token: write` when `push: 'true'`.
+- GHCR auth failures: ensure `permissions: packages: write` (push) or `packages: read` (build‑only) and use `GITHUB_TOKEN` or a PAT with the right scopes.
+- Cache warnings: registry cache uses `ignore-error=true`; failures don’t break the build but reduce cache effectiveness.
