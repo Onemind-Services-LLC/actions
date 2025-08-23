@@ -203,6 +203,38 @@ jobs:
       # patterns: '**/*.+(js|jsx|ts|tsx|json|css|scss)'
 ```
 
+## ESLint Check
+
+- File: `.github/workflows/eslint-check.yml`
+- Purpose: Run ESLint and fail on any issues (warnings are failures via `--max-warnings=0`).
+- Permissions: `contents: read`.
+- Inputs: `runs-on`, `node-version`, `working-directory`, `eslint-args`.
+- Usage:
+  `uses: Onemind-Services-LLC/actions/.github/workflows/eslint-check.yml@master`
+
+Example usage:
+
+```yaml
+permissions:
+  contents: read
+
+jobs:
+  eslint:
+    name: ESLint Check
+    uses: Onemind-Services-LLC/actions/.github/workflows/eslint-check.yml@master
+    with:
+      runs-on: ubuntu-22.04-sh
+      node-version: '22.x'
+      # working-directory: '.'
+      # Additional arguments or targets for ESLint
+      eslint-args: '.'
+```
+
+Notes:
+
+- The workflow installs dependencies using `actions/npm-install-build` and runs `npx eslint --max-warnings=0 ...`.
+- Ensure ESLint is declared in your project's `devDependencies` for reproducible results (npx prefers local installation).
+
 ## Browserslist Lock Check
 
 - File: `.github/workflows/browserslist-lock-check.yml`
