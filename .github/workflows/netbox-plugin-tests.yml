@@ -22,6 +22,12 @@ on:
         type: string
         default: 'ubuntu-22.04-sh'
 
+env:
+  NETBOX_WORKING_DIRECTORY: netbox
+
+permissions:
+  contents: read
+
 jobs:
   test:
     name: Run Tests
@@ -29,7 +35,7 @@ jobs:
 
     services:
       redis:
-        image: redis:latest
+        image: registry.onemindservices.com/docker.io/library/redis:latest
         ports:
           - 6379:6379
         options: >-
@@ -39,7 +45,7 @@ jobs:
           --health-retries 3
 
       postgres:
-        image: postgres:17-alpine
+        image: registry.onemindservices.com/docker.io/library/postgres:17-alpine
         env:
           POSTGRES_USER: netbox
           POSTGRES_PASSWORD: netbox
@@ -60,11 +66,6 @@ jobs:
           app-id: ${{ vars.APP_ID }}
           private-key: ${{ secrets.APP_PRIVATE_KEY }}
 
-      - name: Install System Dependencies
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y libpq-dev
-
       - name: Checkout Plugin Repository
         uses: actions/checkout@v4
         with:
@@ -77,38 +78,30 @@ jobs:
           path: netbox
           ref: ${{ inputs.netbox-version }}
 
-      - name: Set up Python ${{ inputs.python-version }}
-        uses: actions/setup-python@v5
+      - name: Setup NetBox Requirements
+        uses: Onemind-Services-LLC/actions/actions/python-setup-install@master
         with:
           python-version: ${{ inputs.python-version }}
-          cache: 'pip'
+          working-directory: ${{ env.NETBOX_WORKING_DIRECTORY }}
 
-      - name: Install Plugin Dependencies
-        working-directory: ${{ inputs.plugin-name }}
-        run: |
-          echo machine github.com login ${{ steps.repo-token.outputs.token }} > ~/.netrc
-          
-          python -m pip install --upgrade pip
-          pip install -e .  # Install in development mode
-          
-          if [ -f requirements.txt ]; then
-            pip install -r requirements.txt
-          fi
-
-      - name: Install NetBox Core Dependencies
-        working-directory: netbox
-        run: |
-          pip install -r requirements.txt
+      - name: Setup Plugin Requirements
+        uses: Onemind-Services-LLC/actions/actions/python-setup-install@master
+        with:
+          python-version: ${{ inputs.python-version }}
+          working-directory: ${{ inputs.plugin-name }}
+          github-token: ${{ steps.repo-token.outputs.token }}
+          extra-install-commands: |
+            sudo apt-get update && sudo apt-get install -y libpq-dev
+            pip install -e .
 
       - name: Configure NetBox
-        working-directory: netbox
+        working-directory: ${{ env.NETBOX_WORKING_DIRECTORY }}
         run: |
           ln -sf $(pwd)/../${{ inputs.plugin-name }}/testing_configuration/configuration.py netbox/netbox/configuration.py
 
-      - name: Validate Database Migrations
-        working-directory: netbox
-        run: python netbox/manage.py makemigrations --check
-
       - name: Run Tests
-        working-directory: netbox
-        run: python netbox/manage.py test ${{ inputs.plugin-name }}.tests --parallel
+        uses: Onemind-Services-LLC/actions/actions/django-test-runner@master
+        with:
+          working-directory: ${{ env.NETBOX_WORKING_DIRECTORY }}/netbox
+          django-settings-module: netbox.configuration
+          test-args: ${{ inputs.plugin-name }}.tests --parallel
