@@ -9,7 +9,7 @@ Wraps `cypress-io/github-action` to run Cypress component or e2e tests, with opt
 - registry-url: npm registry URL for private/scoped packages (optional).
 - registry-scope: npm scope for auth, e.g., `@your-scope` (optional).
 - npm-token: npm auth token for private registry access (optional).
-- browser: Browser to run (`chrome`, `edge`, `firefox`). Required.
+- browser: Browser to run (`chrome`, `chrome-for-testing`, `edge`, `firefox`). Required.
 - component: Run in component test mode (`false` for e2e). Default `true`.
 - start: Command to start the app/server for e2e (optional).
 - wait-on: URL(s) to wait for before running tests (optional).
@@ -71,5 +71,6 @@ jobs:
 ## Notes
 
 - Uses pinned `cypress-io/github-action` to run tests; it installs dependencies in the working directory.
+- When `browser: chrome` is provided, this action installs Chrome for Testing and runs Cypress with `chrome-for-testing` under the hood, matching Cypress 14+ detection.
 - When `browser: firefox`, `FORCE_FIREFOX_CDP=1` is set automatically to enable CDP.
 - On failure, screenshots from `cypress/screenshots` are uploaded as `cypress-screenshots-<browser>`.

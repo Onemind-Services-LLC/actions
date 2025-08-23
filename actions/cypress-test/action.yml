@@ -60,14 +60,76 @@ runs:
             libgdk-pixbuf2.0-0 libgtk-3-0 libgbm-dev libnss3-dev libxss-dev libasound2 xvfb fonts-liberation \
             libu2f-udev xdg-utils
 
-    - uses: browser-actions/setup-chrome@b94431e051d1c52dcbe9a7092a4f10f827795416 #v2.1.0
+    - id: setup-chrome
+      uses: browser-actions/setup-chrome@b94431e051d1c52dcbe9a7092a4f10f827795416 # v2.1.0
       if: ${{ inputs.browser == 'chrome' }}
 
-    - uses: browser-actions/setup-firefox@5914774dda97099441f02628f8d46411fcfbd208 # v1.7.0
+    - name: Expose Chrome binary on PATH
+      if: ${{ inputs.browser == 'chrome' }}
+      shell: bash
+      run: |
+        set -euo pipefail
+        CHROME_PATH="${{ steps.setup-chrome.outputs.chrome-path }}"
+        if [ -z "$CHROME_PATH" ]; then
+          echo "::error::setup-chrome did not output chrome-path; cannot proceed"
+          exit 1
+        fi
+        if [ ! -x "$CHROME_PATH" ]; then
+          echo "::error::Chrome binary not executable or not found at $CHROME_PATH"
+          exit 1
+        fi
+        echo "Linking $CHROME_PATH to /usr/local/bin/{chrome,google-chrome,google-chrome-stable}"
+        sudo ln -sf "$CHROME_PATH" /usr/local/bin/chrome
+        sudo ln -sf "$CHROME_PATH" /usr/local/bin/google-chrome
+        sudo ln -sf "$CHROME_PATH" /usr/local/bin/google-chrome-stable
+        which chrome || true
+        chrome --version || true
+
+    - id: setup-firefox
+      uses: browser-actions/setup-firefox@5914774dda97099441f02628f8d46411fcfbd208 # v1.7.0
       if: ${{ inputs.browser == 'firefox' }}
 
-    - uses: browser-actions/setup-edge@5a55d8fc0f012aa6e16b582df5bf9d6274bda7da # v1.1.1
+    - name: Expose Firefox binary on PATH
+      if: ${{ inputs.browser == 'firefox' }}
+      shell: bash
+      run: |
+        set -euo pipefail
+        FIREFOX_PATH="${{ steps.setup-firefox.outputs.firefox-path }}"
+        if [ -z "$FIREFOX_PATH" ]; then
+          echo "::error::setup-firefox did not output firefox-path; cannot proceed"
+          exit 1
+        fi
+        if [ ! -x "$FIREFOX_PATH" ]; then
+          echo "::error::Firefox binary not executable or not found at $FIREFOX_PATH"
+          exit 1
+        fi
+        echo "Linking $FIREFOX_PATH to /usr/local/bin/firefox"
+        sudo ln -sf "$FIREFOX_PATH" /usr/local/bin/firefox
+        which firefox || true
+        firefox --version || true
+
+    - id: setup-edge
+      uses: browser-actions/setup-edge@5a55d8fc0f012aa6e16b582df5bf9d6274bda7da # v1.1.1
       if: ${{ inputs.browser == 'edge' }}
+
+    - name: Expose Edge binary on PATH
+      if: ${{ inputs.browser == 'edge' }}
+      shell: bash
+      run: |
+        set -euo pipefail
+        EDGE_PATH="${{ steps.setup-edge.outputs.edge-path }}"
+        if [ -z "$EDGE_PATH" ]; then
+          echo "::error::setup-edge did not output edge-path; cannot proceed"
+          exit 1
+        fi
+        if [ ! -x "$EDGE_PATH" ]; then
+          echo "::error::Edge binary not executable or not found at $EDGE_PATH"
+          exit 1
+        fi
+        echo "Linking $EDGE_PATH to /usr/local/bin/msedge"
+        sudo ln -sf "$EDGE_PATH" /usr/local/bin/msedge
+        which msedge || true
+        msedge --version || true
 
     - name: Run Cypress tests
       uses: cypress-io/github-action@b8ba51a856ba5f4c15cf39007636d4ab04f23e3c # v6.10.2
