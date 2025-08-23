@@ -36,6 +36,120 @@ jobs:
       private-key: ${{ secrets.APP_PRIVATE_KEY }}
 ```
 
+## Cypress E2E Tests
+
+- File: `.github/workflows/cypress-e2e-tests.yml`
+- Purpose: Run Cypress end-to-end tests across a browser matrix with optional private npm auth and caller-provided services.
+- Permissions: `contents: read`.
+- Inputs: `runs-on`, `browsers` (JSON array), `start`, `wait-on`, `wait-on-timeout`, `registry-url`, `registry-scope`, `working-directory`, `node-version`, `services` (JSON object), `app-id`.
+- Secrets: `private-key` (GitHub App private key used to mint an installation token). You may also forward any additional secrets your `services` JSON references.
+- Usage:
+  `uses: Onemind-Services-LLC/actions/.github/workflows/cypress-e2e-tests.yml@master`
+
+Notes:
+- Services are caller-defined and passed as a JSON string via the `services` input. You can interpolate secrets in that JSON at the call site.
+- You can set `needs`, `permissions`, and `strategy` at the call site as usual. This workflow already accepts a `browsers` JSON array and defines the matrix internally.
+
+Example usage mirroring a typical stack:
+
+```yaml
+permissions:
+  contents: read
+
+jobs:
+  unit_test:
+    runs-on: ubuntu-22.04-sh
+    steps:
+      - uses: actions/checkout@v5
+      - run: echo "run your unit tests here"
+
+  e2e:
+    name: End to End tests
+    needs: [unit_test]
+    uses: Onemind-Services-LLC/actions/.github/workflows/cypress-e2e-tests.yml@master
+    with:
+      runs-on: ubuntu-22.04-sh
+      browsers: '["chrome","edge","firefox"]'
+      start: npm run local:test
+      wait-on: http://localhost:3000
+      registry-scope: '@onemind-services-llc'
+      registry-url: 'https://npm.pkg.github.com'
+      services: >-
+        {
+          "postgres": {
+            "image": "registry.onemindservices.com/docker.io/library/postgres:16",
+            "credentials": {
+              "username": "${{ secrets.DOCKER_USERNAME }}",
+              "password": "${{ secrets.DOCKER_PASSWORD }}"
+            },
+            "env": {
+              "POSTGRES_USER": "postgres",
+              "POSTGRES_PASSWORD": "admin",
+              "POSTGRES_DB": "app"
+            },
+            "ports": ["5432:5432"],
+            "options": "--health-cmd pg_isready --health-interval 10s --health-timeout 5s --health-retries 5"
+          },
+          "tsdb": {
+            "image": "registry.onemindservices.com/docker.io/library/influxdb:2.7.6-alpine",
+            "credentials": {
+              "username": "${{ secrets.DOCKER_USERNAME }}",
+              "password": "${{ secrets.DOCKER_PASSWORD }}"
+            },
+            "env": {
+              "DOCKER_INFLUXDB_INIT_MODE": "setup",
+              "DOCKER_INFLUXDB_INIT_USERNAME": "erp-influxdb",
+              "DOCKER_INFLUXDB_INIT_PASSWORD": "password",
+              "DOCKER_INFLUXDB_INIT_ORG": "test",
+              "DOCKER_INFLUXDB_INIT_BUCKET": "things",
+              "DOCKER_INFLUXDB_INIT_ADMIN_TOKEN": "admin"
+            },
+            "ports": ["8086:8086"],
+            "options": "--health-cmd \"curl -f http://localhost:8086\" --health-interval 10s --health-timeout 5s --health-retries 30"
+          },
+          "redis": {
+            "image": "registry.onemindservices.com/docker.io/bitnami/redis",
+            "credentials": {
+              "username": "${{ secrets.DOCKER_USERNAME }}",
+              "password": "${{ secrets.DOCKER_PASSWORD }}"
+            },
+            "env": {
+              "REDIS_PASSWORD": "password"
+            },
+            "ports": ["6379:6379"],
+            "options": "--health-cmd \"redis-cli ping\" --health-interval 10s --health-timeout 5s --health-retries 30"
+          },
+          "minio": {
+            "image": "registry.onemindservices.com/docker.io/bitnami/minio",
+            "credentials": {
+              "username": "${{ secrets.DOCKER_USERNAME }}",
+              "password": "${{ secrets.DOCKER_PASSWORD }}"
+            },
+            "env": {
+              "MINIO_ROOT_USER": "minioadmin",
+              "MINIO_ROOT_PASSWORD": "minioadmin"
+            },
+            "ports": ["9000:9000"],
+            "options": "--health-cmd \"curl -f http://localhost:9000/minio/health/live\" --health-interval 10s --health-timeout 5s --health-retries 30"
+          },
+          "server": {
+            "image": "registry.onemindservices.com/zeus/python-master:dev",
+            "credentials": {
+              "username": "${{ secrets.DOCKER_USERNAME }}",
+              "password": "${{ secrets.DOCKER_PASSWORD }}"
+            },
+            "env": {"SVC_TYPE": "test"},
+            "ports": ["8000:8000"],
+            "options": "--health-cmd \"curl -f http://localhost:8000/health/ping/\" --health-interval 10s --health-timeout 5s --health-retries 30"
+          }
+        }
+    secrets:
+      private-key: ${{ secrets.APP_PRIVATE_KEY }}
+      DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
+      DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
+```
+
+
 ## Docker Build + Push + Sign
 
 - File: `.github/workflows/docker-build-push.yml`
