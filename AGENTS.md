@@ -32,8 +32,8 @@ This document outlines how to work in this monorepo of reusable GitHub Actions a
 
 ## Testing Guidelines
 
-- This repo has no unit tests; validation happens by running the reusable workflows or consuming the composite actions in a sandbox repo.
-- For `netbox-plugin-tests.yml`, ensure a plugin repo provides `testing_configuration/configuration.py` and matches the required services.
+- This repo has no unit tests; validate by running the reusable workflows or consuming the composite actions in a sandbox repo.
+- For `netbox-plugin-tests.yml`, the workflow provides a baseline NetBox test configuration; pass plugin settings via the `plugin-configuration` input. Ensure your plugin supports the selected NetBox version and works with Redis/Postgres services.
 - Use matrix or sample invocations in a test repo before changing defaults.
 - Verify documentation examples by copy-pasting into a scratch workflow.
 
@@ -43,12 +43,12 @@ This document outlines how to work in this monorepo of reusable GitHub Actions a
 - Use `[skip ci]` for docs-only changes if no validation is needed.
 - Open PRs with:
   - Clear description, linked Jira, and scope of change.
-  - Notes on backwards compatibility and any required secrets/permissions (`secrets.git-token`).
+  - Notes on backwards compatibility and any required secrets/permissions (e.g., `vars.APP_ID`, `secrets.APP_PRIVATE_KEY` for NetBox plugin tests).
   - Screenshots or logs for behavior changes.
-- Keep diffs small and update module READMEs when inputs/behavior change.
+  - Keep diffs small and update module READMEs when inputs/behavior change.
 
 ## Security & Configuration Tips
 
-- Do not print secrets; prefer `GITHUB_TOKEN` when possible. `netbox-plugin-tests` requires `secrets.git-token` for private deps.
+- Do not print secrets; prefer `GITHUB_TOKEN` when possible. For NetBox plugin tests, provide GitHub App credentials (`vars.APP_ID`, `secrets.APP_PRIVATE_KEY`) to mint a short‑lived installation token.
 - Pin third-party actions by version/commit; avoid `@master` in new additions.
 - Limit permissions to the minimum needed in workflows.
