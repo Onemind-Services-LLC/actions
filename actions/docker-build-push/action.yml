@@ -99,7 +99,7 @@ runs:
       uses: docker/build-push-action@v6
       with:
         context: ${{ inputs.context }}
-        file: ${{ inputs.file }}
+        file: ${{ inputs.context }}/${{ inputs.file }}
         push: ${{ inputs.push == 'true' }}
         tags: ${{ steps.meta.outputs.tags }}
         build-args: ${{ inputs.build-args }}
