@@ -6,6 +6,36 @@ Overview of reusable workflows published from this repository. Consume via:
 
 See also: [Actions Overview](../actions/README.md)
 
+## Cypress Component Tests
+
+- File: `.github/workflows/cypress-component-tests.yml`
+- Purpose: Run Cypress component tests across a browser matrix with optional private npm auth via a GitHub App token.
+- Permissions: `contents: read`.
+- Inputs: `runs-on`, `browsers` (JSON array), `registry-url`, `registry-scope`, `working-directory`, `node-version`, `app-id`.
+- Secrets: `private-key` (GitHub App private key used to mint an installation token for npm auth).
+- Usage:
+  `uses: Onemind-Services-LLC/actions/.github/workflows/cypress-component-tests.yml@v1`
+
+Example usage:
+
+```yaml
+permissions:
+  contents: read
+
+jobs:
+  unit_test:
+    name: Unit test
+    uses: Onemind-Services-LLC/actions/.github/workflows/cypress-component-tests.yml@v1
+    with:
+      runs-on: ubuntu-22.04-sh
+      browsers: '["chrome","edge","firefox"]'
+      registry-scope: '@onemind-services-llc'
+      registry-url: 'https://npm.pkg.github.com'
+      app-id: ${{ vars.APP_ID }}
+    secrets:
+      private-key: ${{ secrets.APP_PRIVATE_KEY }}
+```
+
 ## Docker Build + Push + Sign
 
 - File: `.github/workflows/docker-build-push.yml`
