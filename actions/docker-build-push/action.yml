@@ -37,6 +37,10 @@ inputs:
       type=ref,event=tag
       type=semver,pattern={{version}}
       type=sha
+  authors:
+    description: Comma-separated list of image authors
+    required: false
+    default: 'Abhimanyu Saharan <asaharan@onemindservices.com>'
   context:
     description: Build context (defaults to current directory)
     required: false
@@ -88,14 +92,14 @@ runs:
         tags: ${{ inputs.meta-tags }}
         # Merge core OCI metadata derived from the GitHub context with any caller-supplied labels
         labels: |
-          org.opencontainers.image.authors=${{ github.repository_owner }}
+          org.opencontainers.image.authors=${{ inputs.authors }}
           org.opencontainers.image.vendor=${{ github.repository_owner }}
           org.opencontainers.image.documentation=${{ github.server_url }}/${{ github.repository }}#readme
           org.opencontainers.image.ref.name=${{ github.ref_name }}
           ${{ inputs.labels }}
         # Emit the same core values as annotations; metadata-action will place them at the configured levels
         annotations: |
-          org.opencontainers.image.authors=${{ github.repository_owner }}
+          org.opencontainers.image.authors=${{ inputs.authors }}
           org.opencontainers.image.vendor=${{ github.repository_owner }}
           org.opencontainers.image.documentation=${{ github.server_url }}/${{ github.repository }}#readme
           org.opencontainers.image.ref.name=${{ github.ref_name }}
