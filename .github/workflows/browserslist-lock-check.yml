@@ -91,4 +91,3 @@ jobs:
         if: steps.snap.outputs.no_lockfiles == 'true'
         run: |
           echo "No package-lock.json or yarn.lock found. Skipping Browserslist lock check."
-

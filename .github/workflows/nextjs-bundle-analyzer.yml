@@ -47,7 +47,7 @@ on:
       github-token:
         description: GitHub token used for artifact access and PR comments
         required: false
-      
+
 
 permissions:
   contents: read

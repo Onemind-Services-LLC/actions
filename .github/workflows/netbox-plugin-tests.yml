@@ -127,7 +127,8 @@ jobs:
 
       - name: Copy NetBox Test Configuration
         run: |
-          cp -f ${{ env.ACTIONS_WORKING_DIRECTORY }}/assets/netbox-plugin-tests/configuration.py ${{ env.NETBOX_WORKING_DIRECTORY }}/netbox/netbox/configuration.py
+          cp -f "${{ env.ACTIONS_WORKING_DIRECTORY }}/assets/netbox-plugin-tests/configuration.py" \
+            "${{ env.NETBOX_WORKING_DIRECTORY }}/netbox/netbox/configuration.py"
 
       - name: Add plugin to NetBox configuration
         run: |

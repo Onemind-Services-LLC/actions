@@ -9,7 +9,7 @@ on:
         default: 'ubuntu-22.04-sh'
         type: string
       browsers:
-        description: JSON array of browsers (e.g., ["chrome","edge","firefox"]) 
+        description: JSON array of browsers (e.g., ["chrome","edge","firefox"]).
         required: false
         default: '["chrome","edge","firefox"]'
         type: string

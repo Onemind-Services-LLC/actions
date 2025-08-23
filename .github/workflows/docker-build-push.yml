@@ -9,7 +9,10 @@ on:
         default: 'ubuntu-22.04-sh'
         type: string
       push:
-        description: "Whether to push images (override). Accepts 'true' or 'false'. If omitted, defaults to pushing only on the repository's default branch."
+        description: >-
+          Whether to push images (override). Accepts 'true' or 'false'.
+          If omitted, defaults to pushing only on the repository's
+          default branch.
         required: false
         default: ''
         type: string
