@@ -109,6 +109,7 @@ jobs:
         with:
           repository: "Onemind-Services-LLC/actions"
           path: ${{ env.ACTIONS_WORKING_DIRECTORY }}
+          ref: master
 
       - name: Setup NetBox Requirements
         uses: Onemind-Services-LLC/actions/actions/python-setup-install@master
