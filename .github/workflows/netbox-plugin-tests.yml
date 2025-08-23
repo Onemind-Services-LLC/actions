@@ -7,6 +7,11 @@ on:
         description: 'The name of the NetBox plugin, eg: netbox_secrets'
         required: true
         type: string
+      plugin-configuration:
+        description: 'The configuration for the NetBox plugin, eg: {"netbox_secrets": {"enabled": true, "config_option": "value"}}'
+        required: false
+        type: string
+        default: '{}'
       netbox-version:
         description: 'NetBox version to use, eg: v4.3.0'
         required: true
@@ -23,6 +28,7 @@ on:
         default: 'ubuntu-22.04-sh'
 
 env:
+  ACTIONS_WORKING_DIRECTORY: actions
   NETBOX_WORKING_DIRECTORY: netbox
 
 permissions:
@@ -66,17 +72,23 @@ jobs:
           app-id: ${{ vars.APP_ID }}
           private-key: ${{ secrets.APP_PRIVATE_KEY }}
 
-      - name: Checkout Plugin Repository
-        uses: actions/checkout@v4
-        with:
-          path: ${{ inputs.plugin-name }}
-
       - name: Checkout NetBox Repository
         uses: actions/checkout@v4
         with:
           repository: "netbox-community/netbox"
           path: netbox
           ref: ${{ inputs.netbox-version }}
+
+      - name: Checkout Plugin Repository
+        uses: actions/checkout@v4
+        with:
+          path: ${{ inputs.plugin-name }}
+
+      - name: Checkout Actions Repository
+        uses: actions/checkout@v4
+        with:
+          repository: "Onemind-Services-LLC/actions"
+          path: ${{ env.ACTIONS_WORKING_DIRECTORY }}
 
       - name: Setup NetBox Requirements
         uses: Onemind-Services-LLC/actions/actions/python-setup-install@master
@@ -94,14 +106,20 @@ jobs:
             sudo apt-get update && sudo apt-get install -y libpq-dev
             pip install -e .
 
-      - name: Configure NetBox
-        working-directory: ${{ env.NETBOX_WORKING_DIRECTORY }}
+      - name: Copy NetBox Test Configuration
         run: |
-          ln -sf $(pwd)/../${{ inputs.plugin-name }}/testing_configuration/configuration.py netbox/netbox/configuration.py
+          cp -f ${{ env.ACTIONS_WORKING_DIRECTORY }}/assets/netbox-plugin-tests/configuration.py ${{ env.NETBOX_WORKING_DIRECTORY }}/netbox/netbox/configuration.py
+
+      - name: Add plugin to NetBox configuration
+        run: |
+          echo "PLUGINS = ['${{ inputs.plugin-name }}']" >> ${{ env.NETBOX_WORKING_DIRECTORY }}/netbox/netbox/configuration.py
+          echo "PLUGINS_CONFIG = ${{ inputs.plugin-configuration }}" >> ${{ env.NETBOX_WORKING_DIRECTORY }}/netbox/netbox/configuration.py
+          cat ${{ env.NETBOX_WORKING_DIRECTORY }}/netbox/netbox/configuration.py
 
       - name: Run Tests
         uses: Onemind-Services-LLC/actions/actions/django-test-runner@master
         with:
           working-directory: ${{ env.NETBOX_WORKING_DIRECTORY }}/netbox
+          django-settings-module-key: NETBOX_CONFIGURATION
           django-settings-module: netbox.configuration
           test-args: ${{ inputs.plugin-name }}.tests --parallel
