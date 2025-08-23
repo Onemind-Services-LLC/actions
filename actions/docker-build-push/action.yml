@@ -33,6 +33,14 @@ inputs:
       type=ref,event=tag
       type=semver,pattern={{version}}
       type=sha
+  context:
+    description: Build context (defaults to current directory)
+    required: false
+    default: .
+  file:
+    description: Dockerfile path (defaults to 'Dockerfile' in the context)
+    required: false
+    default: Dockerfile
   registry:
     description: Registry hostname for login
     required: true
@@ -90,8 +98,8 @@ runs:
       id: build
       uses: docker/build-push-action@v6
       with:
-        context: .
-        file: Dockerfile
+        context: ${{ inputs.context }}
+        file: ${{ inputs.file }}
         push: ${{ inputs.push == 'true' }}
         tags: ${{ steps.meta.outputs.tags }}
         build-args: ${{ inputs.build-args }}
