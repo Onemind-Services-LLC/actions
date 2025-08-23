@@ -91,6 +91,7 @@ jobs:
         with:
           app-id: ${{ inputs.app-id }}
           private-key: ${{ secrets.private-key }}
+          owner: Onemind-Services-LLC
 
       - name: Checkout NetBox Repository
         uses: actions/checkout@v5
