@@ -1,0 +1,52 @@
+name: Detect Package Manager
+description: Detects the Node.js package manager based on lockfiles (pnpm > yarn > npm) with configurable fallback.
+
+inputs:
+  working-directory:
+    description: Directory to scan for lockfiles
+    required: false
+    default: '.'
+  fallback:
+    description: Fallback package manager when no lockfile is found (npm|yarn|pnpm|npx)
+    required: false
+    default: 'npm'
+
+outputs:
+  package-manager:
+    description: Detected package manager (npm|yarn|pnpm|npx)
+    value: ${{ steps.detect.outputs.package-manager }}
+  source:
+    description: What triggered detection (pnpm-lock.yaml|yarn.lock|package-lock.json|fallback)
+    value: ${{ steps.detect.outputs.source }}
+  lockfile:
+    description: Detected lockfile path (or empty if none)
+    value: ${{ steps.detect.outputs.lockfile }}
+
+runs:
+  using: composite
+  steps:
+    - name: Detect
+      id: detect
+      shell: bash
+      working-directory: ${{ inputs.working-directory }}
+      run: |
+        set -euo pipefail
+        fb='${{ inputs.fallback }}'
+        case "$fb" in
+          npm|yarn|pnpm|npx) : ;;
+          *) echo "::warning::Invalid fallback '$fb'; using 'npm'"; fb=npm ;;
+        esac
+        if [[ -f pnpm-lock.yaml ]]; then
+          pm=pnpm; src=pnpm-lock.yaml; lock=pnpm-lock.yaml
+        elif [[ -f yarn.lock ]]; then
+          pm=yarn; src=yarn.lock; lock=yarn.lock
+        elif [[ -f package-lock.json ]]; then
+          pm=npm; src=package-lock.json; lock=package-lock.json
+        else
+          pm="$fb"; src=fallback; lock=""
+          echo "::notice::No lockfile found; defaulting to $pm"
+        fi
+        echo "package-manager=$pm" >> "$GITHUB_OUTPUT"
+        echo "source=$src" >> "$GITHUB_OUTPUT"
+        echo "lockfile=$lock" >> "$GITHUB_OUTPUT"
+
