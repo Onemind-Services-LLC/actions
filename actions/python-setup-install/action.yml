@@ -24,6 +24,12 @@ inputs:
     description: Upgrade pip before installs.
     required: false
     default: 'false'
+  pre-install-commands:
+    description: >-
+      Commands to run before pip installs (e.g., apt installs like
+      'sudo apt-get update && sudo apt-get install -y libpq-dev').
+    required: false
+    default: ''
   extra-install-commands:
     description: >-
       Extra commands to execute for installing system or Python deps
@@ -54,6 +60,12 @@ runs:
       if: ${{ inputs.upgrade-pip == 'true' }}
       shell: bash
       run: pip install --upgrade pip
+
+    - name: Run Pre-Install Commands
+      if: ${{ inputs.pre-install-commands != '' }}
+      shell: bash
+      working-directory: ${{ inputs.working-directory }}
+      run: ${{ inputs.pre-install-commands }}
 
     - name: Install From requirements.txt
       if: hashFiles(format('{0}/requirements.txt', inputs.working-directory))

@@ -1,6 +1,6 @@
 # Python Setup & Install
 
-Set up Python, optionally upgrade `pip`, and install dependencies from `requirements.txt` and `requirements-dev.txt`/`requirements_dev.txt` when present. Supports extra install commands and an optional GitHub token for private dependencies.
+Set up Python, optionally upgrade `pip`, and install dependencies from `requirements.txt` and `requirements-dev.txt`/`requirements_dev.txt` when present. Supports pre-install and extra install commands, plus an optional GitHub token for private dependencies.
 
 ## Inputs
 
@@ -8,6 +8,7 @@ Set up Python, optionally upgrade `pip`, and install dependencies from `requirem
 - **working-directory**: Directory to run installs from (default: `.`).
 - **github-token**: Optional token for private GitHub dependencies. Configures a temporary git URL rewrite to authenticate `https://github.com/` fetches as `https://x-access-token:<token>@github.com/` and cleans it up at the end.
 - **upgrade-pip**: Upgrade pip before installs (default: `false`).
+- **pre-install-commands**: Commands to run before any pip installs (e.g., `sudo apt-get update && sudo apt-get install -y libpq-dev`).
 - **extra-install-commands**: Extra commands to execute for installing system or Python deps (e.g., `sudo apt-get install -y libpq-dev`).
 
 ## Behavior
@@ -19,7 +20,7 @@ Set up Python, optionally upgrade `pip`, and install dependencies from `requirem
   - `requirements-dev.txt`
   - `requirements_dev.txt`
 - Optionally upgrades `pip` when `upgrade-pip: true`.
-- Runs any additional install commands you provide.
+- Runs any pre-install commands you provide before pip installs, and extra commands after.
 
 ## Examples
 
@@ -50,9 +51,9 @@ jobs:
     github-token: ${{ secrets.GITHUB_TOKEN }}
     upgrade-pip: 'true'
     working-directory: backend
+    pre-install-commands: |
+      sudo apt-get update && sudo apt-get install -y libpq-dev
     extra-install-commands: |
-      sudo apt-get update
-      sudo apt-get install -y libpq-dev
       pip install wheel
 ```
 
