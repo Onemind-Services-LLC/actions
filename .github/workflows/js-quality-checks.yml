@@ -53,11 +53,6 @@ on:
         required: false
         default: false
         type: boolean
-      bundle-working-directory:
-        description: Directory to run bundler in (for bundle check)
-        required: false
-        default: '.'
-        type: string
       bundle-dist-path:
         description: Repo-relative dist path to check
         required: false
@@ -118,7 +113,7 @@ jobs:
         uses: Onemind-Services-LLC/actions/actions/bundle-integrity-check@master
         with:
           node-version: ${{ inputs.node-version }}
-          working-directory: ${{ inputs.bundle-working-directory }}
+          working-directory: ${{ inputs.working-directory }}
           dist-path: ${{ inputs.bundle-dist-path }}
           bundle-command: ${{ inputs.bundle-command }}
 
