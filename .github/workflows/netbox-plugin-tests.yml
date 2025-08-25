@@ -114,6 +114,8 @@ jobs:
         with:
           python-version: ${{ inputs.python-version }}
           working-directory: ${{ env.NETBOX_WORKING_DIRECTORY }}
+          pre-install-commands: |
+            sudo apt-get update && sudo apt-get install -y libpq-dev
 
       - name: Setup Plugin Requirements
         uses: Onemind-Services-LLC/actions/actions/python-setup-install@master
