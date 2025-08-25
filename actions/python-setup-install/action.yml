@@ -47,6 +47,7 @@ runs:
         cache: 'pip'
         cache-dependency-path: |
           ${{ inputs.working-directory }}/setup.py
+          ${{ inputs.working-directory }}/pyproject.toml
           ${{ inputs.working-directory }}/requirements*.txt
 
     - name: Configure GitHub Token
