@@ -144,3 +144,4 @@ jobs:
           django-settings-module-key: NETBOX_CONFIGURATION
           django-settings-module: netbox.configuration
           test-args: ${{ inputs.plugin-name }}.tests --parallel
+          coverage-report: true
