@@ -235,6 +235,38 @@ Notes:
 - The workflow installs dependencies using `actions/npm-install-build` and runs `npx eslint --max-warnings=0 ...`.
 - Ensure ESLint is declared in your project's `devDependencies` for reproducible results (npx prefers local installation).
 
+## CodeQL Analysis
+
+- File: `.github/workflows/codeql-analysis.yml`
+- Purpose: Initialize CodeQL, build, and upload results to GitHub code scanning. Caller provides a matrix of languages and passes a single language per job.
+- Permissions: `contents: read`, `actions: read`, `security-events: write`.
+- Inputs: `runs-on`, `languages` (single language per job), `source-root`, `build-mode` (`none` | `autobuild` | `manual`), `build-command`, `queries`, `packs`, `config-file`, `tools`.
+- Usage:
+  `uses: Onemind-Services-LLC/actions/.github/workflows/codeql-analysis.yml@master`
+
+Example (caller provides language matrix):
+
+```yaml
+jobs:
+  codeql:
+    name: CodeQL
+    strategy:
+      fail-fast: false
+      matrix:
+        language: [ 'javascript-typescript', 'python' ]
+    uses: Onemind-Services-LLC/actions/.github/workflows/codeql-analysis.yml@master
+    with:
+      runs-on: ubuntu-22.04-sh
+      languages: ${{ matrix.language }}
+      source-root: '.'
+      build-mode: autobuild
+      # For compiled languages with custom builds:
+      # build-mode: manual
+      # build-command: make -j
+      # Optional:
+      # queries: security-extended
+```
+
 ## Browserslist Lock Check
 
 - File: `.github/workflows/browserslist-lock-check.yml`

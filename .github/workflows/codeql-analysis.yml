@@ -1,0 +1,88 @@
+name: CodeQL Analysis
+
+on:
+  workflow_call:
+    inputs:
+      runs-on:
+        description: Runner label
+        required: false
+        default: ubuntu-22.04-sh
+        type: string
+      languages:
+        description: Comma-separated CodeQL languages (e.g., 'javascript-typescript,python,go')
+        required: false
+        default: javascript-typescript,python
+        type: string
+      source-root:
+        description: Directory to analyze (source root)
+        required: false
+        default: '.'
+        type: string
+      build-mode:
+        description: 'Build mode for single-language jobs: "none", "autobuild", or "manual"'
+        required: false
+        default: autobuild
+        type: string
+      build-command:
+        description: Manual build command when build-mode is 'manual'
+        required: false
+        default: ''
+        type: string
+      queries:
+        description: CodeQL queries or packs (e.g., 'security-extended' or '+security-and-quality')
+        required: false
+        default: ''
+        type: string
+      packs:
+        description: Comma-separated list of CodeQL packs to run (single-language only). Prefix with '+' to merge.
+        required: false
+        default: ''
+        type: string
+      config-file:
+        description: Path to a CodeQL config file (e.g., .github/codeql/codeql-config.yml)
+        required: false
+        default: ''
+        type: string
+      tools:
+        description: Override CodeQL bundle (path/URL or 'linked')
+        required: false
+        default: ''
+        type: string
+
+permissions:
+  contents: read
+  actions: read
+  security-events: write
+
+jobs:
+  analyze:
+    name: CodeQL Analyze
+    runs-on: ${{ inputs.runs-on }}
+    defaults:
+      run:
+        shell: bash
+        working-directory: ${{ inputs.source-root }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Initialize CodeQL
+        uses: github/codeql-action/init@v3
+        with:
+          languages: ${{ inputs.languages }}
+          source-root: ${{ inputs.source-root }}
+          queries: ${{ inputs.queries }}
+          packs: ${{ inputs.packs }}
+          config-file: ${{ inputs.config-file }}
+          tools: ${{ inputs.tools }}
+
+      - name: Autobuild
+        if: inputs.build-mode == 'autobuild'
+        uses: github/codeql-action/autobuild@v3
+
+      - name: Manual Build
+        if: inputs.build-mode == 'manual' && inputs.build-command != ''
+        run: ${{ inputs.build-command }}
+
+      - name: Analyze
+        uses: github/codeql-action/analyze@v3
