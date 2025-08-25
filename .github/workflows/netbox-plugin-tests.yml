@@ -41,6 +41,7 @@ env:
   NETBOX_WORKING_DIRECTORY: netbox
 
 permissions:
+  checks: write
   contents: read
   pull-requests: write
 
