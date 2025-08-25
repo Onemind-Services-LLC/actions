@@ -124,7 +124,6 @@ jobs:
           working-directory: ${{ inputs.plugin-name }}
           github-token: ${{ steps.repo-token.outputs.token }}
           extra-install-commands: |
-            sudo apt-get update && sudo apt-get install -y libpq-dev
             pip install -e .
 
       - name: Copy NetBox Test Configuration
