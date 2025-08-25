@@ -1,0 +1,161 @@
+name: Node Install & Build
+description: Install dependencies and build a Node.js project using npm, Yarn, pnpm, or npx (build only) with caching and optional registry auth.
+
+inputs:
+  package-manager:
+    description: Package manager to use (npm, yarn, pnpm, or npx)
+    required: false
+    default: 'npm'
+  node-version:
+    description: Node.js version to use
+    required: false
+    default: '22.x'
+  working-directory:
+    description: Directory containing the project
+    required: false
+    default: '.'
+  install:
+    description: Whether to run the install step
+    required: false
+    default: 'true'
+  install-command:
+    description: Optional explicit install command to run (overrides defaults)
+    required: false
+    default: ''
+  build:
+    description: Whether to run the build step
+    required: false
+    default: 'true'
+  build-command:
+    description: Optional explicit build command to run (overrides defaults)
+    required: false
+    default: ''
+  registry-url:
+    description: Optional npm registry URL for scoped/private packages
+    required: false
+    default: ''
+  registry-scope:
+    description: Optional npm scope (e.g., '@your-scope') for auth
+    required: false
+    default: ''
+  npm-token:
+    description: NPM auth token for private registry access
+    required: false
+    default: ''
+
+runs:
+  using: composite
+  steps:
+    - name: Validate Inputs
+      shell: bash
+      run: |
+        set -euo pipefail
+        pm='${{ inputs.package-manager }}'
+        if [[ "$pm" != 'npm' && "$pm" != 'yarn' && "$pm" != 'pnpm' && "$pm" != 'npx' ]]; then
+          echo "Unsupported package-manager: $pm (expected 'npm', 'yarn', 'pnpm', or 'npx')" >&2
+          exit 1
+        fi
+
+    - name: Setup Node.js (npm)
+      if: ${{ inputs.package-manager == 'npm' }}
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ inputs.node-version }}
+        cache: npm
+        cache-dependency-path: ${{ inputs.working-directory }}/package-lock.json
+        registry-url: ${{ inputs.registry-url }}
+        scope: ${{ inputs.registry-scope }}
+        always-auth: ${{ inputs.registry-url != '' }}
+
+    - name: Setup Node.js (Yarn)
+      if: ${{ inputs.package-manager == 'yarn' }}
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ inputs.node-version }}
+        cache: yarn
+        cache-dependency-path: ${{ inputs.working-directory }}/yarn.lock
+        registry-url: ${{ inputs.registry-url }}
+        scope: ${{ inputs.registry-scope }}
+        always-auth: ${{ inputs.registry-url != '' }}
+
+    - name: Setup Node.js (pnpm)
+      if: ${{ inputs.package-manager == 'pnpm' }}
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ inputs.node-version }}
+        cache: pnpm
+        cache-dependency-path: ${{ inputs.working-directory }}/pnpm-lock.yaml
+        registry-url: ${{ inputs.registry-url }}
+        scope: ${{ inputs.registry-scope }}
+        always-auth: ${{ inputs.registry-url != '' }}
+
+    - name: Enable Corepack (Yarn/pnpm)
+      if: ${{ inputs.package-manager == 'yarn' || inputs.package-manager == 'pnpm' }}
+      shell: bash
+      run: corepack enable
+
+    - name: Install Dependencies
+      if: ${{ inputs.install == 'true' }}
+      shell: bash
+      working-directory: ${{ inputs.working-directory }}
+      env:
+        NODE_AUTH_TOKEN: ${{ inputs.npm-token }}
+      run: |
+        set -euo pipefail
+        pm='${{ inputs.package-manager }}'
+        if [[ -n "${{ inputs.install-command }}" ]]; then
+          cmd='${{ inputs.install-command }}'
+          echo "+ $cmd"
+          eval "$cmd"
+          exit 0
+        fi
+        case "$pm" in
+          yarn)
+            cmd='yarn install --frozen-lockfile'
+            ;;
+          pnpm)
+            cmd='pnpm install --frozen-lockfile'
+            ;;
+          npm)
+            cmd='npm ci --no-audit'
+            ;;
+          npx)
+            echo "No default install step for 'npx'; skipping install."
+            exit 0
+            ;;
+        esac
+        echo "+ $cmd"
+        eval "$cmd"
+
+    - name: Build
+      if: ${{ inputs.build == 'true' }}
+      shell: bash
+      working-directory: ${{ inputs.working-directory }}
+      env:
+        NODE_AUTH_TOKEN: ${{ inputs.npm-token }}
+      run: |
+        set -euo pipefail
+        pm='${{ inputs.package-manager }}'
+        if [[ -n "${{ inputs.build-command }}" ]]; then
+          cmd='${{ inputs.build-command }}'
+          echo "+ $cmd"
+          eval "$cmd"
+          exit 0
+        fi
+        case "$pm" in
+          yarn)
+            cmd='yarn build'
+            ;;
+          pnpm)
+            cmd='pnpm run build'
+            ;;
+          npm)
+            cmd='npm run build'
+            ;;
+          npx)
+            echo "build-command is required when package-manager is 'npx' (e.g., 'npx -y <tool> build')." >&2
+            exit 1
+            ;;
+        esac
+        echo "+ $cmd"
+        eval "$cmd"
