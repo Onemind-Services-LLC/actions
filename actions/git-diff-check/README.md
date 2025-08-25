@@ -23,10 +23,10 @@ Compute changed files between a base and HEAD using git. Supports automatic base
 
 ## Behavior
 
-- If `base-ref` is empty and the event is a PR, it fetches `origin/<base>` and uses `merge-base` with the PR base branch.
-- Otherwise, it uses `HEAD~1` as base.
+- When `compare-working-tree: true`, it bypasses base resolution and diffs working tree changes against `HEAD`.
+- If `base-ref` is empty and the event is a PR, it fetches `origin/<base>` (using `fetch-depth`) and uses `merge-base` with the PR base branch.
+- For non-PR events without `base-ref`, it attempts `HEAD~1`. If unavailable due to shallow history, it fetches more history (per `fetch-depth`) and retries; if still unavailable (e.g., initial commit), it falls back to diffing against the empty tree.
 - Uses `git diff --name-only` with `--diff-filter` to compute the change list and optional pathspec filters.
-  - When `compare-working-tree: true`, diffs working tree changes against `HEAD`.
 - Writes a summary section with change details. If `fail-if-changed` is true and changes are found, the step fails.
 
 ## Usage
@@ -54,4 +54,4 @@ steps:
 ```
 
 Notes:
-- Ensure the repository is checked out with sufficient history. This action will `git fetch` when resolving PR bases, controlled by `fetch-depth`.
+- Ensure the repository is checked out with sufficient history when you want commit-to-commit diffs. The action will `git fetch` when resolving bases, controlled by `fetch-depth`.

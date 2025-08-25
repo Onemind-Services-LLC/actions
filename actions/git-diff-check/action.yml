@@ -61,6 +61,14 @@ runs:
       working-directory: ${{ inputs.working-directory }}
       run: |
         set -euo pipefail
+        # Short-circuit resolution if we're only comparing the working tree.
+        if [[ '${{ inputs.compare-working-tree }}' == 'true' ]]; then
+          head_input='${{ inputs.head-ref }}'
+          head_ref=${head_input:-HEAD}
+          echo "base=$head_ref" >> "$GITHUB_OUTPUT"
+          echo "head=$head_ref" >> "$GITHUB_OUTPUT"
+          exit 0
+        fi
         base_input='${{ inputs.base-ref }}'
         head_input='${{ inputs.head-ref }}'
         head_ref=${head_input:-HEAD}
@@ -72,13 +80,29 @@ runs:
               depth='${{ inputs.fetch-depth }}'
               git fetch --no-tags --prune --depth="$depth" origin "+refs/heads/*:refs/remotes/origin/*"
               # Use merge-base against the base branch
-              mb=$(git merge-base "$head_ref" "origin/$base_branch")
-              base_ref="$mb"
+              if mb=$(git merge-base "$head_ref" "origin/$base_branch"); then
+                base_ref="$mb"
+              else
+                # Fallback: try previous commit; if unavailable, use empty tree
+                if ! base_ref=$(git rev-parse "$head_ref~1" 2>/dev/null); then
+                  base_ref=$(git hash-object -t tree /dev/null)
+                fi
+              fi
             else
-              base_ref=$(git rev-parse "$head_ref~1")
+              if ! base_ref=$(git rev-parse "$head_ref~1" 2>/dev/null); then
+                # Try fetching more history, then retry, else empty tree
+                depth='${{ inputs.fetch-depth }}'
+                git fetch --no-tags --prune --depth="$depth" origin "+refs/heads/*:refs/remotes/origin/*" || true
+                base_ref=$(git rev-parse "$head_ref~1" 2>/dev/null || git hash-object -t tree /dev/null)
+              fi
             fi
           else
-            base_ref=$(git rev-parse "$head_ref~1")
+            if ! base_ref=$(git rev-parse "$head_ref~1" 2>/dev/null); then
+              # Try fetching more history, then retry, else empty tree
+              depth='${{ inputs.fetch-depth }}'
+              git fetch --no-tags --prune --depth="$depth" origin "+refs/heads/*:refs/remotes/origin/*" || true
+              base_ref=$(git rev-parse "$head_ref~1" 2>/dev/null || git hash-object -t tree /dev/null)
+            fi
           fi
         else
           base_ref="$base_input"
@@ -117,27 +141,24 @@ runs:
         fi
         files=${files//$'\r'/}
         count=0
+        changed_value=false
         if [[ -n "$files" ]]; then
           # Count non-empty lines
           count=$(printf "%s\n" "$files" | sed '/^$/d' | wc -l | tr -d ' ')
-          echo "changed=true" >> "$GITHUB_OUTPUT"
-          echo "count=$count" >> "$GITHUB_OUTPUT"
-          echo "files=$files" >> "$GITHUB_OUTPUT"
+          changed_value=true
         else
-          echo "changed=false" >> "$GITHUB_OUTPUT"
-          echo "count=0" >> "$GITHUB_OUTPUT"
-          echo "files=" >> "$GITHUB_OUTPUT"
+          changed_value=false
         fi
+        echo "count=$count" >> "$GITHUB_OUTPUT"
+        echo "changed=$changed_value" >> "$GITHUB_OUTPUT"
+        echo "files<<EOF" >> "$GITHUB_OUTPUT"
+        if [[ -n "$files" ]]; then printf '%s\n' "$files" >> "$GITHUB_OUTPUT"; fi
+        echo "EOF" >> "$GITHUB_OUTPUT"
         if [[ '${{ inputs.fail-if-changed }}' == 'true' && -n "$files" ]]; then
           echo "::error::Detected $count changed file(s)." >&2
           printf '%s\n' "$files" | sed 's/^/ - /'
           exit 1
         fi
-        echo "files<<EOF" >> "$GITHUB_OUTPUT"
-        if [[ -n "$files" ]]; then printf '%s\n' "$files" >> "$GITHUB_OUTPUT"; fi
-        echo "EOF" >> "$GITHUB_OUTPUT"
-        echo "count=$count" >> "$GITHUB_OUTPUT"
-        echo "changed=$changed" >> "$GITHUB_OUTPUT"
 
     - name: Summarize changes
       shell: bash
