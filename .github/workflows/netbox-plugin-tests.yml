@@ -145,3 +145,4 @@ jobs:
           django-settings-module: netbox.configuration
           test-args: ${{ inputs.plugin-name }}.tests --parallel
           coverage-report: true
+          coverage-reporter-token: ${{ steps.repo-token.outputs.token }}
