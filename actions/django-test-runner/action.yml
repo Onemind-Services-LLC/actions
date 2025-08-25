@@ -122,6 +122,7 @@ runs:
 
     - name: Generate coverage XML
       shell: bash
+      if: ${{ inputs.coverage-report == 'true' }}
       working-directory: ${{ inputs.working-directory }}
       run: coverage xml ${{ inputs.coverage-args }}
 
