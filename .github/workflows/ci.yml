@@ -16,5 +16,8 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v5
 
+      - name: Setup Python
+        uses: Onemind-Services-LLC/actions/actions/python-setup-install@master
+
       - name: Run yamllint
         uses: Onemind-Services-LLC/actions/actions/yamllint@master
