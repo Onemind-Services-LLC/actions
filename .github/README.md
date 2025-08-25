@@ -259,7 +259,7 @@ jobs:
 - File: `.github/workflows/js-quality-checks.yml`
 - Purpose: Run Prettier check, ESLint check, and Browserslist lock check in a single job.
 - Permissions: `contents: read`.
-- Inputs: `runs-on`, `node-version`, `working-directory`, `patterns`, `eslint-args`.
+- Inputs: `runs-on`, `node-version`, `working-directory`, `patterns`, `eslint-args`, `eslint-config`.
 - Usage:
   `uses: Onemind-Services-LLC/actions/.github/workflows/js-quality-checks.yml@master`
 
@@ -277,6 +277,7 @@ jobs:
       runs-on: ubuntu-22.04-sh
       node-version: '22.x'
       working-directory: '.'
+      # eslint-config: 'eslint.config.mjs'
       # patterns: '**/*.+(js|jsx|ts|tsx|json|css|scss)'
       # eslint-args: '.'
 ```

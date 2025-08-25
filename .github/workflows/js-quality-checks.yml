@@ -28,6 +28,11 @@ on:
         required: false
         default: '.'
         type: string
+      eslint-config:
+        description: Path to ESLint config file passed with --config
+        required: false
+        default: 'eslint.config.mjs'
+        type: string
       run-prettier:
         description: Run Prettier check
         required: false
@@ -99,6 +104,7 @@ jobs:
         with:
           node-version: ${{ inputs.node-version }}
           working-directory: ${{ inputs.working-directory }}
+          config: ${{ inputs.eslint-config }}
           eslint-args: ${{ inputs.eslint-args }}
 
       - name: Browserslist Lock Check
