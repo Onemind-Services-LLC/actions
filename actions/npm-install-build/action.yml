@@ -1,5 +1,7 @@
 name: NPM Install & Build
-description: Install dependencies and build a Node.js project using npm with caching and optional registry auth. Consider using Node Install & Build for npm/yarn support.
+description: >-
+  Install dependencies and build a Node.js project using npm with caching and
+  optional registry auth. Consider using Node Install & Build for npm/yarn support.
 
 inputs:
   node-version:
@@ -46,7 +48,8 @@ runs:
       shell: bash
       run: |
         echo "⚠️ npm-install-build is deprecated. Use node-install-build instead." >> "$GITHUB_STEP_SUMMARY"
-        echo "::warning::'Onemind-Services-LLC/actions/actions/npm-install-build' is deprecated. Use 'Onemind-Services-LLC/actions/actions/node-install-build' with 'package-manager'."
+        echo "::warning::'Onemind-Services-LLC/actions/actions/npm-install-build' is deprecated."
+        echo "::warning::Use 'Onemind-Services-LLC/actions/actions/node-install-build' with 'package-manager'."
 
     - name: Setup Node.js
       uses: actions/setup-node@v4

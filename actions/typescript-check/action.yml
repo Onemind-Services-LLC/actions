@@ -57,4 +57,3 @@ runs:
         fi
         echo "+ npx tsc ${args[*]}"
         npx tsc "${args[@]}"
-

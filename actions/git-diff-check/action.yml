@@ -37,20 +37,20 @@ inputs:
 
 outputs:
   changed:
-    description: 'true' if any files changed after filtering
-    value: ${{ steps.diff.outputs.changed }}
+    description: "\"true\" if any files changed after filtering"
+    value: '${{ steps.diff.outputs.changed }}'
   count:
     description: Number of changed files
-    value: ${{ steps.diff.outputs.count }}
+    value: '${{ steps.diff.outputs.count }}'
   files:
     description: Newline-delimited list of changed files
-    value: ${{ steps.diff.outputs.files }}
+    value: '${{ steps.diff.outputs.files }}'
   base:
     description: Resolved base commit/ref used for diff
-    value: ${{ steps.resolve.outputs.base }}
+    value: '${{ steps.resolve.outputs.base }}'
   head:
     description: Resolved head commit/ref used for diff
-    value: ${{ steps.resolve.outputs.head }}
+    value: '${{ steps.resolve.outputs.head }}'
 
 runs:
   using: composite
@@ -118,10 +118,20 @@ runs:
         files=${files//$'\r'/}
         count=0
         if [[ -n "$files" ]]; then
-          count=$(printf '%s\n' "$files" | sed '/^\s*$/d' | wc -l | tr -d ' ')
-          changed=true
+          # Count non-empty lines
+          count=$(printf "%s\n" "$files" | sed '/^$/d' | wc -l | tr -d ' ')
+          echo "changed=true" >> "$GITHUB_OUTPUT"
+          echo "count=$count" >> "$GITHUB_OUTPUT"
+          echo "files=$files" >> "$GITHUB_OUTPUT"
         else
-          changed=false
+          echo "changed=false" >> "$GITHUB_OUTPUT"
+          echo "count=0" >> "$GITHUB_OUTPUT"
+          echo "files=" >> "$GITHUB_OUTPUT"
+        fi
+        if [[ '${{ inputs.fail-if-changed }}' == 'true' && -n "$files" ]]; then
+          echo "::error::Detected $count changed file(s)." >&2
+          printf '%s\n' "$files" | sed 's/^/ - /'
+          exit 1
         fi
         echo "files<<EOF" >> "$GITHUB_OUTPUT"
         if [[ -n "$files" ]]; then printf '%s\n' "$files" >> "$GITHUB_OUTPUT"; fi

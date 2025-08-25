@@ -1,5 +1,8 @@
 name: Node Install & Build
-description: Install dependencies and build a Node.js project using npm, Yarn, pnpm, or npx (build only) with caching and optional registry auth.
+description: >-
+  Install dependencies and build a Node.js project using
+  npm, Yarn, pnpm, or npx (build only) with caching and
+  optional registry auth.
 
 inputs:
   package-manager:

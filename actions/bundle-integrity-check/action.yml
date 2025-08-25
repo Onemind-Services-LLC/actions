@@ -87,4 +87,3 @@ runs:
         diff-filter: ACMR
         compare-working-tree: 'true'
         fail-if-changed: 'true'
-

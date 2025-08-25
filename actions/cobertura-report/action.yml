@@ -69,4 +69,3 @@ runs:
         only_changed_files: ${{ inputs.only-changed-files }}
         report_name: ${{ inputs.report-name }}
         pull_request_number: ${{ inputs.pull-request-number }}
-
