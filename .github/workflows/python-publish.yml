@@ -1,0 +1,69 @@
+name: Python Package Publish
+
+on:
+  workflow_call:
+    inputs:
+      runs-on:
+        description: GitHub runner label
+        required: false
+        default: 'ubuntu-22.04-sh'
+        type: string
+      python-version:
+        description: Python version to use
+        required: false
+        default: '3.x'
+        type: string
+      working-directory:
+        description: Directory containing the Python package
+        required: false
+        default: '.'
+        type: string
+      build-command:
+        description: Command to build distributions (sdist/wheel)
+        required: false
+        default: 'python -m build'
+        type: string
+      skip-existing:
+        description: "If 'true', skip uploading files that already exist"
+        required: false
+        default: 'false'
+        type: string
+    secrets:
+      pypi-token:
+        description: PyPI API token (beginning with 'pypi-')
+        required: true
+
+permissions:
+  contents: read
+
+jobs:
+  publish:
+    name: Publish to Python Package Index (Token)
+    runs-on: ${{ inputs.runs-on }}
+    defaults:
+      run:
+        working-directory: ${{ inputs.working-directory }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v5
+
+      - name: Python setup and build deps
+        uses: Onemind-Services-LLC/actions/actions/python-setup-install@master
+        with:
+          python-version: ${{ inputs.python-version }}
+          working-directory: ${{ inputs.working-directory }}
+          upgrade-pip: 'true'
+          extra-install-commands: pip install build
+
+      - name: Build distributions
+        shell: bash
+        run: ${{ inputs.build-command }}
+
+      - name: Publish package to PyPI
+        uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+          user: __token__
+          password: ${{ secrets.pypi-token }}
+          packages-dir: ${{ inputs.working-directory }}/dist
+          skip-existing: ${{ inputs.skip-existing }}

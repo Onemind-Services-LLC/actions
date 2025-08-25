@@ -10,7 +10,7 @@ See also: [Actions Overview](../actions/README.md)
 
 - File: `.github/workflows/cypress-component-tests.yml`
 - Purpose: Run Cypress component tests across a browser matrix with optional private npm auth via a GitHub App token.
-- Permissions: `contents: read`.
+- Permissions: `contents: read`, `id-token: write`.
 - Inputs: `runs-on`, `browsers` (JSON array), `registry-url`, `registry-scope`, `working-directory`, `node-version`, `app-id`.
 - Secrets: `private-key` (GitHub App private key used to mint an installation token for npm auth).
 - Usage:
@@ -117,6 +117,40 @@ Notes:
 - Secrets: `docker-username`, `docker-password` (optional for authenticated push).
 - Usage:
   `uses: Onemind-Services-LLC/actions/.github/workflows/helm-charts-ci.yml@master`
+
+## Python Package Publish (Token)
+
+- File: `.github/workflows/python-publish.yml`
+- Purpose: Build distributions (sdist/wheel) and publish to PyPI using an API token.
+- Permissions: `contents: read`.
+- Inputs: `runs-on`, `python-version`, `working-directory`, `build-command`, `skip-existing`.
+- Secrets: `pypi-token` (required; project-scoped PyPI API token).
+- Behavior: Uses `user: __token__` with `password: ${{ secrets.pypi-token }}`.
+- Usage:
+  `uses: Onemind-Services-LLC/actions/.github/workflows/python-publish.yml@master`
+
+Example (tagged release):
+
+```yaml
+name: Release
+
+on:
+  release:
+    types: [published]
+
+permissions:
+  contents: read
+
+jobs:
+  publish:
+    uses: Onemind-Services-LLC/actions/.github/workflows/python-publish.yml@master
+    with:
+      python-version: '3.x'
+      working-directory: '.'
+      # skip-existing: 'true'
+    secrets:
+      pypi-token: ${{ secrets.PYPI_API_TOKEN }}
+```
 
 ## NetBox Plugin Tests
 
