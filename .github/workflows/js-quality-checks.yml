@@ -28,6 +28,26 @@ on:
         required: false
         default: '.'
         type: string
+      bundle-check:
+        description: Run a bundle integrity check (re-bundle and ensure no dist changes)
+        required: false
+        default: false
+        type: boolean
+      bundle-working-directory:
+        description: Directory to run bundler in (for bundle check)
+        required: false
+        default: '.'
+        type: string
+      bundle-dist-path:
+        description: Repo-relative dist path to check
+        required: false
+        default: ''
+        type: string
+      bundle-command:
+        description: Explicit bundle command (overrides defaults)
+        required: false
+        default: ''
+        type: string
       typescript-check:
         description: Run TypeScript type check step
         required: false
@@ -74,6 +94,15 @@ jobs:
         with:
           node-version: ${{ inputs.node-version }}
           working-directory: ${{ inputs.working-directory }}
+
+      - name: Bundle Integrity Check
+        if: ${{ inputs.bundle-check }}
+        uses: Onemind-Services-LLC/actions/actions/bundle-integrity-check@master
+        with:
+          node-version: ${{ inputs.node-version }}
+          working-directory: ${{ inputs.bundle-working-directory }}
+          dist-path: ${{ inputs.bundle-dist-path }}
+          bundle-command: ${{ inputs.bundle-command }}
 
       - name: TypeScript Type Check
         if: ${{ inputs.typescript-check }}

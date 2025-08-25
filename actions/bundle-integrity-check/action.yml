@@ -1,0 +1,90 @@
+name: Bundle Integrity Check
+description: Re-run your bundling step and fail if committed dist artifacts change (deterministic bundle check).
+
+inputs:
+  node-version:
+    description: Node.js version to use
+    required: false
+    default: '22.x'
+  working-directory:
+    description: Directory to run the bundler in
+    required: false
+    default: '.'
+  dist-path:
+    description: Path to bundled output to check (repo-relative). Defaults to <working-directory>/dist
+    required: false
+    default: ''
+  install:
+    description: Whether to install dependencies before bundling
+    required: false
+    default: 'true'
+  install-command:
+    description: Optional explicit install command
+    required: false
+    default: ''
+  bundle-command:
+    description: Optional explicit bundle command (overrides defaults)
+    required: false
+    default: ''
+
+runs:
+  using: composite
+  steps:
+    - name: Detect Package Manager
+      id: pm
+      uses: Onemind-Services-LLC/actions/actions/detect-package-manager@master
+      with:
+        working-directory: ${{ inputs.working-directory }}
+
+    - name: Setup Node
+      uses: Onemind-Services-LLC/actions/actions/node-install-build@master
+      with:
+        package-manager: ${{ steps.pm.outputs.package-manager }}
+        node-version: ${{ inputs.node-version }}
+        working-directory: ${{ inputs.working-directory }}
+        install: ${{ inputs.install }}
+        build: 'false'
+        install-command: ${{ inputs.install-command }}
+
+    - name: Resolve dist path
+      id: dist
+      shell: bash
+      run: |
+        set -euo pipefail
+        wd='${{ inputs.working-directory }}'
+        dp='${{ inputs.dist-path }}'
+        if [[ -z "$dp" ]]; then
+          dp="$wd/dist"
+        fi
+        # Normalize by removing leading ./
+        dp=${dp#./}
+        echo "path=$dp" >> "$GITHUB_OUTPUT"
+
+    - name: Bundle
+      shell: bash
+      working-directory: ${{ inputs.working-directory }}
+      run: |
+        set -euo pipefail
+        if [[ -n "${{ inputs.bundle-command }}" ]]; then
+          cmd='${{ inputs.bundle-command }}'
+        else
+          case '${{ steps.pm.outputs.package-manager }}' in
+            yarn) cmd='yarn bundle' ;;
+            pnpm) cmd='pnpm run bundle' ;;
+            npm) cmd='npm run bundle' ;;
+            npx) echo "::error::'npx' selected but bundle-command not provided"; exit 1 ;;
+          esac
+        fi
+        echo "+ $cmd"
+        eval "$cmd"
+
+    - name: Check dist changes
+      id: check
+      uses: Onemind-Services-LLC/actions/actions/git-diff-check@master
+      with:
+        working-directory: .
+        paths: ${{ steps.dist.outputs.path }}
+        diff-filter: ACMR
+        compare-working-tree: 'true'
+        fail-if-changed: 'true'
+
