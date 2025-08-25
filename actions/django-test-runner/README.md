@@ -36,7 +36,7 @@ Run Django checks, apply migrations, collect static files, and execute tests wit
 - Runs `collectstatic --noinput`.
 - Runs `check -v <verbosity>`.
 - Runs tests via `coverage run manage.py test` and generates `coverage.xml` via `coverage xml`.
-- Optionally posts a Cobertura report comment using `5monkeys/cobertura-action@master4` (pinned) when `coverage-report: 'true'`.
+- Optionally posts a Cobertura report comment using the `cobertura-report` composite action (pinned to 5monkeys) when `coverage-report: 'true'`.
 
 ## Examples
 

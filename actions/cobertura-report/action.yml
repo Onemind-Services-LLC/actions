@@ -1,0 +1,72 @@
+name: Cobertura Report
+description: Post a Cobertura coverage report comment on pull requests using 5monkeys/cobertura-action (pinned).
+
+inputs:
+  path:
+    description: Path or glob to coverage XML file
+    required: true
+    default: 'coverage.xml'
+  repo-token:
+    description: Token for reporter (typically GITHUB_TOKEN or a repo-scoped app token)
+    required: false
+    default: ''
+  skip-covered:
+    description: Skip files with 100% coverage
+    required: false
+    default: 'true'
+  minimum-coverage:
+    description: Minimum coverage percentage threshold
+    required: false
+    default: '80'
+  fail-below-threshold:
+    description: Fail when below minimum coverage
+    required: false
+    default: 'true'
+  show-line:
+    description: Show line coverage column
+    required: false
+    default: 'true'
+  show-branch:
+    description: Show branch coverage column
+    required: false
+    default: 'true'
+  show-class-names:
+    description: Show class names instead of file names
+    required: false
+    default: 'false'
+  show-missing:
+    description: Show missing lines per module
+    required: false
+    default: 'true'
+  only-changed-files:
+    description: Only show coverage for changed files on PRs
+    required: false
+    default: 'false'
+  report-name:
+    description: Unique name for the report/comment
+    required: false
+    default: ''
+  pull-request-number:
+    description: Pull request number when not using pull_request trigger
+    required: false
+    default: ''
+
+runs:
+  using: composite
+  steps:
+    - name: Cobertura Report
+      uses: 5monkeys/cobertura-action@ee5787cc56634acddedc51f21c7947985531e6eb # v14
+      with:
+        path: ${{ inputs.path }}
+        repo_token: ${{ inputs.repo-token }}
+        skip_covered: ${{ inputs.skip-covered }}
+        minimum_coverage: ${{ inputs.minimum-coverage }}
+        fail_below_threshold: ${{ inputs.fail-below-threshold }}
+        show_line: ${{ inputs.show-line }}
+        show_branch: ${{ inputs.show-branch }}
+        show_class_names: ${{ inputs.show-class-names }}
+        show_missing: ${{ inputs.show-missing }}
+        only_changed_files: ${{ inputs.only-changed-files }}
+        report_name: ${{ inputs.report-name }}
+        pull_request_number: ${{ inputs.pull-request-number }}
+

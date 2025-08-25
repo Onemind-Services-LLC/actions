@@ -37,7 +37,7 @@ Run mypy type checks and pytest with coverage for Python libraries. Includes opt
 - Optionally installs your package in editable mode when `setup.py` or `pyproject.toml` exists.
 - Runs mypy (auto-detects config in `mypy.ini`, `setup.cfg`, or `pyproject.toml`; otherwise uses `mypy-targets`).
 - Runs tests via `coverage run -m pytest` and generates `coverage.xml`.
-- Optionally posts a Cobertura report comment using a pinned action when `coverage-report: 'true'`.
+- Optionally posts a Cobertura report comment using the `cobertura-report` composite action (pinned to 5monkeys) when `coverage-report: 'true'`.
 
 ## Examples
 
@@ -89,4 +89,3 @@ jobs:
 - This action does not run `actions/checkout`; add it in your workflow before using the action.
 - If you already install dependencies elsewhere, you can still use this action; installs from `requirements*.txt` are conditional on file presence, and editable install is optional.
 - To skip mypy, set `mypy: 'false'`.
-

@@ -162,22 +162,21 @@ runs:
     - name: Coverage Reporter
       if: ${{ inputs.coverage-report == 'true' }}
       continue-on-error: ${{ inputs.coverage-continue-on-error == 'true' }}
-      uses: 5monkeys/cobertura-action@ee5787cc56634acddedc51f21c7947985531e6eb # v14
+      uses: Onemind-Services-LLC/actions/actions/cobertura-report@master
       with:
-        repo_token: ${{ inputs.coverage-reporter-token }}
+        repo-token: ${{ inputs.coverage-reporter-token }}
         path: ${{ inputs.coverage-file }}
-        skip_covered: ${{ inputs.coverage-skip-covered }}
-        minimum_coverage: ${{ inputs.coverage-minimum }}
-        fail_below_threshold: ${{ inputs.coverage-fail-below-threshold }}
-        show_line: ${{ inputs.coverage-show-line }}
-        show_branch: ${{ inputs.coverage-show-branch }}
-        show_class_names: ${{ inputs.coverage-show-class-names }}
-        show_missing: ${{ inputs.coverage-show-missing }}
-        only_changed_files: ${{ inputs.coverage-only-changed-files }}
-        report_name: ${{ inputs.coverage-report-name }}
-        pull_request_number: ${{ inputs.coverage-pull-request-number }}
+        skip-covered: ${{ inputs.coverage-skip-covered }}
+        minimum-coverage: ${{ inputs.coverage-minimum }}
+        fail-below-threshold: ${{ inputs.coverage-fail-below-threshold }}
+        show-line: ${{ inputs.coverage-show-line }}
+        show-branch: ${{ inputs.coverage-show-branch }}
+        show-class-names: ${{ inputs.coverage-show-class-names }}
+        show-missing: ${{ inputs.coverage-show-missing }}
+        only-changed-files: ${{ inputs.coverage-only-changed-files }}
+        report-name: ${{ inputs.coverage-report-name }}
+        pull-request-number: ${{ inputs.coverage-pull-request-number }}
 
 branding:
   icon: check-circle
   color: blue
-
