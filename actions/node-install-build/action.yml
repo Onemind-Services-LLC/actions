@@ -59,6 +59,16 @@ runs:
           exit 1
         fi
 
+    # For Yarn/pnpm, we need a Node runtime available before enabling Corepack,
+    # and Corepack must be enabled before we call setup-node with cache: yarn/pnpm
+    # (setup-node queries the package manager to resolve cache paths).
+    - name: Setup Node.js (bootstrap for Yarn/pnpm)
+      if: ${{ inputs.package-manager == 'yarn' || inputs.package-manager == 'pnpm' }}
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ inputs.node-version }}
+        # No cache in the bootstrap step
+
     - name: Setup Node.js (npm)
       if: ${{ inputs.package-manager == 'npm' }}
       uses: actions/setup-node@v4
@@ -69,6 +79,11 @@ runs:
         registry-url: ${{ inputs.registry-url }}
         scope: ${{ inputs.registry-scope }}
         always-auth: ${{ inputs.registry-url != '' }}
+
+    - name: Enable Corepack (Yarn/pnpm)
+      if: ${{ inputs.package-manager == 'yarn' || inputs.package-manager == 'pnpm' }}
+      shell: bash
+      run: corepack enable
 
     - name: Setup Node.js (Yarn)
       if: ${{ inputs.package-manager == 'yarn' }}
@@ -91,11 +106,6 @@ runs:
         registry-url: ${{ inputs.registry-url }}
         scope: ${{ inputs.registry-scope }}
         always-auth: ${{ inputs.registry-url != '' }}
-
-    - name: Enable Corepack (Yarn/pnpm)
-      if: ${{ inputs.package-manager == 'yarn' || inputs.package-manager == 'pnpm' }}
-      shell: bash
-      run: corepack enable
 
     - name: Install Dependencies
       if: ${{ inputs.install == 'true' }}
