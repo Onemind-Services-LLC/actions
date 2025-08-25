@@ -21,6 +21,7 @@ Reusable composite GitHub Actions maintained in this repository. Each action inc
 - ESLint Check: Run ESLint and fail on any issue. [Docs](eslint-check/README.md)
 - Browserslist Lock Check: Ensure updating Browserslist DB does not modify lockfiles. [Docs](browserslist-lock-check/README.md)
 - yq - Portable YAML Processor: Run pinned `mikefarah/yq` in Docker to create, read, update, delete, merge, and validate YAML. [Docs](yq/README.md)
+- TypeScript Type Check: Run TypeScript compiler in type-check mode (`--noEmit`) with auto PM detection. [Docs](typescript-check/README.md)
 
 ## Versioning
 

@@ -1,0 +1,60 @@
+name: TypeScript Type Check
+description: Run TypeScript compiler in type-check mode (no emit), with auto package-manager detection and optional install.
+
+inputs:
+  node-version:
+    description: Node.js version to use
+    required: false
+    default: '22.x'
+  working-directory:
+    description: Directory to run TypeScript in
+    required: false
+    default: '.'
+  install:
+    description: Whether to install dependencies before checking
+    required: false
+    default: 'true'
+  install-command:
+    description: Optional explicit install command to run
+    required: false
+    default: ''
+  tsconfig:
+    description: Path to tsconfig file (optional)
+    required: false
+    default: ''
+  tsc-args:
+    description: Additional args for tsc (default adds --noEmit)
+    required: false
+    default: '--noEmit'
+
+runs:
+  using: composite
+  steps:
+    - name: Detect Package Manager
+      id: pm
+      uses: Onemind-Services-LLC/actions/actions/detect-package-manager@master
+      with:
+        working-directory: ${{ inputs.working-directory }}
+
+    - name: Setup Node
+      uses: Onemind-Services-LLC/actions/actions/node-install-build@master
+      with:
+        package-manager: ${{ steps.pm.outputs.package-manager }}
+        node-version: ${{ inputs.node-version }}
+        working-directory: ${{ inputs.working-directory }}
+        install: ${{ inputs.install }}
+        build: 'false'
+        install-command: ${{ inputs.install-command }}
+
+    - name: TypeScript Type Check
+      shell: bash
+      working-directory: ${{ inputs.working-directory }}
+      run: |
+        set -euo pipefail
+        args=( ${{ inputs.tsc-args }} )
+        if [[ -n "${{ inputs.tsconfig }}" ]]; then
+          args+=( -p "${{ inputs.tsconfig }}" )
+        fi
+        echo "+ npx tsc ${args[*]}"
+        npx tsc "${args[@]}"
+

@@ -28,6 +28,21 @@ on:
         required: false
         default: '.'
         type: string
+      typescript-check:
+        description: Run TypeScript type check step
+        required: false
+        default: false
+        type: boolean
+      tsconfig:
+        description: Path to tsconfig file for tsc
+        required: false
+        default: ''
+        type: string
+      tsc-args:
+        description: Additional arguments to pass to tsc (default '--noEmit')
+        required: false
+        default: '--noEmit'
+        type: string
 
 permissions:
   contents: read
@@ -59,3 +74,13 @@ jobs:
         with:
           node-version: ${{ inputs.node-version }}
           working-directory: ${{ inputs.working-directory }}
+
+      - name: TypeScript Type Check
+        if: ${{ inputs.typescript-check }}
+        uses: Onemind-Services-LLC/actions/actions/typescript-check@master
+        with:
+          node-version: ${{ inputs.node-version }}
+          working-directory: ${{ inputs.working-directory }}
+          install: 'true'
+          tsconfig: ${{ inputs.tsconfig }}
+          tsc-args: ${{ inputs.tsc-args }}
