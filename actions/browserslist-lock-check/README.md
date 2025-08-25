@@ -1,6 +1,6 @@
 # Browserslist Lock Check
 
-Run `update-browserslist-db` and fail if it modifies `package-lock.json` or `yarn.lock`.
+Run `update-browserslist-db` and fail if it modifies `package-lock.json`, `yarn.lock`, or `pnpm-lock.yaml`.
 
 ## Inputs
 
@@ -21,3 +21,6 @@ steps:
       update-command: "npx --yes update-browserslist-db@latest"
 ```
 
+Notes:
+- Automatically detects npm/yarn/pnpm via lockfiles and sets up Node accordingly.
+- Uses the `git-diff-check` composite action under the hood. It creates a temporary commit for lockfile changes to compute a clear diff against the previous HEAD, and fails the job if any lockfile changed.

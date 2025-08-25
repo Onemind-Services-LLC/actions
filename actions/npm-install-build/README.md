@@ -2,6 +2,8 @@
 
 Installs dependencies and builds a Node.js project using npm with caching and optional private registry authentication.
 
+Note: For a unified interface that supports both npm and Yarn, see `actions/node-install-build`.
+
 ## Inputs
 
 - node-version: Node.js version (default: `22.x`).

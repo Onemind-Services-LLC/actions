@@ -210,64 +210,12 @@ jobs:
 - Usage:
 `uses: Onemind-Services-LLC/actions/.github/workflows/pre-commit.yml@master`
 
-## Prettier Check
+## ESLint/Prettier
 
-- File: `.github/workflows/prettier-check.yml`
-- Purpose: Run Prettier in check mode with caching over a configurable glob.
-- Permissions: `contents: read`.
-- Inputs: `runs-on`, `node-version`, `working-directory`, `patterns`.
-- Usage:
-  `uses: Onemind-Services-LLC/actions/.github/workflows/prettier-check.yml@master`
-
-Example usage:
-
-```yaml
-permissions:
-  contents: read
-
-jobs:
-  prettier:
-    name: Prettier Check
-    uses: Onemind-Services-LLC/actions/.github/workflows/prettier-check.yml@master
-    with:
-      runs-on: ubuntu-22.04-sh
-      node-version: '22'
-      # working-directory: '.'
-      # Override patterns if needed; default checks JS/TS/JSON/CSS/SCSS
-      # patterns: '**/*.+(js|jsx|ts|tsx|json|css|scss)'
-```
-
-## ESLint Check
-
-- File: `.github/workflows/eslint-check.yml`
-- Purpose: Run ESLint and fail on any issues (warnings are failures via `--max-warnings=0`).
-- Permissions: `contents: read`.
-- Inputs: `runs-on`, `node-version`, `working-directory`, `eslint-args`.
-- Usage:
-  `uses: Onemind-Services-LLC/actions/.github/workflows/eslint-check.yml@master`
-
-Example usage:
-
-```yaml
-permissions:
-  contents: read
-
-jobs:
-  eslint:
-    name: ESLint Check
-    uses: Onemind-Services-LLC/actions/.github/workflows/eslint-check.yml@master
-    with:
-      runs-on: ubuntu-22.04-sh
-      node-version: '22.x'
-      # working-directory: '.'
-      # Additional arguments or targets for ESLint
-      eslint-args: '.'
-```
-
-Notes:
-
-- The workflow installs dependencies using `actions/npm-install-build` and runs `npx eslint --max-warnings=0 ...`.
-- Ensure ESLint is declared in your project's `devDependencies` for reproducible results (npx prefers local installation).
+- Prefer the composite actions for flexibility:
+  - ESLint: `Onemind-Services-LLC/actions/actions/eslint-check@master`
+  - Prettier: `Onemind-Services-LLC/actions/actions/prettier-check@master`
+- Both composite actions auto-detect npm/yarn/pnpm and leverage the unified Node install/build action.
 
 ## CodeQL Analysis
 
@@ -303,29 +251,8 @@ jobs:
 
 ## Browserslist Lock Check
 
-- File: `.github/workflows/browserslist-lock-check.yml`
-- Purpose: Run `update-browserslist-db` and fail if it modifies `package-lock.json` or `yarn.lock`.
-- Permissions: `contents: read`.
-- Inputs: `runs-on`, `node-version`, `working-directory`, `update-command`.
-- Usage:
-  `uses: Onemind-Services-LLC/actions/.github/workflows/browserslist-lock-check.yml@master`
-
-Example usage:
-
-```yaml
-permissions:
-  contents: read
-
-jobs:
-  browserslist:
-    name: Browserslist Lock Check
-    uses: Onemind-Services-LLC/actions/.github/workflows/browserslist-lock-check.yml@master
-    with:
-      runs-on: ubuntu-22.04-sh
-      node-version: '20'
-      # working-directory: '.'
-      # update-command: "npx --yes update-browserslist-db@latest"
-```
+- Prefer the composite action: `Onemind-Services-LLC/actions/actions/browserslist-lock-check@master`.
+- Purpose: Run `update-browserslist-db` and fail if it modifies `package-lock.json`, `yarn.lock`, or `pnpm-lock.yaml`.
 
 ## JavaScript Quality Checks
 

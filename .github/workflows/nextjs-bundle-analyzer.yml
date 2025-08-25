@@ -29,14 +29,14 @@ on:
         default: '.'
         type: string
       install-command:
-        description: Install command to run
+        description: Install command to run (optional, overrides defaults)
         required: false
-        default: 'npm ci --no-audit'
+        default: ''
         type: string
       build-command:
-        description: Build command to run
+        description: Build command to run (optional, overrides defaults)
         required: false
-        default: 'npm run build'
+        default: ''
         type: string
       extra-env:
         description: Newline-delimited KEY=VALUE pairs exported to GITHUB_ENV
@@ -82,6 +82,12 @@ jobs:
         with:
           ref: ${{ github.event.pull_request.head.sha }}
 
+      - name: Detect Package Manager
+        id: pm
+        uses: Onemind-Services-LLC/actions/actions/detect-package-manager@master
+        with:
+          working-directory: ${{ inputs.working-directory }}
+
       - name: Apply extra environment variables
         if: inputs.extra-env != ''
         run: |
@@ -89,9 +95,10 @@ jobs:
         env:
           INPUT: ${{ inputs.extra-env }}
 
-      - name: Install & Build (npm)
-        uses: Onemind-Services-LLC/actions/actions/npm-install-build@master
+      - name: Install & Build
+        uses: Onemind-Services-LLC/actions/actions/node-install-build@master
         with:
+          package-manager: ${{ steps.pm.outputs.package-manager }}
           node-version: ${{ inputs.node-version }}
           working-directory: ${{ inputs.working-directory }}
           install-command: ${{ inputs.install-command }}

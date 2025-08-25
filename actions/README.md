@@ -4,6 +4,9 @@ Reusable composite GitHub Actions maintained in this repository. Each action inc
 
 ## Available Actions
 
+- Node Install & Build: Install dependencies and build a Node.js project using npm, Yarn, pnpm, or npx (build only) with caching and optional private registry auth. [Docs](node-install-build/README.md)
+- Detect Package Manager: Detect npm/yarn/pnpm from lockfiles with a fallback output. [Docs](detect-package-manager/README.md)
+- Git Diff Check: Compute changed files between refs using git, with filtering and optional failure. [Docs](git-diff-check/README.md)
 - NPM Install & Build: Install dependencies and build a Node.js project with npm caching and optional private registry auth. [Docs](npm-install-build/README.md)
 - Docker Build, Push, and Sign: Build with Docker Buildx, optionally push, and keyless‑sign Docker images. [Docs](docker-build-push/README.md)
 - Cosign Sign: Keyless signing for Docker images or Helm charts using Sigstore Cosign. [Docs](cosign-sign/README.md)
