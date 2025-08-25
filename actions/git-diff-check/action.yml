@@ -1,0 +1,154 @@
+name: Git Diff Check
+description: Compute changed files between a base and HEAD using git, with optional path filtering and failure on changes.
+
+inputs:
+  working-directory:
+    description: Directory to run git commands in
+    required: false
+    default: '.'
+  base-ref:
+    description: Base ref/commit to compare against (defaults to PR base merge-base or HEAD~1)
+    required: false
+    default: ''
+  head-ref:
+    description: Head ref/commit to compare (defaults to HEAD)
+    required: false
+    default: ''
+  fetch-depth:
+    description: Depth to fetch from origin when discovering base (0 = full)
+    required: false
+    default: '50'
+  diff-filter:
+    description: git --diff-filter (e.g., ACMR; default includes added/copied/modified/renamed)
+    required: false
+    default: 'ACMR'
+  paths:
+    description: Newline-delimited list of pathspecs to filter (optional)
+    required: false
+    default: ''
+  fail-if-changed:
+    description: Fail the step if any files changed
+    required: false
+    default: 'false'
+  compare-working-tree:
+    description: If 'true', compare working tree changes against HEAD (no commits needed)
+    required: false
+    default: 'false'
+
+outputs:
+  changed:
+    description: 'true' if any files changed after filtering
+    value: ${{ steps.diff.outputs.changed }}
+  count:
+    description: Number of changed files
+    value: ${{ steps.diff.outputs.count }}
+  files:
+    description: Newline-delimited list of changed files
+    value: ${{ steps.diff.outputs.files }}
+  base:
+    description: Resolved base commit/ref used for diff
+    value: ${{ steps.resolve.outputs.base }}
+  head:
+    description: Resolved head commit/ref used for diff
+    value: ${{ steps.resolve.outputs.head }}
+
+runs:
+  using: composite
+  steps:
+    - name: Resolve base/head
+      id: resolve
+      shell: bash
+      working-directory: ${{ inputs.working-directory }}
+      run: |
+        set -euo pipefail
+        base_input='${{ inputs.base-ref }}'
+        head_input='${{ inputs.head-ref }}'
+        head_ref=${head_input:-HEAD}
+        # Ensure we have remote refs for PR base if needed
+        if [[ -z "$base_input" ]]; then
+          if [[ "${GITHUB_EVENT_NAME:-}" == "pull_request" || "${GITHUB_EVENT_NAME:-}" == "pull_request_target" ]]; then
+            base_branch=${GITHUB_BASE_REF:-}
+            if [[ -n "$base_branch" ]]; then
+              depth='${{ inputs.fetch-depth }}'
+              git fetch --no-tags --prune --depth="$depth" origin "+refs/heads/*:refs/remotes/origin/*"
+              # Use merge-base against the base branch
+              mb=$(git merge-base "$head_ref" "origin/$base_branch")
+              base_ref="$mb"
+            else
+              base_ref=$(git rev-parse "$head_ref~1")
+            fi
+          else
+            base_ref=$(git rev-parse "$head_ref~1")
+          fi
+        else
+          base_ref="$base_input"
+        fi
+        echo "base=$base_ref" >> "$GITHUB_OUTPUT"
+        echo "head=$head_ref" >> "$GITHUB_OUTPUT"
+
+    - name: Compute diff
+      id: diff
+      shell: bash
+      working-directory: ${{ inputs.working-directory }}
+      env:
+        BASE: ${{ steps.resolve.outputs.base }}
+        HEAD: ${{ steps.resolve.outputs.head }}
+      run: |
+        set -euo pipefail
+        df='${{ inputs.diff-filter }}'
+        pathspecs=()
+        while IFS= read -r line; do
+          [[ -n "$line" ]] && pathspecs+=("$line")
+        done <<< "${{ inputs.paths }}"
+        if [[ '${{ inputs.compare-working-tree }}' == 'true' ]]; then
+          # Diff working tree (includes staged and unstaged) against HEAD
+          if [[ ${#pathspecs[@]} -gt 0 ]]; then
+            files=$(git diff --name-only --diff-filter="$df" HEAD -- "${pathspecs[@]}")
+          else
+            files=$(git diff --name-only --diff-filter="$df" HEAD)
+          fi
+        else
+          # Diff between commits/refs
+          if [[ ${#pathspecs[@]} -gt 0 ]]; then
+            files=$(git diff --name-only --diff-filter="$df" "$BASE...$HEAD" -- "${pathspecs[@]}")
+          else
+            files=$(git diff --name-only --diff-filter="$df" "$BASE...$HEAD")
+          fi
+        fi
+        files=${files//$'\r'/}
+        count=0
+        if [[ -n "$files" ]]; then
+          count=$(printf '%s\n' "$files" | sed '/^\s*$/d' | wc -l | tr -d ' ')
+          changed=true
+        else
+          changed=false
+        fi
+        echo "files<<EOF" >> "$GITHUB_OUTPUT"
+        if [[ -n "$files" ]]; then printf '%s\n' "$files" >> "$GITHUB_OUTPUT"; fi
+        echo "EOF" >> "$GITHUB_OUTPUT"
+        echo "count=$count" >> "$GITHUB_OUTPUT"
+        echo "changed=$changed" >> "$GITHUB_OUTPUT"
+
+    - name: Summarize changes
+      shell: bash
+      env:
+        CHANGED: ${{ steps.diff.outputs.changed }}
+        COUNT: ${{ steps.diff.outputs.count }}
+        FILES: ${{ steps.diff.outputs.files }}
+      run: |
+        {
+          echo "### Git Diff Check"
+          echo "- Changed: $CHANGED"
+          echo "- Count: $COUNT"
+          if [[ "$CHANGED" == "true" ]]; then
+            echo "- Files:"
+            printf '  - %s\n' $FILES
+          fi
+        } >> "$GITHUB_STEP_SUMMARY"
+
+    - name: Fail on changes
+      if: ${{ inputs.fail-if-changed == 'true' && steps.diff.outputs.changed == 'true' }}
+      shell: bash
+      run: |
+        echo "::error::Detected ${{ steps.diff.outputs.count }} changed file(s)"
+        exit 1
