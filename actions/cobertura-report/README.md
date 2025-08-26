@@ -11,7 +11,7 @@ Generates a Markdown code coverage summary from Cobertura XML using the pinned `
 - show-branch: Show Branch Rate metrics when `true` (maps to `hide_branch_rate: false`).
 - report-name: Unique name for the report/comment; used as the sticky comment header (default: `Code Coverage Summary`).
 - pull-request-number: Use when not on a `pull_request` trigger (default: empty).
-- github-token: Token used to create/update the PR comment. If not provided, the sticky comment action uses its own default token.
+- github-token: Token used to create/update the PR comment. Defaults to the workflow's `${{ github.token }}` when not provided.
 
 ## Usage
 
@@ -36,5 +36,5 @@ steps:
 Notes:
 - Requires job permissions `pull-requests: write` to post PR comments.
 - Uses `only_update: true` so it only updates an existing sticky comment; it will not create a new one if none exists.
-- Provide `github-token` if commenting across repos or using a GitHub App token; otherwise the sticky comment action will use its own default token.
+- Provide `github-token` if commenting across repos or using a GitHub App token; otherwise it falls back to `${{ github.token }}`.
 - This is a thin wrapper that keeps the prior interface but now uses `irongut/CodeCoverageSummary` for generation and `marocchino/sticky-pull-request-comment` for commenting.
