@@ -177,4 +177,3 @@ jobs:
           coverage-report: true
           coverage-reporter-token: ${{ steps.repo-token.outputs.token }}
           coverage-minimum: '10' # Currently, not all plugins have coverage
-          coverage-pull-request-number: ${{ github.event.pull_request.number || '' }}
