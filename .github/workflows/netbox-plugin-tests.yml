@@ -174,4 +174,5 @@ jobs:
           coverage-report: true
           coverage-github-token: ${{ steps.repo-token.outputs.token }}
           coverage-pull-request-number: ${{ github.event.pull_request.number || '' }}
+          coverage-source: ${{ inputs.plugin-name }}
           verbosity: '3'
