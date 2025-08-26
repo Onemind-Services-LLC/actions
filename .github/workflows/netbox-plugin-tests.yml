@@ -12,7 +12,7 @@ on:
         required: true
         type: string
       plugin-configuration:
-        description: 'The configuration for the NetBox plugin, eg: {"netbox_secrets": {"enabled": true, "config_option": "value"}}'
+        description: 'Inner plugin config JSON (e.g. {"github_token":"..."}).'
         required: false
         type: string
         default: '{}'
@@ -134,10 +134,36 @@ jobs:
             "${{ env.NETBOX_WORKING_DIRECTORY }}/netbox/netbox/configuration.py"
 
       - name: Add plugin to NetBox configuration
+        env:
+          CONF_PATH: ${{ env.NETBOX_WORKING_DIRECTORY }}/netbox/netbox/configuration.py
+          PLUGIN_NAME: ${{ inputs.plugin-name }}
+          PLUGIN_CONFIG: ${{ inputs.plugin-configuration }}
         run: |
-          echo "PLUGINS = ['${{ inputs.plugin-name }}']" >> ${{ env.NETBOX_WORKING_DIRECTORY }}/netbox/netbox/configuration.py
-          echo "PLUGINS_CONFIG = ${{ inputs.plugin-configuration }}" >> ${{ env.NETBOX_WORKING_DIRECTORY }}/netbox/netbox/configuration.py
-          cat ${{ env.NETBOX_WORKING_DIRECTORY }}/netbox/netbox/configuration.py
+          python - << 'PY'
+          import json, os, sys
+
+          conf_path = os.environ["CONF_PATH"]
+          plugin_name = os.environ["PLUGIN_NAME"]
+          raw = os.environ.get("PLUGIN_CONFIG", "{}")
+
+          # Parse user-supplied JSON; fail fast on invalid JSON
+          try:
+              parsed = json.loads(raw) if raw.strip() else {}
+          except json.JSONDecodeError as e:
+              print(f"Invalid plugin-configuration JSON: {e}", file=sys.stderr)
+              sys.exit(1)
+
+          # Accept either full mapping {plugin_name: {...}} or inner config {...}
+          if isinstance(parsed, dict) and plugin_name in parsed:
+              config = parsed
+          else:
+              config = {plugin_name: parsed}
+
+          # Write valid Python literals (not JSON) to configuration.py
+          with open(conf_path, "a", encoding="utf-8") as f:
+              f.write(f"PLUGINS = ['{plugin_name}']\n")
+              f.write("PLUGINS_CONFIG = " + repr(config) + "\n")
+          PY
 
       - name: Run Tests
         uses: Onemind-Services-LLC/actions/actions/django-test-runner@master

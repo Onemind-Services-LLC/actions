@@ -33,7 +33,7 @@ This document outlines how to work in this monorepo of reusable GitHub Actions a
 ## Testing Guidelines
 
 - This repo has no unit tests; validate by running the reusable workflows or consuming the composite actions in a sandbox repo.
-- For `netbox-plugin-tests.yml`, the workflow provides a baseline NetBox test configuration; pass plugin settings via the `plugin-configuration` input. Ensure your plugin supports the selected NetBox version and works with Redis/Postgres services.
+- For `netbox-plugin-tests.yml`, the workflow provides a baseline NetBox test configuration; pass plugin settings via the `plugin-configuration` input as an inner plugin config JSON string only (e.g., `'{"github_token":"ghp_xxx"}'`). The workflow wraps this under the plugin name and writes a valid Python `PLUGINS_CONFIG = {'<plugin-name>': {...}}` preserving quotes. Ensure your plugin supports the selected NetBox version and works with Redis/Postgres services.
 - Use matrix or sample invocations in a test repo before changing defaults.
 - Verify documentation examples by copy-pasting into a scratch workflow.
 

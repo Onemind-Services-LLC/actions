@@ -168,7 +168,11 @@ Notes:
   - `actions/python-setup-install@master` to set up Python and install deps for NetBox and the plugin.
   - `actions/django-test-runner@master` to run checks, migrations, collectstatic, and tests.
 - NetBox runs with `DJANGO_SETTINGS_MODULE=netbox.configuration` and a provided test configuration copied from `assets/netbox-plugin-tests/configuration.py`.
-- Pass plugin settings via the `plugin-configuration` input to populate `PLUGINS_CONFIG`.
+- Pass plugin settings via the `plugin-configuration` input as an inner config JSON string (only):
+  - Example: `'{"github_token":"ghp_xxx"}'`
+  - The workflow wraps this under your plugin name and writes a valid Python literal:
+    `PLUGINS_CONFIG = {'<plugin-name>': {...}}` without stripping quotes.
+  - Tip: In YAML, wrap the JSON string in single quotes and keep inner quotes as double quotes.
 - Backing services use Redis (`redis:latest`) and Postgres (`postgres:17-alpine`) via our registry mirror.
 
 Example usage:
@@ -183,12 +187,15 @@ jobs:
     with:
       app-id: ${{ vars.APP_ID }}
       plugin-name: my_netbox_plugin
-      plugin-configuration: '{"my_netbox_plugin": {"enabled": true}}'
+      plugin-configuration: '{"enabled": true}'
       netbox-version: v4.3.6
       python-version: '3.12'
       runs-on: ubuntu-22.04-sh
     secrets:
       private-key: ${{ secrets.APP_PRIVATE_KEY }}
+
+Security:
+- The workflow avoids printing `PLUGINS_CONFIG` to logs to prevent secret leakage.
 ```
 
 ## Next.js Bundle Analysis
