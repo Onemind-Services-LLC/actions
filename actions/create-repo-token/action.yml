@@ -4,10 +4,15 @@ description: Create a GitHub App installation token scoped to the current reposi
 inputs:
   app-id:
     description: GitHub App ID used to create the installation token.
-    required: true
+    required: false
   private-key:
     description: Private key (PEM) for the GitHub App.
-    required: true
+    required: false
+  github-token:
+    description: >-
+      Optional: If provided, skip creation and return this token.
+      Useful when a caller workflow already has a suitable token.
+    required: false
   owner:
     description: >-
       Owner of the installation. If omitted and `repositories` is provided,
@@ -26,7 +31,7 @@ inputs:
 outputs:
   token:
     description: The repository-scoped GitHub App installation token.
-    value: ${{ steps.app_token.outputs.token }}
+    value: ${{ steps.emit_token.outputs.token }}
 
 runs:
   using: composite
@@ -68,6 +73,7 @@ runs:
 
     - name: Create GitHub App token
       id: app_token
+      if: ${{ inputs.github-token == '' }}
       uses: actions/create-github-app-token@v2
       with:
         app-id: ${{ inputs.app-id }}
@@ -75,3 +81,17 @@ runs:
         owner: ${{ steps.resolve.outputs.owner }}
         repositories: ${{ steps.resolve.outputs.repositories }}
         skip-token-revoke: ${{ inputs.skip-token-revoke }}
+
+    - name: Emit selected token
+      id: emit_token
+      shell: bash
+      env:
+        PASSED_TOKEN: ${{ inputs.github-token }}
+        APP_TOKEN: ${{ steps.app_token.outputs.token }}
+      run: |
+        token_to_use="${PASSED_TOKEN:-$APP_TOKEN}"
+        if [[ -z "${token_to_use}" ]]; then
+          echo "No token available: either provide 'github-token' or ensure app token creation is enabled." >&2
+          exit 1
+        fi
+        echo "token=${token_to_use}" >> "$GITHUB_OUTPUT"
