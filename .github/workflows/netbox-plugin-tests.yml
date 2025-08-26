@@ -174,3 +174,4 @@ jobs:
           test-args: ${{ inputs.plugin-name }}.tests --parallel
           coverage-report: true
           coverage-reporter-token: ${{ steps.repo-token.outputs.token }}
+          coverage-minimum: '10' # Currently, not all plugins have coverage
