@@ -1,21 +1,17 @@
-# Cobertura Report (Composite Action)
+# Code Coverage Summary (Composite Action)
 
-Posts a Cobertura coverage report comment on pull requests using the pinned `5monkeys/cobertura-action`.
+Generates a Markdown code coverage summary from Cobertura XML using the pinned `irongut/CodeCoverageSummary` action, and posts a sticky pull request comment via the pinned `marocchino/sticky-pull-request-comment` action.
 
 ## Inputs
 
 - path: Path/glob to coverage XML (default: `coverage.xml`).
-- repo-token: Token for reporter (optional; often `${{ secrets.GITHUB_TOKEN }}` or an app token).
-- skip-covered: Skip files with 100% coverage (default: `true`).
+- working-directory: Optional directory to resolve the `path` from (default: `.`; when `.` the `path` is used as-is).
 - minimum-coverage: Minimum coverage percentage threshold (default: `80`).
-- fail-below-threshold: Fail when below minimum coverage (default: `true`).
-- show-line: Show line coverage column (default: `true`).
-- show-branch: Show branch coverage column (default: `true`).
-- show-class-names: Show class names (default: `false`).
-- show-missing: Show missing lines (default: `true`).
-- only-changed-files: Only show changed files (default: `false`).
-- report-name: Unique name for the report/comment (default: empty).
+- fail-below-threshold: Fail when below minimum coverage using `thresholds` lower bound (default: `true`).
+- show-branch: Show Branch Rate metrics when `true` (maps to `hide_branch_rate: false`).
+- report-name: Unique name for the report/comment; used as the sticky comment header (default: `Code Coverage Summary`).
 - pull-request-number: Use when not on a `pull_request` trigger (default: empty).
+- github-token: Token used to create/update the PR comment. If not provided, the sticky comment action uses its own default token.
 
 ## Usage
 
@@ -27,14 +23,18 @@ steps:
       coverage run -m pytest
       coverage xml -o coverage.xml
 
-  - name: Cobertura Report
+  - name: Code Coverage Summary
     uses: Onemind-Services-LLC/actions/actions/cobertura-report@master
     with:
       path: 'coverage.xml'
-      repo-token: ${{ secrets.GITHUB_TOKEN }}
       minimum-coverage: '85'
       fail-below-threshold: 'true'
+      # Optional: customize sticky comment header
+      report-name: 'My Coverage Summary'
 ```
 
 Notes:
-- This is a thin wrapper that keeps a stable interface and pin for `5monkeys/cobertura-action`.
+- Requires job permissions `pull-requests: write` to post PR comments.
+- Uses `only_update: true` so it only updates an existing sticky comment; it will not create a new one if none exists.
+- Provide `github-token` if commenting across repos or using a GitHub App token; otherwise the sticky comment action will use its own default token.
+- This is a thin wrapper that keeps the prior interface but now uses `irongut/CodeCoverageSummary` for generation and `marocchino/sticky-pull-request-comment` for commenting.

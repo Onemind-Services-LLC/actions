@@ -14,17 +14,13 @@ inputs:
     description: Required DJANGO_SETTINGS_MODULE to export for commands
     required: true
   coverage-report:
-    description: Post a Cobertura coverage report comment on PRs
+    description: Generate a Code Coverage Summary and post a sticky PR comment
     required: false
     default: 'false'
   coverage-file:
     description: Path to coverage XML file
     required: false
     default: 'coverage.xml'
-  coverage-reporter-token:
-    description: Token for cobertura reporter (defaults to GITHUB_TOKEN)
-    required: false
-    default: ''
   coverage-minimum:
     description: Minimum coverage percentage threshold
     required: false
@@ -33,28 +29,8 @@ inputs:
     description: Fail when below minimum coverage
     required: false
     default: 'true'
-  coverage-show-line:
-    description: Show line coverage column
-    required: false
-    default: 'true'
   coverage-show-branch:
     description: Show branch coverage column
-    required: false
-    default: 'true'
-  coverage-show-class-names:
-    description: Show class names instead of file names
-    required: false
-    default: 'false'
-  coverage-show-missing:
-    description: Show missing lines per module
-    required: false
-    default: 'true'
-  coverage-only-changed-files:
-    description: Only show coverage for changed files on PRs
-    required: false
-    default: 'true'
-  coverage-skip-covered:
-    description: Skip files with 100% coverage
     required: false
     default: 'true'
   coverage-report-name:
@@ -69,6 +45,10 @@ inputs:
     description: Continue on error when posting report
     required: false
     default: 'true'
+  coverage-github-token:
+    description: GitHub token to use for posting the PR comment (defaults to github.token)
+    required: false
+    default: ''
   verbosity:
     description: Django command verbosity (0-3)
     required: false
@@ -140,18 +120,14 @@ runs:
       continue-on-error: ${{ inputs.coverage-continue-on-error == 'true' }}
       uses: Onemind-Services-LLC/actions/actions/cobertura-report@master
       with:
-        repo-token: ${{ inputs.coverage-reporter-token }}
-        path: ${{ format('{0}/{1}', inputs.working-directory, inputs.coverage-file) }}
-        skip-covered: ${{ inputs.coverage-skip-covered }}
+        working-directory: ${{ inputs.working-directory }}
+        path: ${{ inputs.coverage-file }}
         minimum-coverage: ${{ inputs.coverage-minimum }}
         fail-below-threshold: ${{ inputs.coverage-fail-below-threshold }}
-        show-line: ${{ inputs.coverage-show-line }}
         show-branch: ${{ inputs.coverage-show-branch }}
-        show-class-names: ${{ inputs.coverage-show-class-names }}
-        show-missing: ${{ inputs.coverage-show-missing }}
-        only-changed-files: ${{ inputs.coverage-only-changed-files }}
         report-name: ${{ inputs.coverage-report-name }}
         pull-request-number: ${{ inputs.coverage-pull-request-number }}
+        github-token: ${{ inputs.coverage-github-token }}
 
 branding:
   icon: check-circle

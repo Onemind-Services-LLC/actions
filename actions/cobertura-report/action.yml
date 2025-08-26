@@ -1,19 +1,15 @@
-name: Cobertura Report
-description: Post a Cobertura coverage report comment on pull requests using 5monkeys/cobertura-action (pinned).
+name: Code Coverage Summary
+description: Generate a coverage summary from Cobertura XML and post a sticky PR comment using irongut/CodeCoverageSummary and marocchino/sticky-pull-request-comment (pinned).
 
 inputs:
   path:
     description: Path or glob to coverage XML file
     required: true
     default: 'coverage.xml'
-  repo-token:
-    description: Token for reporter (typically GITHUB_TOKEN or a repo-scoped app token)
+  working-directory:
+    description: Optional directory to resolve relative coverage paths
     required: false
-    default: ''
-  skip-covered:
-    description: Skip files with 100% coverage
-    required: false
-    default: 'true'
+    default: '.'
   minimum-coverage:
     description: Minimum coverage percentage threshold
     required: false
@@ -22,63 +18,46 @@ inputs:
     description: Fail when below minimum coverage
     required: false
     default: 'true'
-  show-line:
-    description: Show line coverage column
-    required: false
-    default: 'true'
   show-branch:
     description: Show branch coverage column
     required: false
     default: 'true'
-  show-class-names:
-    description: Show class names instead of file names
-    required: false
-    default: 'false'
-  show-missing:
-    description: Show missing lines per module
-    required: false
-    default: 'true'
-  only-changed-files:
-    description: Only show coverage for changed files on PRs
-    required: false
-    default: 'false'
   report-name:
     description: Unique name for the report/comment
     required: false
-    default: ''
+    default: 'Code Coverage Summary'
   pull-request-number:
     description: Pull request number when not using pull_request trigger
+    required: false
+    default: ''
+  github-token:
+    description: GitHub token to use for commenting (defaults to github.token)
     required: false
     default: ''
 
 runs:
   using: composite
   steps:
-    - name: Validate inputs
-      shell: bash
-      run: |
-        if [ "${{ github.event_name }}" = "pull_request_target" ] && [ -z "${{ inputs.repo-token }}" ]; then
-          echo "Error: repo-token is required for pull_request_target events"
-          exit 1
-        fi
-
-        if [ -n "${{ inputs.pull-request-number }}" ] && [ "${{ github.event_name }}" != "pull_request_target" ]; then
-          echo "Error: pull-request-number can only be used with pull_request_target events"
-          exit 1
-        fi
-
-    - name: Cobertura Report
-      uses: 5monkeys/cobertura-action@ee5787cc56634acddedc51f21c7947985531e6eb # v14
+    - name: Generate Code Coverage Summary
+      uses: irongut/CodeCoverageSummary@51cc3a756ddcd398d447c044c02cb6aa83fdae95 # v1.3.0
+      working-directory: ${{ inputs.working-directory }}
       with:
-        path: ${{ inputs.path }}
-        repo_token: ${{ inputs.repo-token }}
-        skip_covered: ${{ inputs.skip-covered }}
-        minimum_coverage: ${{ inputs.minimum-coverage }}
-        fail_below_threshold: ${{ inputs.fail-below-threshold }}
-        show_line: ${{ inputs.show-line }}
-        show_branch: ${{ inputs.show-branch }}
-        show_class_names: ${{ inputs.show-class-names }}
-        show_missing: ${{ inputs.show-missing }}
-        only_changed_files: ${{ inputs.only-changed-files }}
-        report_name: ${{ inputs.report-name }}
-        pull_request_number: ${{ inputs.pull-request-number }}
+        filename: ${{ inputs.path }}
+        badge: true
+        format: markdown
+        output: both
+        fail_below_min: ${{ inputs.fail-below-threshold }}
+        hide_branch_rate: ${{ inputs.show-branch == 'false' }}
+        hide_complexity: 'false'
+        thresholds: '${{ inputs.minimum-coverage }} ${{ inputs.minimum-coverage }}'
+
+    - name: Add Coverage PR Comment
+      if: ${{ (github.event_name == 'pull_request' || inputs.pull-request-number != '') && inputs.github-token != '' }}
+      uses: marocchino/sticky-pull-request-comment@773744901bac0e8cbb5a0dc842800d45e9b2b405 # v2.9.4
+      working-directory: ${{ inputs.working-directory }}
+      with:
+        path: code-coverage-results.md
+        only_update: true
+        header: ${{ inputs.report-name }}
+        number: ${{ inputs.pull-request-number }}
+        GITHUB_TOKEN: ${{ inputs.github-token }}
