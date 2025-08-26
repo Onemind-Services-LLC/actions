@@ -52,7 +52,7 @@ inputs:
   coverage-only-changed-files:
     description: Only show coverage for changed files on PRs
     required: false
-    default: 'false'
+    default: 'true'
   coverage-skip-covered:
     description: Skip files with 100% coverage
     required: false
