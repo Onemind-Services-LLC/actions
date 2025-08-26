@@ -165,7 +165,7 @@ runs:
       uses: Onemind-Services-LLC/actions/actions/cobertura-report@master
       with:
         repo-token: ${{ inputs.coverage-reporter-token }}
-        path: ${{ inputs.coverage-file }}
+        path: ${{ format('{0}/{1}', inputs.working-directory, inputs.coverage-file) }}
         skip-covered: ${{ inputs.coverage-skip-covered }}
         minimum-coverage: ${{ inputs.coverage-minimum }}
         fail-below-threshold: ${{ inputs.coverage-fail-below-threshold }}

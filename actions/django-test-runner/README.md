@@ -14,7 +14,7 @@ Run Django checks, apply migrations, collect static files, and execute tests wit
 ### Optional Coverage Report
 
 - **coverage-report**: Enable Cobertura coverage comment (default: `false`).
-- **coverage-file**: Path/glob to coverage XML (default: `coverage.xml`).
+- **coverage-file**: Path/glob to coverage XML (default: `coverage.xml`). Resolved relative to `working-directory`.
 - **coverage-reporter-token**: Token for reporter (required by this action). Pass a repo-scoped token such as `${{ secrets.GIT_TOKEN }}`.
 - **coverage-skip-covered**: Skip files with 100% coverage (default: `true`).
 - **coverage-minimum**: Minimum coverage percentage (default: `80`).
