@@ -31,6 +31,11 @@ on:
         required: false
         type: string
         default: 'ubuntu-22.04-sh'
+      coverage-minimum:
+        description: 'Minimum acceptable code coverage percentage'
+        required: false
+        type: number
+        default: 80
     secrets:
       private-key:
         description: 'The private key for the GitHub App to use for checkout of private repositories'
@@ -175,4 +180,5 @@ jobs:
           coverage-github-token: ${{ steps.repo-token.outputs.token }}
           coverage-pull-request-number: ${{ github.event.pull_request.number || '' }}
           coverage-source: ${{ inputs.plugin-name }}
+          coverage-minimum: ${{ inputs.coverage-minimum }}
           verbosity: '3'
