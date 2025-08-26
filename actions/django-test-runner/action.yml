@@ -23,7 +23,7 @@ inputs:
     default: 'coverage.xml'
   coverage-reporter-token:
     description: Token for cobertura reporter (defaults to GITHUB_TOKEN)
-    required: true
+    required: false
     default: ''
   coverage-minimum:
     description: Minimum coverage percentage threshold

@@ -156,7 +156,7 @@ jobs:
 
 - File: `.github/workflows/netbox-plugin-tests.yml`
 - Purpose: Spin up Redis/Postgres, install NetBox + plugin, and run tests.
-- Permissions: default; uses an installation token for private deps.
+- Permissions: `contents: read`, `checks: write`, `pull-requests: write`, `issues: write` (required for coverage PR comments).
 - Inputs: `app-id`, `plugin-name`, `plugin-configuration`, `netbox-version`, `python-version`, `runs-on`.
 - Secrets: `private-key` (GitHub App private key used to mint an installation token).
 - Usage:
