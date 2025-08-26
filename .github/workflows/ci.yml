@@ -8,8 +8,8 @@ permissions:
   contents: read
 
 jobs:
-  ci:
-    name: CI
+  lint:
+    name: Lint
     if: github.repository == 'Onemind-Services-LLC/actions'
     runs-on: ubuntu-22.04-sh
     steps:
@@ -21,3 +21,38 @@ jobs:
 
       - name: Run yamllint
         uses: Onemind-Services-LLC/actions/actions/yamllint@master
+
+  update-org-actions-latest-sha:
+    name: Update Org Variable ACTIONS_LATEST_SHA
+    if: github.repository == 'Onemind-Services-LLC/actions' && github.event_name == 'push' && github.ref == format('refs/heads/{0}', github.event.repository.default_branch)
+    needs: lint
+    runs-on: ubuntu-22.04-sh
+    permissions:
+      contents: read
+    steps:
+      - name: Create org-scoped token via GitHub App
+        id: repo-token
+        uses: Onemind-Services-LLC/actions/actions/create-repo-token@master
+        with:
+          app-id: ${{ vars.APP_ID }}
+          private-key: ${{ secrets.APP_PRIVATE_KEY }}
+          owner: ${{ github.repository_owner }}
+
+      - name: Upsert ACTIONS_LATEST_SHA
+        env:
+          TOKEN: ${{ steps.repo-token.outputs.token }}
+          ORG: ${{ github.repository_owner }}
+          SHA: ${{ github.sha }}
+        run: |
+          set -euo pipefail
+          if [ -z "${TOKEN:-}" ]; then
+            echo "Missing token from create-repo-token action" >&2
+            exit 1
+          fi
+          json="{\"name\":\"ACTIONS_LATEST_SHA\",\"value\":\"${SHA}\",\"visibility\":\"all\"}"
+          curl -fsSL -X PUT \
+            -H "Accept: application/vnd.github+json" \
+            -H "Authorization: Bearer ${TOKEN}" \
+            -H "X-GitHub-Api-Version: 2022-11-28" \
+            -d "${json}" \
+            "https://api.github.com/orgs/${ORG}/actions/variables/ACTIONS_LATEST_SHA"
