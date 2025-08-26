@@ -47,7 +47,7 @@ runs:
         output: both
         fail_below_min: ${{ inputs.fail-below-threshold }}
         hide_branch_rate: ${{ inputs.show-branch == 'false' }}
-        hide_complexity: 'false'
+        hide_complexity: 'true'
         thresholds: '${{ inputs.minimum-coverage }} ${{ inputs.minimum-coverage }}'
 
     - name: Add Coverage PR Comment
