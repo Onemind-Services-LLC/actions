@@ -10,6 +10,7 @@ Run Django checks, apply migrations, collect static files, and execute tests wit
 - **verbosity**: Django command verbosity (default: `3`).
 - **test-args**: Extra args appended to `manage.py test`.
 - **coverage-args**: Extra args appended to `coverage xml`.
+- **coverage-source**: Comma-separated modules/paths to measure (passed to `coverage run --source`).
 
 ### Optional Coverage Report
 
@@ -36,6 +37,7 @@ Run Django checks, apply migrations, collect static files, and execute tests wit
 - Runs `collectstatic --noinput`.
 - Runs `check -v <verbosity>`.
 - Runs tests via `coverage run manage.py test` and generates `coverage.xml` via `coverage xml`.
+  - Tip: Use `coverage-source` to restrict measurement to your app/package (e.g., only a NetBox plugin) and exclude framework code.
 - Optionally posts a Cobertura report comment using the `cobertura-report` composite action (pinned to 5monkeys) when `coverage-report: 'true'`.
 
 ## Examples
@@ -74,6 +76,9 @@ Run Django checks, apply migrations, collect static files, and execute tests wit
     coverage-show-class-names: 'false'
     coverage-show-missing: 'true'
     coverage-only-changed-files: 'false'
+
+    # Only measure your app (exclude framework/libs)
+    coverage-source: my_plugin_package
 ```
 
 ### In a subdirectory and custom verbosity

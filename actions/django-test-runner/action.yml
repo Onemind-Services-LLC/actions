@@ -81,6 +81,10 @@ inputs:
     description: Extra arguments passed to `coverage xml`
     required: false
     default: ''
+  coverage-source:
+    description: Comma-separated modules/paths to measure coverage for (passed to `coverage run --source`)
+    required: false
+    default: ''
 
 runs:
   using: composite
@@ -118,7 +122,12 @@ runs:
     - name: Run tests with coverage
       shell: bash
       working-directory: ${{ inputs.working-directory }}
-      run: coverage run manage.py test ${{ inputs.test-args }}
+      run: |
+        CMD=(coverage run)
+        if [ -n "${{ inputs.coverage-source }}" ]; then
+          CMD+=("--source=${{ inputs.coverage-source }}")
+        fi
+        "${CMD[@]}" manage.py test ${{ inputs.test-args }}
 
     - name: Generate coverage XML
       shell: bash

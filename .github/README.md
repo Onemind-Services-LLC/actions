@@ -167,6 +167,7 @@ Notes:
   - `actions/create-repo-token@master` to mint an installation token.
   - `actions/python-setup-install@master` to set up Python and install deps for NetBox and the plugin.
   - `actions/django-test-runner@master` to run checks, migrations, collectstatic, and tests.
+    Coverage is restricted to the plugin package (excludes NetBox itself).
 - NetBox runs with `DJANGO_SETTINGS_MODULE=netbox.configuration` and a provided test configuration copied from `assets/netbox-plugin-tests/configuration.py`.
 - Pass plugin settings via the `plugin-configuration` input as an inner config JSON string (only):
   - Example: `'{"github_token":"ghp_xxx"}'`
