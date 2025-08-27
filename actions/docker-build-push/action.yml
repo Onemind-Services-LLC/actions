@@ -32,10 +32,11 @@ inputs:
     description: docker/metadata-action tag rules
     required: false
     default: |
+      type=semver,pattern={{version}}
+      type=semver,pattern={{major}}.{{minor}}
+      type=semver,pattern={{major}}
       type=ref,event=branch
       type=ref,event=pr
-      type=ref,event=tag
-      type=semver,pattern={{version}}
       type=sha
   authors:
     description: Comma-separated list of image authors
