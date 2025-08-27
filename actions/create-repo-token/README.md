@@ -34,7 +34,6 @@ jobs:
       - uses: actions/checkout@v5
 
       - name: Create token for current repo (implicit defaults)
-        # Pin to a tag or commit SHA in production for supply-chain security
         uses: Onemind-Services-LLC/actions/actions/create-repo-token@master
         id: repo-token
         with:
@@ -92,5 +91,5 @@ Use a pre-existing token from the caller workflow instead of creating a new one:
 
 Security tips:
 - Do not echo tokens or secrets; this action masks the token in logs.
-- Pin third-party actions by version or commit SHA; avoid `@master` in production.
+- Third‑party actions in your workflows must be pinned to a version tag or commit SHA (no floating refs like `@master`).
 - Grant only minimal permissions in workflows.

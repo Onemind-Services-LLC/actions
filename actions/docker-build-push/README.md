@@ -48,7 +48,6 @@ jobs:
       - uses: actions/checkout@v5
 
       - name: Build, Push, and Sign
-        # Pin to a tag or commit SHA in production for supply-chain security
         uses: Onemind-Services-LLC/actions/actions/docker-build-push@master
         with:
           images: |
@@ -121,7 +120,7 @@ jobs:
 ```
 
 Security tips:
-- Pin third-party actions by version or commit SHA; avoid `@master` in production.
+- Third‑party actions in your workflows must be pinned to a version tag or commit SHA (no floating refs like `@master`).
 - Do not echo secrets; prefer using `secrets.GITHUB_TOKEN` for GHCR pushes when possible.
 - Limit workflow permissions to the minimum required.
  - Prefer Buildx `secrets` over `build-args` for sensitive values. Access in Dockerfile via `RUN --mount=type=secret,id=GIT_AUTH_TOKEN`.

@@ -20,4 +20,3 @@ steps:
       working-directory: '.'
       patterns: '**/*.+(js|jsx|ts|tsx|json|css|scss)'
 ```
-

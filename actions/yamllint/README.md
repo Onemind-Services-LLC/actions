@@ -25,4 +25,3 @@ jobs:
           format: github
           fail-on-warnings: 'false'
 ```
-

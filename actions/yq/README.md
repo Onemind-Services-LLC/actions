@@ -44,4 +44,5 @@ jobs:
 
 Security tips:
 - The container image is pinned by digest. Prefer tag or commit pinning for calling actions as well.
+- Third‑party actions in your workflows must be pinned to a version tag or commit SHA (no floating refs like `@master`).
 - Do not echo secrets. Avoid putting secrets into YAML produced to logs.

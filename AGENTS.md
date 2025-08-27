@@ -50,5 +50,6 @@ This document outlines how to work in this monorepo of reusable GitHub Actions a
 ## Security & Configuration Tips
 
 - Do not print secrets; prefer `GITHUB_TOKEN` when possible. For NetBox plugin tests, provide GitHub App credentials (`vars.APP_ID`, `secrets.APP_PRIVATE_KEY`) to mint a short‑lived installation token.
-- Pin third-party actions by version/commit; avoid `@master` in new additions.
+- Use `@master` in examples for actions/workflows from this repo unless an action specifically calls out pinning.
+- Third‑party actions/workflows must always be pinned to a version tag or commit SHA (no floating refs like `@master`).
 - Limit permissions to the minimum needed in workflows.

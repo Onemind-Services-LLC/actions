@@ -26,8 +26,10 @@ Reusable composite GitHub Actions maintained in this repository. Each action inc
 
 ## Versioning
 
-- Reference actions using a tagged release (e.g., `@master`) or a commit SHA.
-- Avoid `@master` in production workflows.
+- Use `@master` in examples by default.
+- If an action specifically requires pinning, its README will call out using a tag or commit SHA.
+
+Third‑party actions/workflows: In all examples and consumer workflows, third‑party actions must be pinned to a version tag or commit SHA; do not use floating refs like `@master`.
 
 ## Conventions
 

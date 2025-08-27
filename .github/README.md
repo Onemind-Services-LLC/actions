@@ -1,6 +1,8 @@
 # Reusable Workflows
 
-Overview of reusable workflows published from this repository. Consume via:
+Overview of reusable workflows published from this repository.
+
+Consume via:
 
 `uses: Onemind-Services-LLC/actions/.github/workflows/<file>.yml@master`
 
@@ -113,7 +115,7 @@ jobs:
 - Usage: `uses: Onemind-Services-LLC/actions/.github/workflows/netbox-plugin-tests.yml@master`
 
 Notes:
-- Internally reuses composite actions pinned in this repo to `@master`:
+- Internally reuses composite actions from this repo.
   - `actions/create-repo-token@master` to mint an installation token.
   - `actions/python-setup-install@master` to set up Python and install deps for NetBox and the plugin.
   - `actions/django-test-runner@master` to run checks, migrations, collectstatic, and tests.
