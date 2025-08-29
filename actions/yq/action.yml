@@ -12,6 +12,6 @@ outputs:
     description: "The complete result from the yq command being run"
 runs:
   using: 'docker'
-  image: 'docker://registry.onemindservices.com/docker.io/mikefarah/yq' # yamllint disable-line rule:line-length
+  image: 'docker://registry.onemindservices.com/docker.io/mikefarah/yq:4' # yamllint disable-line rule:line-length
   args:
     - ${{ inputs.cmd }}
