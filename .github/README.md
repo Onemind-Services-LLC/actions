@@ -41,7 +41,26 @@ jobs:
 - File: `.github/workflows/js-quality-checks.yml`
 - Purpose: Orchestrates Prettier, ESLint, Browserslist DB lock, optional TypeScript type check and bundle integrity checks.
 - Permissions: `contents: read`.
-- Inputs: `runs-on`, `node-version`, `working-directory`, `patterns`, `eslint-args`, `eslint-config`, `run-prettier`, `run-eslint`, `run-browserslist`, `run-typescript`, `run-bundle-check`, `bundle-dist-path`, `bundle-command`, `tsconfig`, `tsc-args`.
+- Inputs: `runs-on`, `app-id` (optional; falls back to `vars.APP_ID`), `node-version`, `working-directory`, `patterns`, `eslint-args`, `eslint-config`, `run-prettier`, `run-eslint`, `run-browserslist`, `run-typescript`, `run-bundle-check`, `bundle-dist-path`, `bundle-command`, `tsconfig`, `tsc-args`.
+- Secrets: `private-key` (optional; GitHub App private key for npm auth via installation token). If your repo installs private npm packages, pass this; otherwise you can omit.
+
+Example:
+
+```yaml
+permissions:
+  contents: read
+
+jobs:
+  quality:
+    uses: Onemind-Services-LLC/actions/.github/workflows/js-quality-checks.yml@master
+    with:
+      runs-on: ubuntu-22.04-sh
+      node-version: '22.x'
+      # Optionally override app-id; defaults to vars.APP_ID if set in caller repo
+      app-id: ${{ vars.APP_ID }}
+    secrets:
+      private-key: ${{ secrets.APP_PRIVATE_KEY }}
+```
 
 ## Next.js Bundle Analysis
 
