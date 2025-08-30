@@ -11,6 +11,7 @@ Wraps `cypress-io/github-action` to run Cypress component or e2e tests, with opt
 - npm-token: npm auth token for private registry access (optional).
 - browser: Browser to run (`chrome`, `chrome-for-testing`, `edge`, `firefox`). Required.
 - component: Run in component test mode (`false` for e2e). Default `true`.
+- build: Command to build the app before starting (e2e only; optional).
 - start: Command to start the app/server for e2e (optional).
 - wait-on: URL(s) to wait for before running tests (optional).
 - wait-on-timeout: Timeout in seconds for waits (default: `300`).

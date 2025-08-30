@@ -1,13 +1,13 @@
 # Yamllint
 
-Lint YAML files using yamllint with a self-contained virtual environment. Suitable for reuse across repositories and in this repo's CI.
+Lint YAML files using yamllint (installed via pip in the runner environment). Suitable for reuse across repositories and in this repo's CI.
 
 ## Inputs
 
 - `config_file` (optional): Path to yamllint configuration. Default: `.yamllint.yaml`.
 - `file_or_dir` (optional): File or directory to lint (space-separated allowed). Default: `.`
 - `format` (optional): Output format (`standard`, `parsable`, `github`, `colored`, `auto`). Default: `github`.
-- `fail-on-warnings` (optional): Treat warnings as failures. Default: `false`.
+- `fail-on-warnings` (optional): Treat warnings as failures. Default: `true`.
 
 ## Usage
 

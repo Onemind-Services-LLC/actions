@@ -23,4 +23,4 @@ steps:
 
 Notes:
 - Automatically detects npm/yarn/pnpm via lockfiles and sets up Node accordingly.
-- Uses the `git-diff-check` composite action under the hood. It creates a temporary commit for lockfile changes to compute a clear diff against the previous HEAD, and fails the job if any lockfile changed.
+- Uses the `git-diff-check` composite action under the hood to compare the working tree against `HEAD` for lockfile paths, and fails the job if any lockfile changed.

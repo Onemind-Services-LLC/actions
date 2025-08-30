@@ -1,8 +1,8 @@
 # NPM Install & Build (Composite Action)
 
-Installs dependencies and builds a Node.js project using npm with caching and optional private registry authentication.
+Deprecated: Prefer `actions/node-install-build`, which supports npm, Yarn, pnpm, and npx via a unified interface.
 
-Note: For a unified interface that supports both npm and Yarn, see `actions/node-install-build`.
+Installs dependencies and builds a Node.js project using npm with caching and optional private registry authentication.
 
 ## Inputs
 
