@@ -68,8 +68,8 @@ jobs:
 - File: `.github/workflows/nextjs-bundle-analyzer.yml`
 - Purpose: Generates Next.js bundle report on PRs, uploads artifact, compares with base, and comments results.
 - Permissions: `contents: read`, `actions: read`, `pull-requests: write`.
-- Inputs: `runs-on`, `node-version`, `registry-url`, `registry-scope`, `working-directory`, `install-command`, `build-command`, `extra-env`, `app-id`.
-- Secrets: `private-key` (optional; GitHub App private key) and `github-token` (optional for artifact access/comments; falls back to App token when omitted).
+- Inputs: `runs-on`, `node-version`, `registry-url`, `registry-scope`, `working-directory`, `install-command`, `build-command`, `extra-env`, `app-id` (required).
+- Secrets: `private-key` (required; GitHub App private key used to mint a token for artifact access and PR comments).
 
 ## Docker Build + Push + Sign
 
@@ -130,7 +130,7 @@ jobs:
 - File: `.github/workflows/netbox-plugin-tests.yml`
 - Purpose: Spin up Redis/Postgres, install NetBox + plugin, and run tests.
 - Permissions: `contents: read`, `checks: write`.
-- Inputs: `app-id`, `plugin-name`, `plugin-configuration`, `netbox-version`, `python-version`, `runs-on`.
+- Inputs: `app-id`, `plugin-name`, `plugin-configuration`, `netbox-version`, `python-version`, `runs-on`, `coverage-minimum` (default `80`).
 - Secrets: `private-key` (optional; GitHub App private key used to mint an installation token).
 - Usage: `uses: Onemind-Services-LLC/actions/.github/workflows/netbox-plugin-tests.yml@master`
 

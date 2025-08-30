@@ -22,7 +22,7 @@ Run mypy type checks and pytest with coverage for Python libraries. Includes opt
 - **coverage-report-name**: Unique name for the report/comment (default: empty).
 - **coverage-pull-request-number**: Use when workflow trigger isn’t `pull_request` (default: empty).
 - **coverage-continue-on-error**: Continue on reporting errors (default: `true`).
-- **coverage-github-token**: GitHub token used for commenting; defaults to the workflow token when not provided.
+- **github-token**: GitHub token used for commenting; defaults to the workflow token when not provided.
 
 ## What it does
 

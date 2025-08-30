@@ -12,7 +12,7 @@ Uploads Next.js sourcemaps to Kibana/Elastic APM and optionally deletes existing
 - service-name: Override service name (defaults to `package.json` name).
 - service-version: Override version (defaults to `package.json` version).
 - delete-existing: Delete existing sourcemaps matching the identifier. Default: `true`.
-- chunks-dirs: Comma-separated list of subdirs to scan for `.js.map`. Default: `chunks,chunks/pages,chunks/app`.
+- chunks-dirs: Comma-separated list of subdirs to scan for `.js.map`. Default: `chunks`.
 - retries: Upload retries per file. Default: `3`.
 
 ### Behavior
