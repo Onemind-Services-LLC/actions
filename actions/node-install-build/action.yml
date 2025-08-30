@@ -45,10 +45,6 @@ inputs:
     description: NPM auth token for private registry access
     required: false
     default: ''
-  enable-nextjs-cache:
-    description: Whether to enable caching for Next.js builds
-    required: false
-    default: 'false'
 
 runs:
   using: composite
@@ -111,8 +107,24 @@ runs:
         scope: ${{ inputs.registry-scope }}
         always-auth: ${{ inputs.registry-url != '' }}
 
+    - name: Is this a Next.js project?
+      id: nextjs-check
+      shell: bash
+      working-directory: ${{ inputs.working-directory }}
+      run: |
+        set -euo pipefail
+        if [[ -f package.json ]]; then
+          if grep -q '"next"' package.json; then
+            echo "Next.js project detected."
+            echo "is-nextjs=true" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+        fi
+        echo "Not a Next.js project."
+        echo "is-nextjs=false" >> "$GITHUB_OUTPUT"
+
     - uses: actions/cache@v4
-      if: ${{ inputs.enable-nextjs-cache == 'true' }}
+      if: ${{ steps.nextjs-check.outputs.is-nextjs == 'true' }}
       with:
         path: |
           ${{ github.workspace }}/.next/cache
