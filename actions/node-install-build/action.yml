@@ -131,7 +131,7 @@ runs:
             cmd='pnpm install --frozen-lockfile'
             ;;
           npm)
-            cmd='npm ci --no-audit'
+            cmd='npm ci --ignore-scripts --no-audit --no-fund'
             ;;
           npx)
             echo "No default install step for 'npx'; skipping install."
