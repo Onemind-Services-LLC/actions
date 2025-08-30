@@ -40,7 +40,7 @@ on:
     secrets:
       private-key:
         description: GitHub App private key (PEM) used to mint installation tokens
-        required: true
+        required: false
 
 permissions:
   contents: read
@@ -61,6 +61,7 @@ jobs:
           app-id: ${{ inputs.app-id }}
           private-key: ${{ secrets.private-key }}
           owner: Onemind-Services-LLC
+          github-token: ${{ github.actor == 'dependabot[bot]' && github.token || '' }}
 
       - name: Checkout
         uses: actions/checkout@v5

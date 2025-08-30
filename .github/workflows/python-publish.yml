@@ -8,6 +8,10 @@ on:
         required: false
         default: 'ubuntu-22.04-sh'
         type: string
+      app-id:
+        description: GitHub App ID for generating installation token (falls back to vars.APP_ID if omitted)
+        required: false
+        type: string
       python-version:
         description: Python version to use
         required: false
@@ -29,6 +33,9 @@ on:
         default: 'false'
         type: string
     secrets:
+      private-key:
+        description: GitHub App private key (PEM) used to mint installation tokens
+        required: false
       pypi-token:
         description: PyPI API token (beginning with 'pypi-')
         required: true
@@ -45,6 +52,15 @@ jobs:
         working-directory: ${{ inputs.working-directory }}
 
     steps:
+      - name: Create App Token
+        id: repo-token
+        uses: Onemind-Services-LLC/actions/actions/create-repo-token@master
+        with:
+          app-id: ${{ inputs.app-id }}
+          private-key: ${{ secrets.private-key }}
+          owner: Onemind-Services-LLC
+          github-token: ${{ github.actor == 'dependabot[bot]' && github.token || '' }}
+
       - name: Checkout repository
         uses: actions/checkout@v5
 

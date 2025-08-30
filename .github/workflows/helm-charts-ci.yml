@@ -28,7 +28,14 @@ on:
         required: false
         default: 'charts'
         type: string
+      app-id:
+        description: GitHub App ID for generating installation token (falls back to vars.APP_ID if omitted)
+        required: false
+        type: string
     secrets:
+      private-key:
+        description: GitHub App private key (PEM) used to mint installation tokens
+        required: false
       docker-username:
         description: Username for registry login
         required: false
@@ -48,6 +55,15 @@ jobs:
       changed: ${{ steps.list-changed.outputs.changed }}
       changed-dirs: ${{ steps.list-changed.outputs.changed_dirs }}
     steps:
+      - name: Create App Token
+        id: repo-token
+        uses: Onemind-Services-LLC/actions/actions/create-repo-token@master
+        with:
+          app-id: ${{ inputs.app-id }}
+          private-key: ${{ secrets.private-key }}
+          owner: Onemind-Services-LLC
+          github-token: ${{ github.actor == 'dependabot[bot]' && github.token || '' }}
+
       - name: Checkout
         uses: actions/checkout@v5
         with:
@@ -93,6 +109,15 @@ jobs:
     needs: lint-test
     if: startsWith(github.ref, 'refs/tags/')
     steps:
+      - name: Create App Token
+        id: repo-token
+        uses: Onemind-Services-LLC/actions/actions/create-repo-token@master
+        with:
+          app-id: ${{ inputs.app-id }}
+          private-key: ${{ secrets.private-key }}
+          owner: Onemind-Services-LLC
+          github-token: ${{ github.actor == 'dependabot[bot]' && github.token || '' }}
+
       - name: Checkout
         uses: actions/checkout@v5
         with:

@@ -14,7 +14,7 @@ See also: [Actions Overview](../actions/README.md)
 - Purpose: Run Cypress component tests across a browser matrix with optional private npm auth via a GitHub App token.
 - Permissions: `contents: read`.
 - Inputs: `runs-on`, `browsers` (JSON array), `registry-url`, `registry-scope`, `working-directory`, `node-version`, `app-id`.
-- Secrets: `private-key` (required; GitHub App private key for npm auth).
+- Secrets: `private-key` (optional; GitHub App private key for npm auth).
 - Usage: `uses: Onemind-Services-LLC/actions/.github/workflows/cypress-component-tests.yml@master`
 
 Example:
@@ -67,8 +67,8 @@ jobs:
 - File: `.github/workflows/nextjs-bundle-analyzer.yml`
 - Purpose: Generates Next.js bundle report on PRs, uploads artifact, compares with base, and comments results.
 - Permissions: `contents: read`, `actions: read`, `pull-requests: write`.
-- Inputs: `runs-on`, `node-version`, `registry-url`, `registry-scope`, `working-directory`, `install-command`, `build-command`, `extra-env`.
-- Secrets: `private-key` (required; GitHub App private key) and `github-token` (optional for artifact access/comments).
+- Inputs: `runs-on`, `node-version`, `registry-url`, `registry-scope`, `working-directory`, `install-command`, `build-command`, `extra-env`, `app-id`.
+- Secrets: `private-key` (optional; GitHub App private key) and `github-token` (optional for artifact access/comments; falls back to App token when omitted).
 
 ## Docker Build + Push + Sign
 
@@ -76,7 +76,7 @@ jobs:
 - Purpose: Build with Buildx, generate tags/labels, optionally push, and keyless‑sign images.
 - Permissions: `contents: read`, `id-token: write`.
 - Inputs: `runs-on`, `push`, `image`, `meta-tags`, `annotations`, `build-args`, `build-secrets`, `cache-image`, `org-token`, `app-id`, `registry`.
-- Secrets: `private-key`, `username`, `password`.
+- Secrets: `private-key` (optional; required when `org-token: 'true'`), `username`, `password`.
 - Usage: `uses: Onemind-Services-LLC/actions/.github/workflows/docker-build-push.yml@master`
 
 Notes:
@@ -88,8 +88,8 @@ Notes:
 - File: `.github/workflows/helm-charts-ci.yml`
 - Purpose: Lint/test charts on PRs and package/push on tags; optional keyless signing.
 - Permissions: `contents: read`, `id-token: write`.
-- Inputs: `runs-on`, `python-version`, `charts-dir`, `registry`, `oci-namespace`.
-- Secrets: `docker-username`, `docker-password` (optional for authenticated push).
+- Inputs: `runs-on`, `python-version`, `charts-dir`, `registry`, `oci-namespace`, `app-id`.
+- Secrets: `docker-username`, `docker-password` (optional for authenticated push), `private-key` (optional; for App token).
 - Usage: `uses: Onemind-Services-LLC/actions/.github/workflows/helm-charts-ci.yml@master`
 
 ## Python Package Publish (Token)
@@ -97,8 +97,8 @@ Notes:
 - File: `.github/workflows/python-publish.yml`
 - Purpose: Build distributions (sdist/wheel) and publish to PyPI using an API token.
 - Permissions: `contents: read`.
-- Inputs: `runs-on`, `python-version`, `working-directory`, `build-command`, `skip-existing`.
-- Secrets: `pypi-token` (required; project-scoped PyPI API token).
+- Inputs: `runs-on`, `python-version`, `working-directory`, `build-command`, `skip-existing`, `app-id`.
+- Secrets: `pypi-token` (required; project-scoped PyPI API token), `private-key` (optional; for App token).
 - Usage: `uses: Onemind-Services-LLC/actions/.github/workflows/python-publish.yml@master`
 
 Example (tagged release):
@@ -130,7 +130,7 @@ jobs:
 - Purpose: Spin up Redis/Postgres, install NetBox + plugin, and run tests.
 - Permissions: `contents: read`, `checks: write`.
 - Inputs: `app-id`, `plugin-name`, `plugin-configuration`, `netbox-version`, `python-version`, `runs-on`.
-- Secrets: `private-key` (GitHub App private key used to mint an installation token).
+- Secrets: `private-key` (optional; GitHub App private key used to mint an installation token).
 - Usage: `uses: Onemind-Services-LLC/actions/.github/workflows/netbox-plugin-tests.yml@master`
 
 Notes:
@@ -175,13 +175,15 @@ Security:
 - File: `.github/workflows/codeql-analysis.yml`
 - Purpose: Initialize, optionally build, and run CodeQL analysis.
 - Permissions: `contents: read`, `actions: read`, `security-events: write`.
-- Inputs: `runs-on`, `languages`, `source-root`, `build-mode`, `build-command`, `queries`, `packs`, `config-file`, `tools`.
+- Inputs: `runs-on`, `languages`, `source-root`, `app-id`, `build-mode`, `build-command`, `queries`, `packs`, `config-file`, `tools`.
+- Secrets: `private-key` (optional; for App token).
 
 ## Pre-commit Checks
 
 - File: `.github/workflows/pre-commit.yml`
 - Purpose: Run pre-commit hooks with a pinned action.
-- Inputs: `runs-on`, `python-version`.
+- Inputs: `runs-on`, `python-version`, `app-id`.
+- Secrets: `private-key` (optional; for App token).
 
 Notes:
 - Internal CI for this repo lives in `.github/workflows/ci.yml` and is not reusable.

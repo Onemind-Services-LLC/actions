@@ -64,7 +64,7 @@ on:
     secrets:
       private-key:
         description: GitHub App private key (PEM) used to mint installation tokens
-        required: true
+        required: false
       username:
         description: Registry username
         required: true
@@ -116,6 +116,7 @@ jobs:
           app-id: ${{ inputs.app-id }}
           private-key: ${{ secrets.private-key }}
           owner: Onemind-Services-LLC
+          github-token: ${{ github.actor == 'dependabot[bot]' && github.token || '' }}
 
       - name: Merge user build-secrets with org token
         id: merged_secrets

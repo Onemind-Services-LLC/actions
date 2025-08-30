@@ -5,7 +5,7 @@ on:
     inputs:
       app-id:
         description: 'The GitHub App ID to use for checkout of private repositories'
-        required: true
+        required: false
         type: string
       plugin-name:
         description: 'The name of the NetBox plugin, eg: netbox_secrets'
@@ -39,7 +39,7 @@ on:
     secrets:
       private-key:
         description: 'The private key for the GitHub App to use for checkout of private repositories'
-        required: true
+        required: false
 
 env:
   ACTIONS_WORKING_DIRECTORY: actions
@@ -94,6 +94,7 @@ jobs:
           app-id: ${{ inputs.app-id }}
           private-key: ${{ secrets.private-key }}
           owner: Onemind-Services-LLC
+          github-token: ${{ github.actor == 'dependabot[bot]' && github.token || '' }}
 
       - name: Checkout NetBox Repository
         uses: actions/checkout@v5
