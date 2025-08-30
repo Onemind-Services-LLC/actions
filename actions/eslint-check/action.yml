@@ -18,6 +18,10 @@ inputs:
     description: Additional ESLint args or target paths
     required: false
     default: '.'
+  npm-token:
+    description: NPM auth token for private registry access
+    required: false
+    default: ''
 
 runs:
   using: composite
@@ -36,6 +40,9 @@ runs:
         working-directory: ${{ inputs.working-directory }}
         install: 'true'
         build: 'false'
+        registry-scope: "@onemind-services-llc"
+        registry-url: "https://npm.pkg.github.com"
+        npm-token: ${{ steps.repo-token.outputs.token }}
 
     - name: Run ESLint
       shell: bash
