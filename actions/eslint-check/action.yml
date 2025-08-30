@@ -42,7 +42,7 @@ runs:
         build: 'false'
         registry-scope: "@onemind-services-llc"
         registry-url: "https://npm.pkg.github.com"
-        npm-token: ${{ steps.repo-token.outputs.token }}
+        npm-token: ${{ inputs.npm-token }}
 
     - name: Run ESLint
       shell: bash
