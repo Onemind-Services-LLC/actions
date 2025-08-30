@@ -104,7 +104,7 @@ jobs:
         uses: Onemind-Services-LLC/actions/actions/create-repo-token@master
         with:
           owner: Onemind-Services-LLC
-          github-token: ${{ github.actor == 'dependabot[bot]' && github.token || '' }}
+          github-token: ${{ github.token }}
 
       - name: Prettier Check
         if: ${{ inputs.run-prettier }}
