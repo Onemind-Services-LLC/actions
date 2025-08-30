@@ -1,14 +1,13 @@
 # ESLint Check
 
-Run ESLint and fail on any issue (treats warnings as errors).
+Run ESLint and fail on any issue (treats warnings as errors). The action executes ESLint via `npx -p eslint@<version> eslint` for an ephemeral, pinned installation and invokes `eslint` with `--max-warnings=0`.
 
 ## Inputs
 
 - `node-version`: Node.js version (default: `22.x`).
 - `working-directory`: Directory to run in (default: `.`).
-- `config`: Path to ESLint config file (default: `eslint.config.mjs`). If the file is not found in the working directory, the action runs with ESLint's autodiscovery.
 - `eslint-args`: Additional args/targets (default: `.`).
-- `version` (optional): ESLint version or dist-tag to run via `npx` (e.g., `9.9.0` or `latest`). Defaults to the `npx` resolution if omitted.
+- `version` (optional): ESLint package version or dist-tag to run via `npx -p` (e.g., `9.9.0` or `latest`). If omitted, `npx` resolves the default dist-tag.
 
 ## Example
 
@@ -20,10 +19,7 @@ steps:
     with:
       node-version: '22.x'
       working-directory: '.'
-      config: 'eslint.config.mjs'
       eslint-args: '.'
-      # version: '9.9.0' # optional
+      # Pin ESLint (optional). Without this, the default dist-tag is used.
+      # version: '9.9.0'
 ```
-
-Notes:
-- This action runs ESLint via `npx` and does not install repository dependencies. If your ESLint config requires plugins/configs that are only present in your repo, either vendor them into the repo or run ESLint from your own workflow with your preferred install strategy.
