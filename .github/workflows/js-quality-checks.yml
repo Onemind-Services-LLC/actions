@@ -122,6 +122,7 @@ jobs:
           working-directory: ${{ inputs.working-directory }}
           config: ${{ inputs.eslint-config }}
           eslint-args: ${{ inputs.eslint-args }}
+          npm-token: ${{ steps.repo-token.outputs.token }}
 
       - name: Browserslist Lock Check
         if: ${{ inputs.run-browserslist }}
