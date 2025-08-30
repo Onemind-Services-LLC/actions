@@ -1,0 +1,246 @@
+name: Kibana Sourcemaps Upload
+description: >-
+  Upload Next.js sourcemaps to Kibana/Elastic APM with optional cleanup of
+  previously uploaded artifacts. Implements HTTP calls with curl/Node core, so
+  no additional npm dependencies are required.
+
+inputs:
+  kibana-url:
+    description: Kibana APM sourcemaps API URL
+    required: false
+    default: 'https://kibana.onemindservices.com/api/apm/sourcemaps'
+  kibana-api-key:
+    description: Kibana/Elastic API key with privileges to manage APM sourcemaps
+    required: true
+  base-url:
+    description: Public base URL to the built assets root (e.g., 'https://example.com/_next/static')
+    required: true
+  build-dir:
+    description: Repo-relative path to the Next.js static dir
+    required: false
+    default: '.next/static'
+  working-directory:
+    description: Directory containing the project (package.json)
+    required: false
+    default: '.'
+  service-name:
+    description: Optional override for service_name (defaults to package.json name)
+    required: false
+    default: ''
+  service-version:
+    description: Optional override for service_version (defaults to package.json version)
+    required: false
+    default: ''
+  delete-existing:
+    description: Delete existing sourcemaps matching '<name>-<version>' before upload
+    required: false
+    default: 'true'
+  chunks-dirs:
+    description: Comma-separated list of subdirs relative to build-dir to scan for .js.map
+    required: false
+    default: 'chunks,chunks/pages'
+  retries:
+    description: Retry attempts per upload
+    required: false
+    default: '3'
+
+runs:
+  using: composite
+  steps:
+    - name: Resolve service metadata
+      id: meta
+      shell: bash
+      working-directory: ${{ inputs.working-directory }}
+      env:
+        INPUT_SERVICE_NAME: ${{ inputs.service-name }}
+        INPUT_SERVICE_VERSION: ${{ inputs.service-version }}
+      run: |
+        set -euo pipefail
+        NAME="$INPUT_SERVICE_NAME"
+        VERSION="$INPUT_SERVICE_VERSION"
+        if [[ -z "$NAME" || -z "$VERSION" ]]; then
+          node - <<'NODE'
+const fs = require('fs');
+const path = require('path');
+const pkgPath = path.resolve(process.cwd(), 'package.json');
+const pkg = JSON.parse(fs.readFileSync(pkgPath, 'utf8'));
+const out = process.env.GITHUB_OUTPUT;
+const lines = [
+  `service_name=${process.env.INPUT_SERVICE_NAME || pkg.name || ''}`,
+  `service_version=${process.env.INPUT_SERVICE_VERSION || pkg.version || ''}`
+];
+fs.appendFileSync(out, lines.join('\n') + '\n');
+NODE
+          exit 0
+        fi
+        if [[ -z "$NAME" || -z "$VERSION" ]]; then
+          echo "::error::Failed to resolve service name/version (provide inputs or ensure package.json has both)." >&2
+          exit 1
+        fi
+        echo "service_name=$NAME" >> "$GITHUB_OUTPUT"
+        echo "service_version=$VERSION" >> "$GITHUB_OUTPUT"
+
+    - name: Delete existing sourcemaps
+      if: ${{ inputs.delete-existing == 'true' }}
+      shell: bash
+      env:
+        KIBANA_URL: ${{ inputs.kibana-url }}
+        KIBANA_API_KEY: ${{ inputs.kibana-api-key }}
+        IDENT_PREFIX: ${{ steps.meta.outputs.service_name }}-${{ steps.meta.outputs.service_version }}
+      run: |
+        set -euo pipefail
+        node - <<'NODE'
+const https = require('https');
+const url = require('url');
+
+const KIBANA_URL = process.env.KIBANA_URL;
+const API_KEY = process.env.KIBANA_API_KEY;
+const IDENT_PREFIX = process.env.IDENT_PREFIX;
+
+if (!KIBANA_URL || !API_KEY) {
+  console.error('Missing KIBANA_URL or KIBANA_API_KEY');
+  process.exit(1);
+}
+
+function requestJSON(method, endpoint) {
+  return new Promise((resolve, reject) => {
+    const u = new url.URL(endpoint);
+    const opts = {
+      method,
+      hostname: u.hostname,
+      path: u.pathname + (u.search || ''),
+      port: u.port || (u.protocol === 'https:' ? 443 : 80),
+      headers: {
+        'kbn-xsrf': 'true',
+        'Authorization': `ApiKey ${API_KEY}`,
+        'Accept': 'application/json'
+      }
+    };
+    const req = https.request(opts, (res) => {
+      let data = '';
+      res.on('data', (c) => data += c);
+      res.on('end', () => {
+        if (res.statusCode >= 400) {
+          return reject(new Error(`HTTP ${res.statusCode}: ${data}`));
+        }
+        try { resolve(JSON.parse(data || '{}')); }
+        catch (e) { reject(e); }
+      });
+    });
+    req.on('error', reject);
+    req.end();
+  });
+}
+
+function requestVoid(method, endpoint) {
+  return new Promise((resolve, reject) => {
+    const u = new url.URL(endpoint);
+    const opts = {
+      method,
+      hostname: u.hostname,
+      path: u.pathname + (u.search || ''),
+      port: u.port || (u.protocol === 'https:' ? 443 : 80),
+      headers: {
+        'kbn-xsrf': 'true',
+        'Authorization': `ApiKey ${API_KEY}`
+      }
+    };
+    const req = https.request(opts, (res) => {
+      if (res.statusCode >= 400) {
+        let data='';
+        res.on('data', c => data += c);
+        res.on('end', () => reject(new Error(`HTTP ${res.statusCode}: ${data}`)));
+      } else {
+        res.resume();
+        res.on('end', resolve);
+      }
+    });
+    req.on('error', reject);
+    req.end();
+  });
+}
+
+(async function main(){
+  console.log(`[INFO] Checking for existing sourcemaps with prefix '${IDENT_PREFIX}'...`);
+  const list = await requestJSON('GET', KIBANA_URL);
+  const artifacts = (list && list.artifacts) || [];
+  const matches = artifacts.filter(a => (a.identifier || '').startsWith(IDENT_PREFIX));
+  if (!matches.length) {
+    console.log('[INFO] No matching sourcemaps found.');
+    return;
+  }
+  console.log(`[INFO] Found ${matches.length} matching sourcemaps; deleting...`);
+  for (const a of matches) {
+    try {
+      await requestVoid('DELETE', `${KIBANA_URL}/${a.id}`);
+      console.log(`[SUCCESS] Deleted sourcemap id=${a.id}`);
+    } catch (e) {
+      console.warn(`[WARN] Failed to delete id=${a.id}: ${e.message}`);
+    }
+  }
+})();
+NODE
+
+    - name: Upload sourcemaps
+      shell: bash
+      env:
+        KIBANA_URL: ${{ inputs.kibana-url }}
+        KIBANA_API_KEY: ${{ inputs.kibana-api-key }}
+        BASE_URL: ${{ inputs.base-url }}
+        BUILD_DIR: ${{ inputs.build-dir }}
+        CHUNK_DIRS: ${{ inputs.chunks-dirs }}
+        SERVICE_NAME: ${{ steps.meta.outputs.service_name }}
+        SERVICE_VERSION: ${{ steps.meta.outputs.service_version }}
+        RETRIES: ${{ inputs.retries }}
+      run: |
+        set -euo pipefail
+        if [[ -z "$KIBANA_API_KEY" ]]; then
+          echo "::error::kibana-api-key is required" >&2
+          exit 1
+        fi
+        # Trim trailing slash from BASE_URL
+        BASE_URL=${BASE_URL%%/}
+        root="$GITHUB_WORKSPACE/${{ inputs.working-directory }}/$BUILD_DIR"
+        IFS=',' read -ra DIRS <<< "$CHUNK_DIRS"
+        found_any=false
+        for d in "${DIRS[@]}"; do
+          dir="$root/$d"
+          if [[ -d "$dir" ]]; then
+            while IFS= read -r -d '' file; do
+              found_any=true
+              rel="${file#"$root/"}"
+              bundle="$BASE_URL/${rel%.map}"
+              attempt=1
+              max=$RETRIES
+              backoff=1
+              while (( attempt <= max )); do
+                echo "+ Upload $rel (attempt $attempt/$max)"
+                if curl -sS -f -X POST "$KIBANA_URL" \
+                  -H 'kbn-xsrf: true' \
+                  -H "Authorization: ApiKey $KIBANA_API_KEY" \
+                  -F "service_name=$SERVICE_NAME" \
+                  -F "service_version=$SERVICE_VERSION" \
+                  -F "bundle_filepath=$bundle" \
+                  -F "sourcemap=@$file;type=application/json" > /dev/null; then
+                  echo "[SUCCESS] $rel"
+                  break
+                else
+                  status=$?
+                  if (( attempt == max )); then
+                    echo "::error::Failed to upload $rel (curl exit $status)" >&2
+                    exit 1
+                  fi
+                  echo "[WARN] Upload failed for $rel. Retrying in ${backoff}s..."
+                  sleep "$backoff"
+                  backoff=$(( backoff * 2 ))
+                  attempt=$(( attempt + 1 ))
+                fi
+              done
+            done < <(find "$dir" -type f -name '*.js.map' -print0)
+          else
+            echo "[INFO] Directory not found: $dir (skipping)"
+          fi
+        done
+        if [[ "$found_any" == false ]]; then
+          echo "[INFO] No sourcemap files found under $root/$CHUNK_DIRS"
+        fi

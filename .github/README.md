@@ -187,3 +187,40 @@ Security:
 
 Notes:
 - Internal CI for this repo lives in `.github/workflows/ci.yml` and is not reusable.
+
+## Kibana Sourcemaps Upload
+
+- File: `.github/workflows/kibana-sourcemaps-upload.yml`
+- Purpose: Install/build a JS project and upload Next.js sourcemaps to Kibana/Elastic APM without requiring any repo scripts or npm deps.
+- Permissions: `contents: read`, `packages: read`.
+- Inputs: `runs-on`, `node-version`, `package-manager`, `working-directory`, `install`, `build`, `build-command`, `registry-url`, `registry-scope`, `app-id`, `base-url`, `kibana-url`, `build-dir`, `delete-existing`.
+- Secrets: `private-key` (optional; for App token), `kibana-api-key` (exported internally for upload).
+- Usage: `uses: Onemind-Services-LLC/actions/.github/workflows/kibana-sourcemaps-upload.yml@master`
+
+Example:
+
+```yaml
+permissions:
+  contents: read
+  packages: read
+
+jobs:
+  upload_sourcemaps:
+    uses: Onemind-Services-LLC/actions/.github/workflows/kibana-sourcemaps-upload.yml@master
+    with:
+      node-version: '22.x'
+      package-manager: npm
+      working-directory: '.'
+      install: true
+      build: true
+      base-url: https://cloudmylab.com/_next/static
+      # Optional overrides
+      # build-command: 'npm run build'
+      # kibana-url: https://kibana.onemindservices.com/api/apm/sourcemaps
+      # build-dir: .next/static
+      # delete-existing: true
+      app-id: ${{ vars.APP_ID }}
+    secrets:
+      private-key: ${{ secrets.APP_PRIVATE_KEY }}
+      kibana-api-key: ${{ secrets.KIBANA_API_KEY }}
+```

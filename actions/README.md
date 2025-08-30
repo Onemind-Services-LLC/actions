@@ -23,6 +23,7 @@ Reusable composite GitHub Actions maintained in this repository. Each action inc
 - yq - Portable YAML Processor: Run pinned `mikefarah/yq` in Docker to create, read, update, delete, merge, and validate YAML. [Docs](yq/README.md)
 - TypeScript Type Check: Run TypeScript compiler in type-check mode (`--noEmit`) with auto PM detection. [Docs](typescript-check/README.md)
 - Bundle Integrity Check: Re-run bundling and fail if `dist` changes to enforce deterministic artifacts. [Docs](bundle-integrity-check/README.md)
+- Kibana Sourcemaps Upload: Upload Next.js sourcemaps to Kibana/Elastic APM and optionally delete existing artifacts. [Docs](kibana-sourcemaps-upload/README.md)
 
 ## Versioning
 

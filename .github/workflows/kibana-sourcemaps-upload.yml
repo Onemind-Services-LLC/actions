@@ -1,0 +1,127 @@
+name: Kibana Sourcemaps Upload
+
+on:
+  workflow_call:
+    inputs:
+      runs-on:
+        description: Runner label
+        required: false
+        default: ubuntu-22.04-sh
+        type: string
+      node-version:
+        description: Node.js version
+        required: false
+        default: '22.x'
+        type: string
+      package-manager:
+        description: Package manager (npm, yarn, pnpm, or npx)
+        required: false
+        default: 'npm'
+        type: string
+      working-directory:
+        description: Project directory
+        required: false
+        default: '.'
+        type: string
+      install:
+        description: Run install before build
+        required: false
+        default: true
+        type: boolean
+      build:
+        description: Build the project before upload
+        required: false
+        default: true
+        type: boolean
+      build-command:
+        description: Optional explicit build command (overrides defaults)
+        required: false
+        default: ''
+        type: string
+      registry-url:
+        description: Optional npm registry URL for scoped/private packages
+        required: false
+        default: 'https://npm.pkg.github.com/'
+        type: string
+      registry-scope:
+        description: Optional npm scope (e.g., '@onemind-services-llc')
+        required: false
+        default: ''
+        type: string
+      app-id:
+        description: GitHub App ID for generating installation token (falls back to vars.APP_ID if omitted)
+        required: false
+        type: string
+      base-url:
+        description: Public base URL to built assets (e.g., 'https://example.com/_next/static')
+        required: true
+        type: string
+      kibana-url:
+        description: Kibana APM sourcemaps API URL
+        required: false
+        default: 'https://kibana.onemindservices.com/api/apm/sourcemaps'
+        type: string
+      build-dir:
+        description: Repo-relative build dir containing Next.js static assets
+        required: false
+        default: '.next/static'
+        type: string
+      delete-existing:
+        description: Delete existing sourcemaps matching '<name>-<version>'
+        required: false
+        default: true
+        type: boolean
+    secrets:
+      private-key:
+        description: GitHub App private key (PEM) used to mint installation token
+        required: false
+      kibana-api-key:
+        description: Kibana/Elastic APM API key exposed as KIBANA_API_KEY for the upload command
+        required: false
+
+permissions:
+  contents: read
+  packages: read
+
+jobs:
+  upload:
+    name: Upload Sourcemaps
+    runs-on: ${{ inputs.runs-on }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Create App Token
+        id: repo-token
+        uses: Onemind-Services-LLC/actions/actions/create-repo-token@master
+        with:
+          # Allow caller to override; otherwise try vars.APP_ID if set
+          app-id: ${{ inputs.app-id != '' && inputs.app-id || vars.APP_ID }}
+          private-key: ${{ secrets.private-key }}
+          owner: Onemind-Services-LLC
+          # If Dependabot triggered, pass the default GITHUB_TOKEN so the action mints an installation token; otherwise empty
+          github-token: ${{ github.actor == 'dependabot[bot]' && github.token || '' }}
+
+      - name: Install & Build
+        if: ${{ inputs.install || inputs.build }}
+        uses: Onemind-Services-LLC/actions/actions/node-install-build@master
+        with:
+          package-manager: ${{ inputs.package-manager }}
+          node-version: ${{ inputs.node-version }}
+          working-directory: ${{ inputs.working-directory }}
+          install: ${{ inputs.install && 'true' || 'false' }}
+          build: ${{ inputs.build && 'true' || 'false' }}
+          build-command: ${{ inputs.build-command }}
+          registry-url: ${{ inputs.registry-url }}
+          registry-scope: ${{ inputs.registry-scope }}
+          npm-token: ${{ steps.repo-token.outputs.token }}
+
+      - name: Upload sourcemaps
+        uses: Onemind-Services-LLC/actions/actions/kibana-sourcemaps-upload@master
+        with:
+          kibana-url: ${{ inputs.kibana-url }}
+          kibana-api-key: ${{ secrets.kibana-api-key }}
+          base-url: ${{ inputs.base-url }}
+          build-dir: ${{ inputs.build-dir }}
+          working-directory: ${{ inputs.working-directory }}
+          delete-existing: ${{ inputs.delete-existing && 'true' || 'false' }}
