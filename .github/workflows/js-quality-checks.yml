@@ -116,7 +116,7 @@ jobs:
           node-version: ${{ inputs.node-version }}
           working-directory: ${{ inputs.working-directory }}
           patterns: ${{ inputs.patterns }}
-          prettier-version: ${{ inputs.prettier-version }}
+          version: ${{ inputs.prettier-version }}
 
       - name: ESLint Check
         if: ${{ inputs.run-eslint }}
@@ -126,7 +126,7 @@ jobs:
           working-directory: ${{ inputs.working-directory }}
           config: ${{ inputs.eslint-config }}
           eslint-args: ${{ inputs.eslint-args }}
-          eslint-version: ${{ inputs.eslint-version }}
+          version: ${{ inputs.eslint-version }}
 
       - name: Browserslist Lock Check
         if: ${{ inputs.run-browserslist }}
