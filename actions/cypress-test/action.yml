@@ -28,6 +28,9 @@ inputs:
     description: "Run in component test mode (false for e2e)"
     default: "true"
     required: false
+  build:
+    description: "Command to build the app before starting (e2e only)"
+    required: false
   start:
     description: "Command to start the app/server for e2e"
     required: false
@@ -149,6 +152,7 @@ runs:
         component: ${{ inputs.component }}
         install: true
         browser: ${{ inputs.browser == 'chrome' && 'chrome-for-testing' || inputs.browser }}
+        build: ${{ inputs.build }}
         start: ${{ inputs.start }}
         wait-on: ${{ inputs.wait-on }}
         wait-on-timeout: ${{ inputs.wait-on-timeout }}
