@@ -113,7 +113,7 @@ jobs:
           npm-token: ${{ steps.repo-token.outputs.token }}
 
       - name: Analyze bundle
-        run: npx -y nextjs-bundle-analysis report
+        run: npx -y -p nextjs-bundle-analysis report
 
       - name: Upload analysis artifact
         uses: actions/upload-artifact@v4
