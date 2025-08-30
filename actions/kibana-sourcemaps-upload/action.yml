@@ -60,17 +60,17 @@ runs:
         VERSION="$INPUT_SERVICE_VERSION"
         if [[ -z "$NAME" || -z "$VERSION" ]]; then
           node - <<'NODE'
-const fs = require('fs');
-const path = require('path');
-const pkgPath = path.resolve(process.cwd(), 'package.json');
-const pkg = JSON.parse(fs.readFileSync(pkgPath, 'utf8'));
-const out = process.env.GITHUB_OUTPUT;
-const lines = [
-  `service_name=${process.env.INPUT_SERVICE_NAME || pkg.name || ''}`,
-  `service_version=${process.env.INPUT_SERVICE_VERSION || pkg.version || ''}`
-];
-fs.appendFileSync(out, lines.join('\n') + '\n');
-NODE
+          const fs = require('fs');
+          const path = require('path');
+          const pkgPath = path.resolve(process.cwd(), 'package.json');
+          const pkg = JSON.parse(fs.readFileSync(pkgPath, 'utf8'));
+          const out = process.env.GITHUB_OUTPUT;
+          const lines = [
+            `service_name=${process.env.INPUT_SERVICE_NAME || pkg.name || ''}`,
+            `service_version=${process.env.INPUT_SERVICE_VERSION || pkg.version || ''}`
+          ];
+          fs.appendFileSync(out, lines.join('\n') + '\n');
+          NODE
           exit 0
         fi
         if [[ -z "$NAME" || -z "$VERSION" ]]; then
@@ -90,96 +90,96 @@ NODE
       run: |
         set -euo pipefail
         node - <<'NODE'
-const https = require('https');
-const url = require('url');
+        const https = require('https');
+        const url = require('url');
 
-const KIBANA_URL = process.env.KIBANA_URL;
-const API_KEY = process.env.KIBANA_API_KEY;
-const IDENT_PREFIX = process.env.IDENT_PREFIX;
+        const KIBANA_URL = process.env.KIBANA_URL;
+        const API_KEY = process.env.KIBANA_API_KEY;
+        const IDENT_PREFIX = process.env.IDENT_PREFIX;
 
-if (!KIBANA_URL || !API_KEY) {
-  console.error('Missing KIBANA_URL or KIBANA_API_KEY');
-  process.exit(1);
-}
-
-function requestJSON(method, endpoint) {
-  return new Promise((resolve, reject) => {
-    const u = new url.URL(endpoint);
-    const opts = {
-      method,
-      hostname: u.hostname,
-      path: u.pathname + (u.search || ''),
-      port: u.port || (u.protocol === 'https:' ? 443 : 80),
-      headers: {
-        'kbn-xsrf': 'true',
-        'Authorization': `ApiKey ${API_KEY}`,
-        'Accept': 'application/json'
-      }
-    };
-    const req = https.request(opts, (res) => {
-      let data = '';
-      res.on('data', (c) => data += c);
-      res.on('end', () => {
-        if (res.statusCode >= 400) {
-          return reject(new Error(`HTTP ${res.statusCode}: ${data}`));
+        if (!KIBANA_URL || !API_KEY) {
+          console.error('Missing KIBANA_URL or KIBANA_API_KEY');
+          process.exit(1);
         }
-        try { resolve(JSON.parse(data || '{}')); }
-        catch (e) { reject(e); }
-      });
-    });
-    req.on('error', reject);
-    req.end();
-  });
-}
 
-function requestVoid(method, endpoint) {
-  return new Promise((resolve, reject) => {
-    const u = new url.URL(endpoint);
-    const opts = {
-      method,
-      hostname: u.hostname,
-      path: u.pathname + (u.search || ''),
-      port: u.port || (u.protocol === 'https:' ? 443 : 80),
-      headers: {
-        'kbn-xsrf': 'true',
-        'Authorization': `ApiKey ${API_KEY}`
-      }
-    };
-    const req = https.request(opts, (res) => {
-      if (res.statusCode >= 400) {
-        let data='';
-        res.on('data', c => data += c);
-        res.on('end', () => reject(new Error(`HTTP ${res.statusCode}: ${data}`)));
-      } else {
-        res.resume();
-        res.on('end', resolve);
-      }
-    });
-    req.on('error', reject);
-    req.end();
-  });
-}
+        function requestJSON(method, endpoint) {
+          return new Promise((resolve, reject) => {
+            const u = new url.URL(endpoint);
+            const opts = {
+              method,
+              hostname: u.hostname,
+              path: u.pathname + (u.search || ''),
+              port: u.port || (u.protocol === 'https:' ? 443 : 80),
+              headers: {
+                'kbn-xsrf': 'true',
+                'Authorization': `ApiKey ${API_KEY}`,
+                'Accept': 'application/json'
+              }
+            };
+            const req = https.request(opts, (res) => {
+              let data = '';
+              res.on('data', (c) => data += c);
+              res.on('end', () => {
+                if (res.statusCode >= 400) {
+                  return reject(new Error(`HTTP ${res.statusCode}: ${data}`));
+                }
+                try { resolve(JSON.parse(data || '{}')); }
+                catch (e) { reject(e); }
+              });
+            });
+            req.on('error', reject);
+            req.end();
+          });
+        }
 
-(async function main(){
-  console.log(`[INFO] Checking for existing sourcemaps with prefix '${IDENT_PREFIX}'...`);
-  const list = await requestJSON('GET', KIBANA_URL);
-  const artifacts = (list && list.artifacts) || [];
-  const matches = artifacts.filter(a => (a.identifier || '').startsWith(IDENT_PREFIX));
-  if (!matches.length) {
-    console.log('[INFO] No matching sourcemaps found.');
-    return;
-  }
-  console.log(`[INFO] Found ${matches.length} matching sourcemaps; deleting...`);
-  for (const a of matches) {
-    try {
-      await requestVoid('DELETE', `${KIBANA_URL}/${a.id}`);
-      console.log(`[SUCCESS] Deleted sourcemap id=${a.id}`);
-    } catch (e) {
-      console.warn(`[WARN] Failed to delete id=${a.id}: ${e.message}`);
-    }
-  }
-})();
-NODE
+        function requestVoid(method, endpoint) {
+          return new Promise((resolve, reject) => {
+            const u = new url.URL(endpoint);
+            const opts = {
+              method,
+              hostname: u.hostname,
+              path: u.pathname + (u.search || ''),
+              port: u.port || (u.protocol === 'https:' ? 443 : 80),
+              headers: {
+                'kbn-xsrf': 'true',
+                'Authorization': `ApiKey ${API_KEY}`
+              }
+            };
+            const req = https.request(opts, (res) => {
+              if (res.statusCode >= 400) {
+                let data='';
+                res.on('data', c => data += c);
+                res.on('end', () => reject(new Error(`HTTP ${res.statusCode}: ${data}`)));
+              } else {
+                res.resume();
+                res.on('end', resolve);
+              }
+            });
+            req.on('error', reject);
+            req.end();
+          });
+        }
+
+        (async function main(){
+          console.log(`[INFO] Checking for existing sourcemaps with prefix '${IDENT_PREFIX}'...`);
+          const list = await requestJSON('GET', KIBANA_URL);
+          const artifacts = (list && list.artifacts) || [];
+          const matches = artifacts.filter(a => (a.identifier || '').startsWith(IDENT_PREFIX));
+          if (!matches.length) {
+            console.log('[INFO] No matching sourcemaps found.');
+            return;
+          }
+          console.log(`[INFO] Found ${matches.length} matching sourcemaps; deleting...`);
+          for (const a of matches) {
+            try {
+              await requestVoid('DELETE', `${KIBANA_URL}/${a.id}`);
+              console.log(`[SUCCESS] Deleted sourcemap id=${a.id}`);
+            } catch (e) {
+              console.warn(`[WARN] Failed to delete id=${a.id}: ${e.message}`);
+            }
+          }
+        })();
+        NODE
 
     - name: Upload sourcemaps
       shell: bash
