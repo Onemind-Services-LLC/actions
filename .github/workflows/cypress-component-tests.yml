@@ -58,7 +58,7 @@ jobs:
         id: repo-token
         uses: Onemind-Services-LLC/actions/actions/create-repo-token@master
         with:
-          app-id: ${{ inputs.app-id || vars.APP_ID }}
+          app-id: ${{ inputs.app-id }}
           private-key: ${{ secrets.private-key }}
           owner: Onemind-Services-LLC
 
