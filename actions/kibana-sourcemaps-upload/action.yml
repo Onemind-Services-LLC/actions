@@ -38,7 +38,7 @@ inputs:
   chunks-dirs:
     description: Comma-separated list of subdirs relative to build-dir to scan for .js.map
     required: false
-    default: 'chunks,chunks/pages'
+    default: 'chunks,chunks/pages,chunks/app'
   retries:
     description: Retry attempts per upload
     required: false
@@ -212,7 +212,7 @@ runs:
                   -F "service_name=$SERVICE_NAME" \
                   -F "service_version=$SERVICE_VERSION" \
                   -F "bundle_filepath=$bundle" \
-                  -F "sourcemap=@$file;type=application/json")
+                  -F "sourcemap=@$file")
                 if [[ "$http_code" =~ ^2 ]]; then
                   echo "[SUCCESS] $rel"
                   rm -f "$tmp_resp"

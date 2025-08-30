@@ -12,13 +12,13 @@ Uploads Next.js sourcemaps to Kibana/Elastic APM and optionally deletes existing
 - service-name: Override service name (defaults to `package.json` name).
 - service-version: Override version (defaults to `package.json` version).
 - delete-existing: Delete existing sourcemaps matching the identifier. Default: `true`.
-- chunks-dirs: Comma-separated list of subdirs to scan for `.js.map`. Default: `chunks,chunks/pages`.
+- chunks-dirs: Comma-separated list of subdirs to scan for `.js.map`. Default: `chunks,chunks/pages,chunks/app`.
 - retries: Upload retries per file. Default: `3`.
 
 ### Behavior
 
 - Deletes existing sourcemaps by calling `GET /api/apm/sourcemaps` and `DELETE /api/apm/sourcemaps/{id}` for artifacts whose `identifier` starts with `<name>-<version>`.
-- Finds `.js.map` files under `build-dir/chunks` and `build-dir/chunks/pages` by default.
+- Finds `.js.map` files under `build-dir/chunks`, `build-dir/chunks/pages`, and `build-dir/chunks/app` by default.
 - Computes `bundle_filepath` by stripping `.map` and prefixing with `base-url`.
 - Uploads via `multipart/form-data` fields: `service_name`, `service_version`, `bundle_filepath`, and file field `sourcemap`.
 
@@ -37,4 +37,3 @@ Uploads Next.js sourcemaps to Kibana/Elastic APM and optionally deletes existing
     # service-version: 1.2.3
     delete-existing: 'true'
 ```
-
