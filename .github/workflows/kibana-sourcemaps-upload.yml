@@ -71,6 +71,11 @@ on:
         required: false
         default: true
         type: boolean
+      chunks-dirs:
+        description: Comma-separated list of subdirs under build-dir to scan recursively for .js.map
+        required: false
+        default: 'chunks'
+        type: string
     secrets:
       private-key:
         description: GitHub App private key (PEM) used to mint installation token
@@ -125,3 +130,4 @@ jobs:
           build-dir: ${{ inputs.build-dir }}
           working-directory: ${{ inputs.working-directory }}
           delete-existing: ${{ inputs.delete-existing && 'true' || 'false' }}
+          chunks-dirs: ${{ inputs.chunks-dirs }}

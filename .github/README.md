@@ -193,7 +193,7 @@ Notes:
 - File: `.github/workflows/kibana-sourcemaps-upload.yml`
 - Purpose: Install/build a JS project and upload Next.js sourcemaps to Kibana/Elastic APM without requiring any repo scripts or npm deps.
 - Permissions: `contents: read`, `packages: read`.
-- Inputs: `runs-on`, `node-version`, `package-manager`, `working-directory`, `install`, `build`, `build-command`, `registry-url`, `registry-scope`, `app-id`, `base-url`, `kibana-url`, `build-dir`, `delete-existing`.
+- Inputs: `runs-on`, `node-version`, `package-manager`, `working-directory`, `install`, `build`, `build-command`, `registry-url`, `registry-scope`, `app-id`, `base-url`, `kibana-url`, `build-dir`, `delete-existing`, `chunks-dirs` (default `chunks`, searched recursively).
 - Secrets: `private-key` (optional; for App token), `kibana-api-key` (exported internally for upload).
 - Usage: `uses: Onemind-Services-LLC/actions/.github/workflows/kibana-sourcemaps-upload.yml@master`
 
@@ -218,6 +218,7 @@ jobs:
       # build-command: 'npm run build'
       # kibana-url: https://kibana.onemindservices.com/api/apm/sourcemaps
       # build-dir: .next/static
+      # chunks-dirs: 'chunks'  # searched recursively
       # delete-existing: true
       app-id: ${{ vars.APP_ID }}
     secrets:

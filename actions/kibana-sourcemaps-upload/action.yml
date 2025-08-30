@@ -38,7 +38,7 @@ inputs:
   chunks-dirs:
     description: Comma-separated list of subdirs relative to build-dir to scan for .js.map
     required: false
-    default: 'chunks,chunks/pages,chunks/app'
+    default: 'chunks'
   retries:
     description: Retry attempts per upload
     required: false
