@@ -37,11 +37,6 @@ on:
         required: false
         default: '.'
         type: string
-      eslint-config:
-        description: Path to ESLint config file passed with --config
-        required: false
-        default: 'eslint.config.mjs'
-        type: string
       eslint-version:
         description: Optional ESLint version or dist-tag to run via npx (e.g., '9.9.0' or 'latest')
         required: false
@@ -124,7 +119,6 @@ jobs:
         with:
           node-version: ${{ inputs.node-version }}
           working-directory: ${{ inputs.working-directory }}
-          config: ${{ inputs.eslint-config }}
           eslint-args: ${{ inputs.eslint-args }}
           version: ${{ inputs.eslint-version }}
 
