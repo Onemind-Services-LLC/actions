@@ -71,6 +71,9 @@ on:
       password:
         description: Registry password/token
         required: true
+      github-token:
+        description: Token used to authenticate GitHub API requests
+        required: false
 
 permissions:
   contents: read
@@ -124,10 +127,12 @@ jobs:
         env:
           USER_SECRETS: ${{ inputs.build-secrets }}
           ORG_TOKEN: ${{ steps.org_token.outputs.token }}
+          GITHUB_TOKEN: ${{ secrets.github-token }}
         run: |
           {
             if [ -n "${USER_SECRETS}" ]; then printf '%s\n' "${USER_SECRETS}"; fi
             if [ -n "${ORG_TOKEN:-}" ]; then printf 'github_token=%s\n' "${ORG_TOKEN}"; fi
+            if [ -n "${GITHUB_TOKEN:-}" ]; then printf 'github_token=%s\n' "${GITHUB_TOKEN}"; fi
           } | awk 'NF' > merged_secrets.txt
           echo "value<<EOF" >> "$GITHUB_OUTPUT"
           cat merged_secrets.txt >> "$GITHUB_OUTPUT"
