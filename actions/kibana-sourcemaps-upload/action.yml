@@ -59,18 +59,8 @@ runs:
         NAME="$INPUT_SERVICE_NAME"
         VERSION="$INPUT_SERVICE_VERSION"
         if [[ -z "$NAME" || -z "$VERSION" ]]; then
-          node - <<'NODE'
-          const fs = require('fs');
-          const path = require('path');
-          const pkgPath = path.resolve(process.cwd(), 'package.json');
-          const pkg = JSON.parse(fs.readFileSync(pkgPath, 'utf8'));
-          const out = process.env.GITHUB_OUTPUT;
-          const lines = [
-            `service_name=${process.env.INPUT_SERVICE_NAME || pkg.name || ''}`,
-            `service_version=${process.env.INPUT_SERVICE_VERSION || pkg.version || ''}`
-          ];
-          fs.appendFileSync(out, lines.join('\n') + '\n');
-          NODE
+          # Use inline Node to avoid heredoc delimiter issues
+          node -e "const fs=require('fs');const path=require('path');const pkg=JSON.parse(fs.readFileSync(path.resolve(process.cwd(),'package.json'),'utf8'));const out=process.env.GITHUB_OUTPUT;const name=process.env.INPUT_SERVICE_NAME||pkg.name||'';const ver=process.env.INPUT_SERVICE_VERSION||pkg.version||'';fs.appendFileSync(out, \`service_name=\${name}\nservice_version=\${ver}\n\`);"
           exit 0
         fi
         if [[ -z "$NAME" || -z "$VERSION" ]]; then
