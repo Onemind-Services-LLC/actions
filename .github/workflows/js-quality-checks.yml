@@ -81,6 +81,7 @@ on:
 
 permissions:
   contents: read
+  packages: read
 
 jobs:
   quality:
@@ -97,6 +98,7 @@ jobs:
           app-id: ${{ vars.APP_ID }}
           private-key: ${{ secrets.APP_PRIVATE_KEY }}
           owner: Onemind-Services-LLC
+          github-token: ${{ github.actor == 'dependabot[bot]' && github.token || '' }}
 
       - name: Prettier Check
         if: ${{ inputs.run-prettier }}
