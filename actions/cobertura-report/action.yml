@@ -1,5 +1,8 @@
 name: Code Coverage Summary
-description: Generate a coverage summary from Cobertura XML and post a sticky PR comment using irongut/CodeCoverageSummary and marocchino/sticky-pull-request-comment (pinned).
+description: >
+  Generate a coverage summary from Cobertura XML and post a sticky PR
+  comment using irongut/CodeCoverageSummary and
+  marocchino/sticky-pull-request-comment (pinned).
 
 inputs:
   path:
