@@ -10,10 +10,6 @@ inputs:
     description: Directory to run ESLint in
     required: false
     default: '.'
-  config:
-    description: Path to ESLint config file (e.g., eslint.config.mjs)
-    required: false
-    default: 'eslint.config.mjs'
   eslint-args:
     description: Additional ESLint args or target paths
     required: false
@@ -46,18 +42,9 @@ runs:
       working-directory: ${{ inputs.working-directory }}
       run: |
         set -euo pipefail
-        cfg='${{ inputs.config }}'
-        extra_cfg=()
-        if [[ -n "$cfg" ]]; then
-          if [[ -f "$cfg" ]]; then
-            extra_cfg=("--config" "$cfg")
-          else
-            echo "::notice::ESLint config '$cfg' not found in $PWD; running with ESLint defaults/autodiscovery."
-          fi
-        fi
         pkg="eslint"
         if [[ -n "${{ inputs.version }}" ]]; then
           pkg="eslint@${{ inputs.version }}"
         fi
-        echo "+ npx --yes -p $pkg eslint --max-warnings=0 ${extra_cfg[*]} ${{ inputs.eslint-args }}"
-        npx --yes -p "$pkg" eslint --max-warnings=0 "${extra_cfg[@]}" ${{ inputs.eslint-args }}
+        echo "+ npx --yes -p $pkg --max-warnings=0 ${extra_cfg[*]} ${{ inputs.eslint-args }}"
+        npx --yes -p "$pkg" --max-warnings=0 "${extra_cfg[@]}" ${{ inputs.eslint-args }}
