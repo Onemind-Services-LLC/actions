@@ -205,22 +205,28 @@ runs:
               backoff=1
               while (( attempt <= max )); do
                 echo "+ Upload $rel (attempt $attempt/$max)"
-                if curl -sS -f -X POST "$KIBANA_URL" \
+                tmp_resp="$(mktemp)"
+                http_code=$(curl -sS -o "$tmp_resp" -w "%{http_code}" -X POST "$KIBANA_URL" \
                   -H 'kbn-xsrf: true' \
                   -H "Authorization: ApiKey $KIBANA_API_KEY" \
                   -F "service_name=$SERVICE_NAME" \
                   -F "service_version=$SERVICE_VERSION" \
                   -F "bundle_filepath=$bundle" \
-                  -F "sourcemap=@$file;type=application/json" > /dev/null; then
+                  -F "sourcemap=@$file;type=application/json")
+                if [[ "$http_code" =~ ^2 ]]; then
                   echo "[SUCCESS] $rel"
+                  rm -f "$tmp_resp"
                   break
                 else
-                  status=$?
+                  echo "[ERROR] Upload failed for $rel (HTTP $http_code). Response:" >&2
+                  # Print at most the last 4KB to keep logs tidy
+                  tail -c 4096 "$tmp_resp" >&2 || true
+                  rm -f "$tmp_resp"
                   if (( attempt == max )); then
-                    echo "::error::Failed to upload $rel (curl exit $status)" >&2
+                    echo "::error::Failed to upload $rel after $max attempts (HTTP $http_code)" >&2
                     exit 1
                   fi
-                  echo "[WARN] Upload failed for $rel. Retrying in ${backoff}s..."
+                  echo "[WARN] Retrying in ${backoff}s..."
                   sleep "$backoff"
                   backoff=$(( backoff * 2 ))
                   attempt=$(( attempt + 1 ))
