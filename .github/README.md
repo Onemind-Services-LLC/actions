@@ -41,8 +41,9 @@ jobs:
 - File: `.github/workflows/js-quality-checks.yml`
 - Purpose: Orchestrates Prettier, ESLint, Browserslist DB lock, optional TypeScript type check and bundle integrity checks.
 - Permissions: `contents: read`.
-- Inputs: `runs-on`, `app-id` (optional; falls back to `vars.APP_ID`), `node-version`, `working-directory`, `patterns`, `eslint-args`, `eslint-config`, `run-prettier`, `run-eslint`, `run-browserslist`, `run-typescript`, `run-bundle-check`, `bundle-dist-path`, `bundle-command`, `tsconfig`, `tsc-args`.
-- Secrets: `private-key` (optional; GitHub App private key for npm auth via installation token). If your repo installs private npm packages, pass this; otherwise you can omit.
+- Inputs: `runs-on`, `app-id` (optional; falls back to `vars.APP_ID`), `node-version`, `prettier-version`, `eslint-version`, `working-directory`, `patterns`, `eslint-args`, `eslint-config`, `run-prettier`, `run-eslint`, `run-browserslist`, `run-typescript`, `run-bundle-check`, `bundle-dist-path`, `bundle-command`, `tsconfig`, `tsc-args`.
+- Notes: Prettier/ESLint are executed via `npx` in their actions and do not install repository dependencies. If your project requires installs for other steps (TypeScript, bundle), configure those in the respective actions.
+- Secrets: none required by default for these checks.
 
 Example:
 

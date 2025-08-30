@@ -8,7 +8,7 @@ Run ESLint and fail on any issue (treats warnings as errors).
 - `working-directory`: Directory to run in (default: `.`).
 - `config`: Path to ESLint config file (default: `eslint.config.mjs`). If the file is not found in the working directory, the action runs with ESLint's autodiscovery.
 - `eslint-args`: Additional args/targets (default: `.`).
-- `npm-token` (optional): NPM auth token used when your project depends on private packages (e.g., GitHub Packages). Provide a token if private dependencies are required during install.
+- `version` (optional): ESLint version or dist-tag to run via `npx` (e.g., `9.9.0` or `latest`). Defaults to the `npx` resolution if omitted.
 
 ## Example
 
@@ -22,8 +22,8 @@ steps:
       working-directory: '.'
       config: 'eslint.config.mjs'
       eslint-args: '.'
-      # npm-token: ${{ steps.repo-token.outputs.token }} # if private packages are needed
+      # version: '9.9.0' # optional
 ```
 
 Notes:
-- If your repository uses private packages (e.g., from GitHub Packages), pass an `npm-token`. In reusable workflows, you can generate a scoped token via the `create-repo-token` action and forward it here.
+- This action runs ESLint via `npx` and does not install repository dependencies. If your ESLint config requires plugins/configs that are only present in your repo, either vendor them into the repo or run ESLint from your own workflow with your preferred install strategy.

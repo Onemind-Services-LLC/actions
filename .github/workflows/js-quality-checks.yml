@@ -17,6 +17,11 @@ on:
         required: false
         default: '22.x'
         type: string
+      prettier-version:
+        description: Optional Prettier version or dist-tag to run via npx (e.g., '3.3.3' or 'latest')
+        required: false
+        default: ''
+        type: string
       working-directory:
         description: Directory to run checks in
         required: false
@@ -36,6 +41,11 @@ on:
         description: Path to ESLint config file passed with --config
         required: false
         default: 'eslint.config.mjs'
+        type: string
+      eslint-version:
+        description: Optional ESLint version or dist-tag to run via npx (e.g., '9.9.0' or 'latest')
+        required: false
+        default: ''
         type: string
       run-prettier:
         description: Run Prettier check
@@ -99,13 +109,6 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v5
 
-      - name: Create App Token
-        id: repo-token
-        uses: Onemind-Services-LLC/actions/actions/create-repo-token@master
-        with:
-          owner: Onemind-Services-LLC
-          github-token: ${{ github.token }}
-
       - name: Prettier Check
         if: ${{ inputs.run-prettier }}
         uses: Onemind-Services-LLC/actions/actions/prettier-check@master
@@ -113,6 +116,7 @@ jobs:
           node-version: ${{ inputs.node-version }}
           working-directory: ${{ inputs.working-directory }}
           patterns: ${{ inputs.patterns }}
+          prettier-version: ${{ inputs.prettier-version }}
 
       - name: ESLint Check
         if: ${{ inputs.run-eslint }}
@@ -122,7 +126,7 @@ jobs:
           working-directory: ${{ inputs.working-directory }}
           config: ${{ inputs.eslint-config }}
           eslint-args: ${{ inputs.eslint-args }}
-          npm-token: ${{ steps.repo-token.outputs.token }}
+          eslint-version: ${{ inputs.eslint-version }}
 
       - name: Browserslist Lock Check
         if: ${{ inputs.run-browserslist }}

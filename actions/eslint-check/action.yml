@@ -18,8 +18,8 @@ inputs:
     description: Additional ESLint args or target paths
     required: false
     default: '.'
-  npm-token:
-    description: NPM auth token for private registry access
+  version:
+    description: Optional ESLint version or dist-tag to run via npx (e.g., '9.9.0' or 'latest')
     required: false
     default: ''
 
@@ -38,11 +38,8 @@ runs:
         package-manager: ${{ steps.pm.outputs.package-manager }}
         node-version: ${{ inputs.node-version }}
         working-directory: ${{ inputs.working-directory }}
-        install: 'true'
+        install: 'false'
         build: 'false'
-        registry-scope: "@onemind-services-llc"
-        registry-url: "https://npm.pkg.github.com"
-        npm-token: ${{ inputs.npm-token }}
 
     - name: Run ESLint
       shell: bash
@@ -58,5 +55,9 @@ runs:
             echo "::notice::ESLint config '$cfg' not found in $PWD; running with ESLint defaults/autodiscovery."
           fi
         fi
-        echo "+ npx eslint --max-warnings=0 ${extra_cfg[*]} ${{ inputs.eslint-args }}"
-        npx eslint --max-warnings=0 "${extra_cfg[@]}" ${{ inputs.eslint-args }}
+        pkg="eslint"
+        if [[ -n "${{ inputs.version }}" ]]; then
+          pkg="eslint@${{ inputs.version }}"
+        fi
+        echo "+ npx --yes $pkg --max-warnings=0 ${extra_cfg[*]} ${{ inputs.eslint-args }}"
+        npx --yes "$pkg" --max-warnings=0 "${extra_cfg[@]}" ${{ inputs.eslint-args }}
