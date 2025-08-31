@@ -159,6 +159,7 @@ runs:
         working-directory: ${{ inputs.working-directory }}
       env:
         FORCE_FIREFOX_CDP: ${{ inputs.browser == 'firefox' && '1' || '' }}
+        NODE_AUTH_TOKEN: ${{ inputs.npm-token }}
 
     - name: Upload screenshots on failure
       if: ${{ failure() }}
