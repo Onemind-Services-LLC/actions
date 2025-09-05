@@ -34,7 +34,7 @@ jobs:
           app-id: ${{ inputs.app-id }}
           private-key: ${{ secrets.private-key }}
           owner: Onemind-Services-LLC
-          github-token: ${{ github.actor == 'dependabot[bot]' && github.token || '' }}
+          github-token: ${{ github.actor == 'dependabot[bot]' && github.token || secrets.GIT_TOKEN }}
 
       - name: Checkout repository
         uses: actions/checkout@v5
