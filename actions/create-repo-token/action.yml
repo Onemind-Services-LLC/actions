@@ -5,6 +5,7 @@ inputs:
   app-id:
     description: GitHub App ID used to create the installation token.
     required: false
+    default: "1824662"
   private-key:
     description: Private key (PEM) for the GitHub App.
     required: false
