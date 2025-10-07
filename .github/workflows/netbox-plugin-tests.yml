@@ -133,6 +133,15 @@ jobs:
           extra-install-commands: |
             pip install -e .
 
+      - name: Copy Plugin Coverage Configuration
+        run: |
+          plugin_coveragerc="${{ inputs.plugin-name }}/.coveragerc"
+          netbox_root="${{ env.NETBOX_WORKING_DIRECTORY }}/.coveragerc"
+
+          if [ -f "$plugin_coveragerc" ]; then
+            cp -f "$plugin_coveragerc" "$netbox_root"
+          fi
+
       - name: Copy NetBox Test Configuration
         run: |
           cp -f "${{ env.ACTIONS_WORKING_DIRECTORY }}/assets/netbox-plugin-tests/configuration.py" \
