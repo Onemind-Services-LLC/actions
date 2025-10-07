@@ -104,6 +104,9 @@ runs:
       working-directory: ${{ inputs.working-directory }}
       run: |
         CMD=(coverage run)
+        if [ -n "${COVERAGE_RCFILE:-}" ]; then
+          CMD+=("--rcfile=${COVERAGE_RCFILE}")
+        fi
         if [ -n "${{ inputs.coverage-source }}" ]; then
           CMD+=("--source=${{ inputs.coverage-source }}")
         fi
@@ -113,7 +116,15 @@ runs:
       shell: bash
       if: ${{ inputs.coverage-report == 'true' }}
       working-directory: ${{ inputs.working-directory }}
-      run: coverage xml ${{ inputs.coverage-args }}
+      run: |
+        CMD=(coverage xml)
+        if [ -n "${COVERAGE_RCFILE:-}" ]; then
+          CMD+=("--rcfile=${COVERAGE_RCFILE}")
+        fi
+        if [ -n "${{ inputs.coverage-args }}" ]; then
+          CMD+=(${{ inputs.coverage-args }})
+        fi
+        "${CMD[@]}"
 
     - name: Coverage Reporter
       if: ${{ inputs.coverage-report == 'true' }}
