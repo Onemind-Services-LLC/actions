@@ -19,7 +19,7 @@ on:
       netbox-version:
         description: 'NetBox version to use, eg: v4.3.0'
         required: false
-        default: 'v4.3.7'
+        default: 'v4.4.4'
         type: string
       python-version:
         description: 'Python version to use, eg: 3.12'
