@@ -135,40 +135,68 @@ jobs:
 
       - name: Copy NetBox Test Configuration
         run: |
-          cp -f "${{ env.ACTIONS_WORKING_DIRECTORY }}/assets/netbox-plugin-tests/configuration.py" \
+          cp -f "${{ env.NETBOX_WORKING_DIRECTORY }}/netbox/netbox/configuration_testing.py" \
             "${{ env.NETBOX_WORKING_DIRECTORY }}/netbox/netbox/configuration.py"
 
-      - name: Add plugin to NetBox configuration
+      - name: Update NetBox plugins list
         env:
           CONF_PATH: ${{ env.NETBOX_WORKING_DIRECTORY }}/netbox/netbox/configuration.py
           PLUGIN_NAME: ${{ inputs.plugin-name }}
           PLUGIN_CONFIG: ${{ inputs.plugin-configuration }}
         run: |
           python - << 'PY'
-          import json, os, sys
+          import json, os, re, sys
 
           conf_path = os.environ["CONF_PATH"]
           plugin_name = os.environ["PLUGIN_NAME"]
           raw = os.environ.get("PLUGIN_CONFIG", "{}")
 
-          # Parse user-supplied JSON; fail fast on invalid JSON
           try:
               parsed = json.loads(raw) if raw.strip() else {}
           except json.JSONDecodeError as e:
-              print(f"Invalid plugin-configuration JSON: {e}", file=sys.stderr)
+              print(f"Invalid JSON: {e}", file=sys.stderr)
               sys.exit(1)
 
-          # Accept either full mapping {plugin_name: {...}} or inner config {...}
-          if isinstance(parsed, dict) and plugin_name in parsed:
-              config = parsed
-          else:
-              config = {plugin_name: parsed}
+          with open(conf_path, "r", encoding="utf-8") as f:
+              content = f.read()
 
-          # Write valid Python literals (not JSON) to configuration.py
-          with open(conf_path, "a", encoding="utf-8") as f:
-              f.write(f"PLUGINS = ['{plugin_name}']\n")
-              f.write("PLUGINS_CONFIG = " + repr(config) + "\n")
+          # Find PLUGINS block
+          match = re.search(r"PLUGINS\s*=\s*\[(.*?)\]", content, re.S)
+          if match:
+              body = match.group(1)
+
+              # extract existing plugin names
+              plugins = [
+                  p.strip().strip("'\"")
+                  for p in body.split(",")
+                  if p.strip()
+              ]
+
+              # remove dummy + duplicates
+              plugins = [p for p in plugins if p != "netbox.tests.dummy_plugin"]
+
+              if plugin_name not in plugins:
+                  plugins.append(plugin_name)
+
+              new_block = "PLUGINS = [\n" + "".join(
+                  f"    '{p}',\n" for p in plugins
+              ) + "]"
+
+              content = content[:match.start()] + new_block + content[match.end():]
+          else:
+              # If no PLUGINS found, create one
+              new_block = f"\nPLUGINS = ['{plugin_name}']\n"
+              content += new_block
+
+          # append/replace PLUGINS_CONFIG
+          config_line = "PLUGINS_CONFIG = " + repr({plugin_name: parsed})
+
+          content = re.sub(r"PLUGINS_CONFIG\s*=.*", "", content).rstrip() + "\n" + config_line + "\n"
+
+          with open(conf_path, "w", encoding="utf-8") as f:
+              f.write(content)
           PY
+
 
       - name: Run Tests
         uses: Onemind-Services-LLC/actions/actions/django-test-runner@master
