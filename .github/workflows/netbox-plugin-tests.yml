@@ -40,7 +40,7 @@ on:
         description: 'Extra arguments passed to `coverage xml` (e.g. --omit=*/migrations/*,*/templates/*,*/static/*)'
         required: false
         type: string
-        default: '--omit=*/migrations/*,*/templates/*,*/static/*,*/tests/*',
+        default: '--omit=*/migrations/*,*/templates/*,*/static/*,*/tests/*'
     secrets:
       private-key:
         description: 'The private key for the GitHub App to use for checkout of private repositories'
