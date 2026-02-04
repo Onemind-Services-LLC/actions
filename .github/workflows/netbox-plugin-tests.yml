@@ -209,7 +209,7 @@ jobs:
           working-directory: ${{ env.NETBOX_WORKING_DIRECTORY }}/netbox
           django-settings-module-key: NETBOX_CONFIGURATION
           django-settings-module: netbox.configuration
-          test-args: ${{ inputs.plugin-name }}.tests --parallel
+          test-args: ${{ inputs.plugin-name }}.tests
           coverage-report: true
           coverage-github-token: ${{ steps.repo-token.outputs.token }}
           coverage-pull-request-number: ${{ github.event.pull_request.number || '' }}
