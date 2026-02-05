@@ -130,7 +130,7 @@ jobs:
 - File: `.github/workflows/netbox-plugin-tests.yml`
 - Purpose: Spin up Redis/Postgres, install NetBox + plugin, and run tests.
 - Permissions: `contents: read`, `checks: write`.
-- Inputs: `app-id`, `plugin-name`, `plugin-configuration`, `netbox-version`, `python-version`, `runs-on`, `coverage-minimum` (default `80`).
+- Inputs: `app-id`, `plugin-name`, `plugin-configuration`, `netbox-version`, `python-version`, `runs-on`, `coverage-minimum` (default `80`), `coverage-args` (default `--omit=*/migrations/*,*/templates/*,*/static/*,*/tests/*`).
 - Secrets: `private-key` (optional; GitHub App private key used to mint an installation token).
 - Usage: `uses: Onemind-Services-LLC/actions/.github/workflows/netbox-plugin-tests.yml@master`
 
