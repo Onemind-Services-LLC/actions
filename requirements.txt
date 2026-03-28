@@ -4,9 +4,9 @@
 #
 #    pip-compile --output-file=requirements.txt requirements.in
 #
-pathspec==0.12.1
+pathspec==1.0.4
     # via yamllint
-pyyaml==6.0.2
+pyyaml==6.0.3
     # via yamllint
-yamllint==1.37.1
+yamllint==1.38.0
     # via -r requirements.in
