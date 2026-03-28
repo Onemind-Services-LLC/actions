@@ -35,7 +35,7 @@ on:
         description: 'Minimum acceptable code coverage percentage'
         required: false
         type: number
-        default: 80
+        default: 100
       coverage-args:
         description: 'Extra arguments passed to `coverage xml` (e.g. --omit=*/migrations/*,*/templates/*,*/static/*)'
         required: false
