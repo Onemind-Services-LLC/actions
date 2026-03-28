@@ -11,7 +11,7 @@ Practical guidance for using the actions and reusable workflows in this repo saf
 
 - Least privilege: Declare only the permissions a job needs (e.g., `contents: read`). Add `id-token: write` only when required (e.g., OIDC signing).
 - Secrets hygiene: Never echo secrets. Pass via `secrets.*` or masked env vars, and prefer short‑lived tokens.
-- GitHub App tokens: Prefer GitHub App auth over PATs. Use `actions/create-repo-token@master` from this repo to mint installation tokens scoped to specific repos.
+- Git auth tokens: Use `GITHUB_TOKEN` by default. If a workflow needs broader package or cross-repo access, rely on inherited `ORG_GITHUB_TOKEN` and enable that workflow's org-token flag instead of adding GitHub App token plumbing.
 - Logs: Avoid printing sensitive configuration (e.g., plugin configs, tokens). Use summaries or artifacts for non‑sensitive outputs.
 
 ## Caching & Performance
