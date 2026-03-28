@@ -18,7 +18,7 @@ Installs dependencies and builds a Node.js project using npm with caching and op
 
 ## Caching
 
-- Uses `actions/setup-node@v4` with `cache: npm` and `cache-dependency-path: <working-directory>/package-lock.json`.
+- Uses `actions/setup-node@v6` with `cache: npm` and `cache-dependency-path: <working-directory>/package-lock.json`.
 
 ## Usage
 
@@ -27,7 +27,7 @@ jobs:
   build:
     runs-on: ubuntu-22.04-sh
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
 
       - name: Install & Build
         uses: Onemind-Services-LLC/actions/actions/npm-install-build@master

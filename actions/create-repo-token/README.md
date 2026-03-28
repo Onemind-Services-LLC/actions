@@ -31,7 +31,7 @@ jobs:
   hello-world:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
 
       - name: Create token for current repo (implicit defaults)
         uses: Onemind-Services-LLC/actions/actions/create-repo-token@master

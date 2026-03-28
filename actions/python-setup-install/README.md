@@ -13,7 +13,7 @@ Set up Python, optionally upgrade `pip`, and install dependencies from `requirem
 
 ## Behavior
 
-- Uses `actions/setup-python@v5` to install the requested Python version.
+- Uses `actions/setup-python@v6` to install the requested Python version.
 - If provided, configures a temporary git URL rewrite using the token for private repo access.
 - Installs from the following files if they exist in the repo root:
   - `requirements.txt`
@@ -31,7 +31,7 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
 
       - name: Python Setup & Install
         uses: OWNER/REPO/actions/python-setup-install@master
@@ -67,7 +67,7 @@ jobs:
       matrix:
         python-version: ['3.10', '3.11', '3.12']
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
 
       - name: Python Setup & Install
         uses: OWNER/REPO/actions/python-setup-install@master

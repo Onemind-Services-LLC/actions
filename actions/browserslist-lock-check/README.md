@@ -12,7 +12,7 @@ Run `update-browserslist-db` and fail if it modifies `package-lock.json`, `yarn.
 
 ```yaml
 steps:
-  - uses: actions/checkout@v5
+  - uses: actions/checkout@v6
   - name: Browserslist Lock Check
     uses: Onemind-Services-LLC/actions/actions/browserslist-lock-check@master
     with:

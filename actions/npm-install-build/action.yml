@@ -52,7 +52,7 @@ runs:
         echo "::warning::Use 'Onemind-Services-LLC/actions/actions/node-install-build' with 'package-manager'."
 
     - name: Setup Node.js
-      uses: actions/setup-node@v4
+      uses: actions/setup-node@v6
       with:
         node-version: ${{ inputs.node-version }}
         cache: npm

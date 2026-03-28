@@ -45,7 +45,7 @@ jobs:
   build:
     runs-on: ubuntu-22.04-sh
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
 
       - name: Build, Push, and Sign
         uses: Onemind-Services-LLC/actions/actions/docker-build-push@master
@@ -107,7 +107,7 @@ jobs:
   build-only:
     runs-on: ubuntu-22.04-sh
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
       - name: Build Only (no push)
         uses: Onemind-Services-LLC/actions/actions/docker-build-push@master
         with:

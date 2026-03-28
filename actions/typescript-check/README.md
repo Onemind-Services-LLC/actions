@@ -20,7 +20,7 @@ Runs the TypeScript compiler in type-check mode (no emit) with auto detection of
 
 ```yaml
 steps:
-  - uses: actions/checkout@v5
+  - uses: actions/checkout@v6
 
   - name: TypeScript Type Check
     uses: Onemind-Services-LLC/actions/actions/typescript-check@master

@@ -47,7 +47,7 @@ jobs:
       matrix:
         python-version: ["3.10", "3.11", "3.12", "3.13"]
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
 
       - name: Python Library Tests
         uses: OWNER/REPO/actions/python-library-tests@master

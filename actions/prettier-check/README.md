@@ -13,7 +13,7 @@ Run Prettier in check mode with caching over a configurable glob.
 
 ```yaml
 steps:
-  - uses: actions/checkout@v5
+  - uses: actions/checkout@v6
   - name: Prettier
     uses: Onemind-Services-LLC/actions/actions/prettier-check@master
     with:

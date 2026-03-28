@@ -18,7 +18,7 @@ Order of precedence: pnpm > yarn > npm. If no lockfile is found, it returns a co
 
 ```yaml
 steps:
-  - uses: actions/checkout@v5
+  - uses: actions/checkout@v6
 
   - id: pm
     name: Detect Package Manager

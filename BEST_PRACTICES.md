@@ -16,8 +16,9 @@ Practical guidance for using the actions and reusable workflows in this repo saf
 
 ## Caching & Performance
 
-- Node: Use `actions/setup-node@v4` caching tied to lockfiles. Ensure the correct lockfile exists for npm/yarn/pnpm.
-- Python: Use `actions/setup-python@v5` with pip caching; keep `requirements*.txt` up‑to‑date. Separate installs from tests when helpful for cache efficiency.
+- Node: Use `actions/setup-node@v6` caching tied to lockfiles. Ensure the correct lockfile exists for npm/yarn/pnpm.
+- Python: Use `actions/setup-python@v6` with pip caching; keep `requirements*.txt` up‑to‑date. Separate installs from tests when helpful for cache efficiency.
+- Self-hosted runners: Current GitHub-maintained `v6` actions in this repo require Actions Runner `v2.327.1` or newer.
 - Layered steps: Keep install/build/test as separate steps to improve cache reuse and failure visibility.
 
 ## Deterministic Builds
@@ -75,4 +76,3 @@ Practical guidance for using the actions and reusable workflows in this repo saf
 - Quoting JSON in YAML: Wrap JSON strings in single quotes and keep inner quotes as double quotes to avoid YAML parsing issues.
 - Deprecated output syntax: Write outputs to `$GITHUB_OUTPUT` instead of using deprecated `set-output`.
 - Floating refs: Never use floating refs for third‑party actions (must pin to tags/SHAs).
-

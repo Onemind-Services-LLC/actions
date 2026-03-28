@@ -24,7 +24,7 @@ Installs dependencies and builds a Node.js project using npm, Yarn, pnpm, or npx
 
 ## Caching
 
-- Uses `actions/setup-node@v4` with `cache: npm`/`yarn`/`pnpm` and dependency path:
+- Uses `actions/setup-node@v6` with `cache: npm`/`yarn`/`pnpm` and dependency path:
   - npm: `<working-directory>/package-lock.json`
   - yarn: `<working-directory>/yarn.lock`
   - pnpm: `<working-directory>/pnpm-lock.yaml`
@@ -36,7 +36,7 @@ jobs:
   build:
     runs-on: ubuntu-22.04-sh
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
 
       - name: Install & Build (npm)
         uses: Onemind-Services-LLC/actions/actions/node-install-build@master
