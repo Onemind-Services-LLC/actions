@@ -106,6 +106,8 @@ jobs:
           build-command: ${{ inputs.build-command }}
           registry-url: ${{ inputs.registry-url }}
           registry-scope: ${{ inputs.registry-scope }}
+          # `ORG_GITHUB_TOKEN` is intentionally consumed only via `secrets: inherit`
+          # so callers cannot remap a different secret under that name.
           npm-token: ${{ inputs.use-org-github-token && secrets.ORG_GITHUB_TOKEN || github.token }}
 
       - name: Upload sourcemaps

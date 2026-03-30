@@ -59,6 +59,8 @@ jobs:
   analyze:
     name: Analyze Bundle
     runs-on: ${{ inputs.runs-on }}
+    # Intentionally rely on `secrets: inherit` from the caller so `ORG_GITHUB_TOKEN`
+    # cannot be remapped via `workflow_call.secrets`.
     env:
       NEXT_TELEMETRY_DISABLED: 1
       SELECTED_GITHUB_TOKEN: ${{ inputs.use-org-github-token && secrets.ORG_GITHUB_TOKEN || github.token }}
