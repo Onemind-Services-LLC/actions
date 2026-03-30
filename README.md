@@ -54,7 +54,7 @@ Notes
 - Use `[skip ci]` for docs-only changes if no validation is needed.
 - Open PRs with:
   - Clear description, linked Jira, and scope of change.
-  - Notes on backwards compatibility and any required secrets/permissions (e.g., `vars.APP_ID`, `secrets.APP_PRIVATE_KEY`).
+  - Notes on backwards compatibility and any required secrets/permissions (e.g., optional use of inherited `secrets.ORG_GITHUB_TOKEN` plus any workflow flag that opts into it).
   - Screenshots or logs for behavior changes.
   - Keep diffs small and update module READMEs when inputs/behavior change.
 
