@@ -14,7 +14,7 @@ See also: [Actions Overview](../actions/README.md)
 - Purpose: Run Cypress component tests across a browser matrix with selectable GitHub Packages auth.
 - Permissions: `contents: read`, `packages: read`.
 - Inputs: `runs-on`, `browsers` (JSON array), `registry-url`, `registry-scope`, `working-directory`, `node-version`, `use-org-github-token`.
-- Notes: If `use-org-github-token: true`, the workflow uses `secrets.ORG_GITHUB_TOKEN` when available and otherwise falls back to `GITHUB_TOKEN`.
+- Notes: If `use-org-github-token: true`, the workflow uses inherited `secrets.ORG_GITHUB_TOKEN` when available and otherwise falls back to `GITHUB_TOKEN`. When callers use `secrets: inherit`, the workflow can consume `ORG_GITHUB_TOKEN` without declaring it under `workflow_call.secrets`; that omission is intentional so callers cannot remap another secret under that name.
 - Usage: `uses: Onemind-Services-LLC/actions/.github/workflows/cypress-component-tests.yml@master`
 
 Example:
@@ -64,7 +64,7 @@ jobs:
 - Purpose: Generates Next.js bundle report on PRs, uploads artifact, compares with base, and comments results.
 - Permissions: `contents: read`, `actions: read`, `packages: read`, `pull-requests: write`.
 - Inputs: `runs-on`, `node-version`, `registry-url`, `registry-scope`, `working-directory`, `install-command`, `build-command`, `extra-env`, `use-org-github-token`.
-- Notes: If `use-org-github-token: true`, the workflow uses `secrets.ORG_GITHUB_TOKEN` when available and otherwise falls back to `GITHUB_TOKEN`.
+- Notes: If `use-org-github-token: true`, the workflow uses inherited `secrets.ORG_GITHUB_TOKEN` when available and otherwise falls back to `GITHUB_TOKEN`. When callers use `secrets: inherit`, the workflow can consume `ORG_GITHUB_TOKEN` without declaring it under `workflow_call.secrets`; that omission is intentional so callers cannot remap another secret under that name.
 
 ## Docker Build + Push + Sign
 
@@ -78,6 +78,7 @@ jobs:
 Notes:
 - When `org-token: 'true'`, the workflow injects `github_token=...` into Buildx secrets.
 - Set `use-org-github-token: true` to inject inherited `ORG_GITHUB_TOKEN` when available; otherwise it injects `GITHUB_TOKEN`.
+- When callers use `secrets: inherit`, the workflow can consume `ORG_GITHUB_TOKEN` without declaring it under `workflow_call.secrets`; that omission is intentional so callers cannot remap another secret under that name.
 - Any user-provided `build-secrets` are merged with the selected token; duplicate keys are not de-duplicated (last write wins).
 
 ## Helm Charts CI
@@ -127,7 +128,7 @@ jobs:
 - Purpose: Spin up Redis/Postgres, install NetBox + plugin, and run tests.
 - Permissions: `contents: read`, `pull-requests: write`.
 - Inputs: `plugin-name`, `plugin-configuration`, `netbox-version`, `python-version`, `runs-on`, `coverage-minimum` (default `100`), `coverage-args` (default `--omit=*/migrations/*,*/templates/*,*/static/*,*/tests/*`), `use-org-github-token`.
-- Notes: If `use-org-github-token: true`, the workflow uses `secrets.ORG_GITHUB_TOKEN` when available and otherwise falls back to `GITHUB_TOKEN`.
+- Notes: If `use-org-github-token: true`, the workflow uses inherited `secrets.ORG_GITHUB_TOKEN` when available and otherwise falls back to `GITHUB_TOKEN`. When callers use `secrets: inherit`, the workflow can consume `ORG_GITHUB_TOKEN` without declaring it under `workflow_call.secrets`; that omission is intentional so callers cannot remap another secret under that name.
 - Usage: `uses: Onemind-Services-LLC/actions/.github/workflows/netbox-plugin-tests.yml@master`
 
 Notes:
@@ -188,7 +189,7 @@ Notes:
 - Permissions: `contents: read`, `packages: read`.
 - Inputs: `runs-on`, `node-version`, `package-manager`, `working-directory`, `install`, `build`, `build-command`, `registry-url`, `registry-scope`, `base-url`, `kibana-url`, `build-dir`, `delete-existing`, `chunks-dirs` (default `chunks`, searched recursively), `use-org-github-token`.
 - Secrets: `kibana-api-key` (exported internally for upload).
-- Notes: If `use-org-github-token: true`, the workflow uses `secrets.ORG_GITHUB_TOKEN` when available and otherwise falls back to `GITHUB_TOKEN`.
+- Notes: If `use-org-github-token: true`, the workflow uses inherited `secrets.ORG_GITHUB_TOKEN` when available and otherwise falls back to `GITHUB_TOKEN`. When callers use `secrets: inherit`, the workflow can consume `ORG_GITHUB_TOKEN` without declaring it under `workflow_call.secrets`; that omission is intentional so callers cannot remap another secret under that name.
 - Usage: `uses: Onemind-Services-LLC/actions/.github/workflows/kibana-sourcemaps-upload.yml@master`
 
 Example:

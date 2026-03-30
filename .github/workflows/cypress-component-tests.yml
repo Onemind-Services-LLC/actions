@@ -62,6 +62,8 @@ jobs:
           browser: ${{ matrix.browser }}
           registry-scope: ${{ inputs.registry-scope }}
           registry-url: ${{ inputs.registry-url }}
+          # `ORG_GITHUB_TOKEN` is intentionally consumed only via `secrets: inherit`
+          # so callers cannot remap a different secret under that name.
           npm-token: ${{ inputs.use-org-github-token && secrets.ORG_GITHUB_TOKEN || github.token }}
           working-directory: ${{ inputs.working-directory }}
           node-version: ${{ inputs.node-version }}

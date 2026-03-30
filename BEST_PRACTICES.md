@@ -11,7 +11,7 @@ Practical guidance for using the actions and reusable workflows in this repo saf
 
 - Least privilege: Declare only the permissions a job needs (e.g., `contents: read`). Add `id-token: write` only when required (e.g., OIDC signing).
 - Secrets hygiene: Never echo secrets. Pass via `secrets.*` or masked env vars, and prefer short‑lived tokens.
-- Git auth tokens: Use `GITHUB_TOKEN` by default. If a workflow needs broader package or cross-repo access, rely on inherited `ORG_GITHUB_TOKEN` and enable that workflow's org-token flag instead of adding GitHub App token plumbing.
+- Git auth tokens: Use `GITHUB_TOKEN` by default. If a workflow needs broader package or cross-repo access, rely on inherited `ORG_GITHUB_TOKEN` and enable that workflow's org-token flag instead of adding GitHub App token plumbing. Reusable workflows intentionally consume it via `secrets: inherit` rather than `workflow_call.secrets` so callers cannot remap a different secret under that name.
 - Logs: Avoid printing sensitive configuration (e.g., plugin configs, tokens). Use summaries or artifacts for non‑sensitive outputs.
 
 ## Caching & Performance
@@ -43,7 +43,7 @@ Practical guidance for using the actions and reusable workflows in this repo saf
 
 - Browser matrix: For reusable workflows, pass browsers as a JSON array string (e.g., `'["chrome","edge","firefox"]'`).
 - Component vs e2e: Use `component: true` for component tests; set `start` and `wait-on` for e2e.
-- Private npm: Use GitHub App credentials to mint a token for scoped private registry access.
+- Private npm: Use `GITHUB_TOKEN` by default, or enable a workflow's `use-org-github-token` flag with `secrets: inherit` when broader package access is required.
 
 ## Python Testing
 

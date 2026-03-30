@@ -113,6 +113,8 @@ jobs:
         env:
           USER_SECRETS: ${{ inputs.build-secrets }}
           ORG_TOKEN_ENABLED: ${{ inputs.org-token }}
+          # Intentionally rely on `secrets: inherit` from the caller so
+          # `ORG_GITHUB_TOKEN` cannot be remapped via `workflow_call.secrets`.
           SELECTED_GITHUB_TOKEN: ${{ inputs.use-org-github-token && secrets.ORG_GITHUB_TOKEN || github.token }}
         run: |
           {
