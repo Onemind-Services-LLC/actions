@@ -60,7 +60,7 @@ runs:
     - name: Upgrade Pip
       if: ${{ inputs.upgrade-pip == 'true' }}
       shell: bash
-      run: pip install --upgrade pip
+      run: pip install --upgrade pip setuptools wheel
 
     - name: Run Pre-Install Commands
       if: ${{ inputs.pre-install-commands != '' }}

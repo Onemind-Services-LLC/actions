@@ -117,7 +117,7 @@ jobs:
           token: ${{ steps.repo-token.outputs.token }}
 
       - name: Setup NetBox Requirements
-        uses: Onemind-Services-LLC/actions/actions/python-setup-install@master
+        uses: Onemind-Services-LLC/actions/actions/python-setup-install@feature/plugin-driven-test-config
         with:
           python-version: ${{ inputs.python-version }}
           working-directory: ${{ env.NETBOX_WORKING_DIRECTORY }}
@@ -125,7 +125,7 @@ jobs:
             sudo apt-get update && sudo apt-get install -y libpq-dev
 
       - name: Setup Plugin Requirements
-        uses: Onemind-Services-LLC/actions/actions/python-setup-install@master
+        uses: Onemind-Services-LLC/actions/actions/python-setup-install@feature/plugin-driven-test-config
         with:
           python-version: ${{ inputs.python-version }}
           working-directory: ${{ inputs.plugin-name }}
