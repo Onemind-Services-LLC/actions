@@ -64,15 +64,23 @@ runs:
     - name: Install Dependencies
       shell: bash
       run: |
-        sudo apt-get update
+        # Retry logic for apt (handles mirror sync issues)
+        for i in 1 2 3; do
+          sudo apt-get clean
+          sudo rm -rf /var/lib/apt/lists/*
+          sudo apt-get update && break || sleep 10
+        done
 
-        # Ensure all required repos are enabled
+        # Ensure repos
         sudo apt-get install -y software-properties-common
         sudo add-apt-repository -y universe
         sudo add-apt-repository -y multiverse
-        sudo apt-get update
 
-        # Install dependencies (Ubuntu 22 compatible)
+        for i in 1 2 3; do
+          sudo apt-get update && break || sleep 10
+        done
+
+        # Install deps (Ubuntu 24 compatible)
         sudo apt-get install -y --no-install-recommends \
           libglib2.0-0 \
           libatk1.0-0 \
