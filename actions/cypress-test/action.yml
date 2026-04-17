@@ -64,34 +64,10 @@ runs:
     - name: Install Dependencies
       shell: bash
       run: |
-        for i in 1 2 3; do
-          sudo apt-get clean
-          sudo rm -rf /var/lib/apt/lists/*
-          sudo apt-get update && break || sleep 10
-        done
-
-        sudo apt-get install -y software-properties-common
-        sudo add-apt-repository -y universe
-        sudo add-apt-repository -y multiverse
-
-        for i in 1 2 3; do
-          sudo apt-get update && break || sleep 10
-        done
-
-        sudo apt-get install -y --no-install-recommends \
-          libglib2.0-0 \
-          libatk1.0-0 \
-          libatk-bridge2.0-0 \
-          libgdk-pixbuf-2.0-0 \
-          libgtk-3-0 \
-          libgbm1 \
-          libnss3 \
-          libxss1 \
-          libasound2t64 \
-          xvfb \
-          fonts-liberation \
-          libu2f-udev \
-          xdg-utils
+        sudo apt-get update
+        sudo apt-get install -y --no-install-recommends libglib2.0-0 libatk1.0-0 libatk-bridge2.0-0 \
+            libgdk-pixbuf2.0-0 libgtk-3-0 libgbm-dev libnss3-dev libxss-dev libasound2t64 xvfb fonts-liberation \
+            libu2f-udev
 
     - id: setup-chrome
       uses: browser-actions/setup-chrome@b94431e051d1c52dcbe9a7092a4f10f827795416 # v2.1.0
