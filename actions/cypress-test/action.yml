@@ -64,14 +64,12 @@ runs:
     - name: Install Dependencies
       shell: bash
       run: |
-        # Retry logic for apt (handles mirror sync issues)
         for i in 1 2 3; do
           sudo apt-get clean
           sudo rm -rf /var/lib/apt/lists/*
           sudo apt-get update && break || sleep 10
         done
 
-        # Ensure repos
         sudo apt-get install -y software-properties-common
         sudo add-apt-repository -y universe
         sudo add-apt-repository -y multiverse
@@ -80,7 +78,6 @@ runs:
           sudo apt-get update && break || sleep 10
         done
 
-        # Install deps (Ubuntu 24 compatible)
         sudo apt-get install -y --no-install-recommends \
           libglib2.0-0 \
           libatk1.0-0 \
@@ -90,7 +87,7 @@ runs:
           libgbm1 \
           libnss3 \
           libxss1 \
-          libasound2 \
+          libasound2t64 \
           xvfb \
           fonts-liberation \
           libu2f-udev \
