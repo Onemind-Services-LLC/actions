@@ -3,10 +3,6 @@ name: NetBox Plugin Tests
 on:
   workflow_call:
     inputs:
-      app-id:
-        description: 'The GitHub App ID to use for checkout of private repositories'
-        required: false
-        type: string
       plugin-name:
         description: 'The name of the NetBox plugin, eg: netbox_secrets'
         required: true
@@ -36,10 +32,11 @@ on:
         required: false
         type: string
         default: '--omit=*/migrations/*,*/templates/*,*/static/*,*/tests/*'
-    secrets:
-      private-key:
-        description: 'The private key for the GitHub App to use for checkout of private repositories'
+      use-org-github-token:
+        description: 'Use secrets.ORG_GITHUB_TOKEN instead of github.token for repo checkout, installs, and PR comments'
         required: false
+        default: false
+        type: boolean
 
 env:
   ACTIONS_WORKING_DIRECTORY: actions
@@ -60,6 +57,10 @@ jobs:
     name: Run Tests
     runs-on: ${{ inputs.runs-on }}
     needs: lint
+    # Intentionally rely on `secrets: inherit` from the caller so `ORG_GITHUB_TOKEN`
+    # cannot be remapped via `workflow_call.secrets`.
+    env:
+      SELECTED_GITHUB_TOKEN: ${{ inputs.use-org-github-token && secrets.ORG_GITHUB_TOKEN || github.token }}
 
     services:
       redis:
@@ -87,15 +88,6 @@ jobs:
           --health-retries 5
 
     steps:
-      - name: Create App Token
-        id: repo-token
-        uses: Onemind-Services-LLC/actions/actions/create-repo-token@master
-        with:
-          app-id: ${{ inputs.app-id }}
-          private-key: ${{ secrets.private-key }}
-          owner: Onemind-Services-LLC
-          github-token: ${{ github.actor == 'dependabot[bot]' && github.token || secrets.GIT_TOKEN }}
-
       - name: Checkout NetBox Repository
         uses: actions/checkout@v6
         with:
@@ -114,7 +106,7 @@ jobs:
           repository: "Onemind-Services-LLC/actions"
           path: ${{ env.ACTIONS_WORKING_DIRECTORY }}
           ref: master
-          token: ${{ steps.repo-token.outputs.token }}
+          token: ${{ env.SELECTED_GITHUB_TOKEN }}
 
       - name: Setup NetBox Requirements
         uses: Onemind-Services-LLC/actions/actions/python-setup-install@master
@@ -130,7 +122,7 @@ jobs:
         with:
           python-version: ${{ inputs.python-version }}
           working-directory: ${{ inputs.plugin-name }}
-          github-token: ${{ steps.repo-token.outputs.token }}
+          github-token: ${{ env.SELECTED_GITHUB_TOKEN }}
           extra-install-commands: |
             pip install -e .
 
@@ -147,7 +139,7 @@ jobs:
           django-settings-module: netbox.configuration
           test-args: ${{ inputs.plugin-name }}.tests
           coverage-report: true
-          coverage-github-token: ${{ steps.repo-token.outputs.token }}
+          coverage-github-token: ${{ env.SELECTED_GITHUB_TOKEN }}
           coverage-pull-request-number: ${{ github.event.pull_request.number || '' }}
           coverage-source: ${{ inputs.plugin-name }}
           coverage-minimum: ${{ inputs.coverage-minimum }}

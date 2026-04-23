@@ -48,10 +48,6 @@ on:
         required: false
         default: ''
         type: string
-      app-id:
-        description: GitHub App ID for generating installation token (falls back to vars.APP_ID if omitted)
-        required: false
-        type: string
       base-url:
         description: Public base URL to built assets (e.g., 'https://example.com/_next/static')
         required: true
@@ -76,10 +72,12 @@ on:
         required: false
         default: 'chunks'
         type: string
-    secrets:
-      private-key:
-        description: GitHub App private key (PEM) used to mint installation token
+      use-org-github-token:
+        description: Use secrets.ORG_GITHUB_TOKEN instead of github.token for GitHub Packages auth
         required: false
+        default: false
+        type: boolean
+    secrets:
       kibana-api-key:
         description: Kibana/Elastic APM API key exposed as KIBANA_API_KEY for the upload command
         required: false
@@ -96,17 +94,6 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v6
 
-      - name: Create App Token
-        id: repo-token
-        uses: Onemind-Services-LLC/actions/actions/create-repo-token@master
-        with:
-          # Allow caller to override; otherwise try vars.APP_ID if set
-          app-id: ${{ inputs.app-id != '' && inputs.app-id || vars.APP_ID }}
-          private-key: ${{ secrets.private-key }}
-          owner: Onemind-Services-LLC
-          # If Dependabot triggered, pass the default GITHUB_TOKEN so the action mints an installation token; otherwise empty
-          github-token: ${{ github.actor == 'dependabot[bot]' && github.token || '' }}
-
       - name: Install & Build
         if: ${{ inputs.install || inputs.build }}
         uses: Onemind-Services-LLC/actions/actions/node-install-build@master
@@ -119,7 +106,9 @@ jobs:
           build-command: ${{ inputs.build-command }}
           registry-url: ${{ inputs.registry-url }}
           registry-scope: ${{ inputs.registry-scope }}
-          npm-token: ${{ steps.repo-token.outputs.token }}
+          # `ORG_GITHUB_TOKEN` is intentionally consumed only via `secrets: inherit`
+          # so callers cannot remap a different secret under that name.
+          npm-token: ${{ inputs.use-org-github-token && secrets.ORG_GITHUB_TOKEN || github.token }}
 
       - name: Upload sourcemaps
         uses: Onemind-Services-LLC/actions/actions/kibana-sourcemaps-upload@master
