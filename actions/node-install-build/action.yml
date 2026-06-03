@@ -78,6 +78,7 @@ runs:
         cache-dependency-path: ${{ inputs.working-directory }}/package-lock.json
         registry-url: ${{ inputs.registry-url }}
         scope: ${{ inputs.registry-scope }}
+        always-auth: ${{ inputs.registry-url != '' }}
 
     - name: Enable Corepack (Yarn/pnpm)
       if: ${{ inputs.package-manager == 'yarn' || inputs.package-manager == 'pnpm' }}
@@ -93,6 +94,7 @@ runs:
         cache-dependency-path: ${{ inputs.working-directory }}/yarn.lock
         registry-url: ${{ inputs.registry-url }}
         scope: ${{ inputs.registry-scope }}
+        always-auth: ${{ inputs.registry-url != '' }}
 
     - name: Setup Node.js (pnpm)
       if: ${{ inputs.package-manager == 'pnpm' }}
@@ -103,6 +105,7 @@ runs:
         cache-dependency-path: ${{ inputs.working-directory }}/pnpm-lock.yaml
         registry-url: ${{ inputs.registry-url }}
         scope: ${{ inputs.registry-scope }}
+        always-auth: ${{ inputs.registry-url != '' }}
 
     - name: Is this a Next.js project?
       id: nextjs-check
