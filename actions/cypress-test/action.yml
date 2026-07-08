@@ -50,16 +50,29 @@ runs:
       with:
         working-directory: ${{ inputs.working-directory }}
 
-    - name: Setup Node.js
+    - name: Setup Node.js and install dependencies
       uses: Onemind-Services-LLC/actions/actions/node-install-build@master
       with:
         package-manager: ${{ steps.pm.outputs.package-manager }}
         node-version: ${{ inputs.node-version }}
-        install: false
+        install: true
         build: false
         registry-url: ${{ inputs.registry-url }}
         registry-scope: ${{ inputs.registry-scope }}
         npm-token: ${{ inputs.npm-token }}
+
+    - name: Cache Cypress binary
+      uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+      with:
+        path: ~/.cache/Cypress
+        key: ${{ runner.os }}-cypress-${{ hashFiles('**/package-lock.json') }}
+        restore-keys: |
+          ${{ runner.os }}-cypress-
+
+    - name: Install Cypress binary
+      shell: bash
+      working-directory: ${{ inputs.working-directory }}
+      run: npx cypress install
 
     - name: Install Dependencies
       shell: bash
@@ -150,7 +163,7 @@ runs:
       uses: cypress-io/github-action@7ef72e250a9e564efb4ed4c2433971ada4cc38b4 # v6.10.4
       with:
         component: ${{ inputs.component }}
-        install: true
+        install: false
         browser: ${{ inputs.browser == 'chrome' && 'chrome-for-testing' || inputs.browser }}
         build: ${{ inputs.build }}
         start: ${{ inputs.start }}
