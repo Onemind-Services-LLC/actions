@@ -54,7 +54,7 @@ jobs:
     steps:
       - name: Create App Token
         id: repo-token
-        uses: Onemind-Services-LLC/actions/actions/create-repo-token@master
+        uses: Onemind-Services-LLC/actions/actions/create-repo-token@develop
         with:
           app-id: ${{ inputs.app-id }}
           private-key: ${{ secrets.private-key }}
@@ -65,7 +65,7 @@ jobs:
         uses: actions/checkout@v6
 
       - name: Python setup and build deps
-        uses: Onemind-Services-LLC/actions/actions/python-setup-install@master
+        uses: Onemind-Services-LLC/actions/actions/python-setup-install@develop
         with:
           python-version: ${{ inputs.python-version }}
           working-directory: ${{ inputs.working-directory }}

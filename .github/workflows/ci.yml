@@ -15,7 +15,7 @@ jobs:
     steps:
       - name: Create App Token
         id: repo-token
-        uses: Onemind-Services-LLC/actions/actions/create-repo-token@master
+        uses: Onemind-Services-LLC/actions/actions/create-repo-token@develop
         with:
           app-id: ${{ vars.APP_ID }}
           private-key: ${{ secrets.APP_PRIVATE_KEY }}
@@ -26,9 +26,9 @@ jobs:
         uses: actions/checkout@v6
 
       - name: Setup Python
-        uses: Onemind-Services-LLC/actions/actions/python-setup-install@master
+        uses: Onemind-Services-LLC/actions/actions/python-setup-install@develop
         with:
           github-token: ${{ steps.repo-token.outputs.token }}
 
       - name: Run yamllint
-        uses: Onemind-Services-LLC/actions/actions/yamllint@master
+        uses: Onemind-Services-LLC/actions/actions/yamllint@develop
