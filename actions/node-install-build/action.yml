@@ -59,26 +59,30 @@ runs:
           exit 1
         fi
 
-    # For Yarn/pnpm, we need a Node runtime available before enabling Corepack,
-    # and Corepack must be enabled before we call setup-node with cache: yarn/pnpm
-    # (setup-node queries the package manager to resolve cache paths).
+    # Yarn/pnpm need a Node runtime before Corepack can be enabled.
     - name: Setup Node.js (bootstrap for Yarn/pnpm)
       if: ${{ inputs.package-manager == 'yarn' || inputs.package-manager == 'pnpm' }}
       uses: actions/setup-node@v6
       with:
         node-version: ${{ inputs.node-version }}
-        # No cache in the bootstrap step
 
     - name: Setup Node.js (npm)
       if: ${{ inputs.package-manager == 'npm' }}
       uses: actions/setup-node@v6
       with:
         node-version: ${{ inputs.node-version }}
-        cache: npm
-        cache-dependency-path: ${{ inputs.working-directory }}/package-lock.json
         registry-url: ${{ inputs.registry-url }}
         scope: ${{ inputs.registry-scope }}
         always-auth: ${{ inputs.registry-url != '' }}
+
+    - name: Cache npm dependencies
+      if: ${{ inputs.package-manager == 'npm' }}
+      uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+      with:
+        path: ~/.npm
+        key: ${{ runner.os }}-npm-${{ hashFiles('**/package-lock.json') }}
+        restore-keys: |
+          ${{ runner.os }}-npm-
 
     - name: Enable Corepack (Yarn/pnpm)
       if: ${{ inputs.package-manager == 'yarn' || inputs.package-manager == 'pnpm' }}
@@ -90,22 +94,48 @@ runs:
       uses: actions/setup-node@v6
       with:
         node-version: ${{ inputs.node-version }}
-        cache: yarn
-        cache-dependency-path: ${{ inputs.working-directory }}/yarn.lock
         registry-url: ${{ inputs.registry-url }}
         scope: ${{ inputs.registry-scope }}
         always-auth: ${{ inputs.registry-url != '' }}
+
+    - name: Get Yarn cache directory
+      if: ${{ inputs.package-manager == 'yarn' }}
+      id: yarn-cache-dir
+      shell: bash
+      run: echo "dir=$(yarn cache dir)" >> "$GITHUB_OUTPUT"
+
+    - name: Cache Yarn dependencies
+      if: ${{ inputs.package-manager == 'yarn' }}
+      uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+      with:
+        path: ${{ steps.yarn-cache-dir.outputs.dir }}
+        key: ${{ runner.os }}-yarn-${{ hashFiles('**/yarn.lock') }}
+        restore-keys: |
+          ${{ runner.os }}-yarn-
 
     - name: Setup Node.js (pnpm)
       if: ${{ inputs.package-manager == 'pnpm' }}
       uses: actions/setup-node@v6
       with:
         node-version: ${{ inputs.node-version }}
-        cache: pnpm
-        cache-dependency-path: ${{ inputs.working-directory }}/pnpm-lock.yaml
         registry-url: ${{ inputs.registry-url }}
         scope: ${{ inputs.registry-scope }}
         always-auth: ${{ inputs.registry-url != '' }}
+
+    - name: Get pnpm store directory
+      if: ${{ inputs.package-manager == 'pnpm' }}
+      id: pnpm-store
+      shell: bash
+      run: echo "dir=$(pnpm store path)" >> "$GITHUB_OUTPUT"
+
+    - name: Cache pnpm dependencies
+      if: ${{ inputs.package-manager == 'pnpm' }}
+      uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+      with:
+        path: ${{ steps.pnpm-store.outputs.dir }}
+        key: ${{ runner.os }}-pnpm-${{ hashFiles('**/pnpm-lock.yaml') }}
+        restore-keys: |
+          ${{ runner.os }}-pnpm-
 
     - name: Is this a Next.js project?
       id: nextjs-check
