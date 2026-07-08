@@ -97,19 +97,19 @@ jobs:
           github-token: ${{ github.actor == 'dependabot[bot]' && github.token || secrets.GIT_TOKEN }}
 
       - name: Checkout NetBox Repository
-        uses: actions/checkout@v6
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
         with:
           repository: "netbox-community/netbox"
           path: netbox
           ref: ${{ inputs.netbox-version }}
 
       - name: Checkout Plugin Repository
-        uses: actions/checkout@v6
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
         with:
           path: ${{ inputs.plugin-name }}
 
       - name: Checkout Actions Repository
-        uses: actions/checkout@v6
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
         with:
           repository: "Onemind-Services-LLC/actions"
           path: ${{ env.ACTIONS_WORKING_DIRECTORY }}

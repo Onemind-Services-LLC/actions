@@ -81,10 +81,10 @@ jobs:
           github-token: ${{ github.actor == 'dependabot[bot]' && github.token || '' }}
 
       - name: Checkout
-        uses: actions/checkout@v6
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
 
       - name: Initialize CodeQL
-        uses: github/codeql-action/init@v4
+        uses: github/codeql-action/init@99df26d4f13ea111d4ec1a7dddef6063f76b97e9 # v4.37.0
         with:
           languages: ${{ inputs.languages }}
           source-root: ${{ inputs.source-root }}
@@ -95,11 +95,11 @@ jobs:
 
       - name: Autobuild
         if: inputs.build-mode == 'autobuild'
-        uses: github/codeql-action/autobuild@v4
+        uses: github/codeql-action/autobuild@99df26d4f13ea111d4ec1a7dddef6063f76b97e9 # v4.37.0
 
       - name: Manual Build
         if: inputs.build-mode == 'manual' && inputs.build-command != ''
         run: ${{ inputs.build-command }}
 
       - name: Analyze
-        uses: github/codeql-action/analyze@v4
+        uses: github/codeql-action/analyze@99df26d4f13ea111d4ec1a7dddef6063f76b97e9 # v4.37.0

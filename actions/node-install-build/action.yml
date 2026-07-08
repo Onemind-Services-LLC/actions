@@ -64,14 +64,14 @@ runs:
     # (setup-node queries the package manager to resolve cache paths).
     - name: Setup Node.js (bootstrap for Yarn/pnpm)
       if: ${{ inputs.package-manager == 'yarn' || inputs.package-manager == 'pnpm' }}
-      uses: actions/setup-node@v6
+      uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6.4.0
       with:
         node-version: ${{ inputs.node-version }}
         # No cache in the bootstrap step
 
     - name: Setup Node.js (npm)
       if: ${{ inputs.package-manager == 'npm' }}
-      uses: actions/setup-node@v6
+      uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6.4.0
       with:
         node-version: ${{ inputs.node-version }}
         cache: npm
@@ -87,7 +87,7 @@ runs:
 
     - name: Setup Node.js (Yarn)
       if: ${{ inputs.package-manager == 'yarn' }}
-      uses: actions/setup-node@v6
+      uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6.4.0
       with:
         node-version: ${{ inputs.node-version }}
         cache: yarn
@@ -98,7 +98,7 @@ runs:
 
     - name: Setup Node.js (pnpm)
       if: ${{ inputs.package-manager == 'pnpm' }}
-      uses: actions/setup-node@v6
+      uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6.4.0
       with:
         node-version: ${{ inputs.node-version }}
         cache: pnpm
@@ -123,7 +123,7 @@ runs:
         echo "Not a Next.js project."
         echo "is-nextjs=false" >> "$GITHUB_OUTPUT"
 
-    - uses: actions/cache@v4
+    - uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
       if: ${{ steps.nextjs-check.outputs.is-nextjs == 'true' }}
       with:
         path: |

@@ -83,7 +83,7 @@ jobs:
           exit 1
 
       - name: Checkout code
-        uses: actions/checkout@v6
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
         with:
           ref: ${{ github.event.pull_request.head.sha }}
 
@@ -116,14 +116,14 @@ jobs:
         run: npx -y -p nextjs-bundle-analysis report
 
       - name: Upload analysis artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: next-bundle-analysis
           path: .next/analyze/__bundle_analysis.json
           overwrite: true
 
       - name: Download base branch artifact
-        uses: dawidd6/action-download-artifact@ac66b43f0e6a346234dd65d4d0c8fbb31cb316e5 # v11
+        uses: dawidd6/action-download-artifact@b6e2e70617bc3265edd6dab6c906732b2f1ae151 # v21
         with:
           branch: ${{ github.event.pull_request.base.ref }}
           path: .next/analyze/base
