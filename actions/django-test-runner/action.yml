@@ -118,7 +118,7 @@ runs:
     - name: Coverage Reporter
       if: ${{ inputs.coverage-report == 'true' }}
       continue-on-error: ${{ inputs.coverage-continue-on-error == 'true' }}
-      uses: Onemind-Services-LLC/actions/actions/cobertura-report@master
+      uses: Onemind-Services-LLC/actions/actions/cobertura-report@develop
       with:
         working-directory: ${{ inputs.working-directory }}
         path: ${{ inputs.coverage-file }}

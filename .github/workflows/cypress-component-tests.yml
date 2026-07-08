@@ -59,7 +59,7 @@ jobs:
         uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
 
       - name: Run Cypress Component Tests
-        uses: Onemind-Services-LLC/actions/actions/cypress-test@master
+        uses: Onemind-Services-LLC/actions/actions/cypress-test@develop
         with:
           component: true
           browser: ${{ matrix.browser }}

@@ -1,0 +1,34 @@
+name: Sync internal refs on master
+
+on:
+  push:
+    branches: [master]
+
+permissions:
+  contents: write
+
+jobs:
+  sync:
+    name: Replace @develop with @master
+    runs-on: ubuntu-22.04-sh
+    steps:
+      - name: Checkout master
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+        with:
+          ref: master
+          token: ${{ secrets.GIT_TOKEN }}
+
+      - name: Replace @develop refs with @master
+        run: |
+          find . -name "*.yml" -not -path "*/.git/*" | \
+            xargs grep -l "Onemind-Services-LLC/actions/.*@develop" | \
+            xargs sed -i 's|Onemind-Services-LLC/actions/\(.*\)@develop|Onemind-Services-LLC/actions/\1@master|g'
+
+      - name: Commit and push if changed
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git diff --quiet && echo "No ref changes needed" && exit 0
+          git add -A
+          git commit -m "chore: sync internal action refs to @master"
+          git push

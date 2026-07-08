@@ -59,7 +59,6 @@ runs:
         cache-dependency-path: ${{ inputs.working-directory }}/package-lock.json
         registry-url: ${{ inputs.registry-url }}
         scope: ${{ inputs.registry-scope }}
-        always-auth: ${{ inputs.registry-url != '' }}
 
     - name: Install Dependencies
       if: ${{ inputs.install == 'true' }}
