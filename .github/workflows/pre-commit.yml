@@ -9,7 +9,7 @@ on:
         default: '3.12'
         type: string
       runs-on:
-        description: Compatibility input; jobs always use ubuntu-22.04-sh
+        description: 'GitHub runner to use'
         required: false
         type: string
         default: 'ubuntu-22.04-sh'
@@ -17,7 +17,7 @@ on:
 jobs:
   pre-commit:
     name: Run pre-commit hooks
-    runs-on: ubuntu-22.04-sh
+    runs-on: ${{ inputs.runs-on }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v6

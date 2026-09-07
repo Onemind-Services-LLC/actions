@@ -159,7 +159,7 @@ jobs:
 - File: `.github/workflows/netbox-plugin-tests.yml`
 - Purpose: Spin up Redis/Postgres, install NetBox + plugin, and run tests.
 - Permissions: `contents: read`, `pull-requests: write`.
-- Inputs: `plugin-name`, `netbox-version`, `python-version`, `runs-on`, `coverage-minimum` (default `100`), `coverage-args` (default `--omit=*/migrations/*,*/templates/*,*/static/*,*/tests/*`).
+- Inputs: `plugin-name`, `netbox-version`, `python-version`, `runs-on`, `lint-runs-on` (defaults to `runs-on`), `coverage-minimum` (default `100`), `coverage-args` (default `--omit=*/migrations/*,*/templates/*,*/static/*,*/tests/*`).
 - Secrets: `GIT_TOKEN` (optional; private dependency access).
 - Usage: `uses: Onemind-Services-LLC/actions/.github/workflows/netbox-plugin-tests.yml@master`
 
@@ -171,6 +171,7 @@ Notes:
 - NetBox uses the plugin's `testing_configuration/configuration.py`, copied into its configuration directory and selected with `NETBOX_CONFIGURATION=netbox.configuration`. Put any `PLUGINS` and `PLUGINS_CONFIG` settings in that file.
 - Private dependency authentication is scoped to the plugin install step through Git's runtime environment configuration; the token is not written into global Git configuration.
 - Backing services use Redis (`redis:latest`) and Postgres (`postgres:17-alpine`) via our registry mirror.
+- Set `lint-runs-on` to an available lightweight runner and `runs-on` to a runner with Docker for the Redis/Postgres test services. Omitting `lint-runs-on` keeps both jobs on `runs-on`.
 
 Example:
 
@@ -228,8 +229,10 @@ plus `GIT_TOKEN` when private dependencies are needed. Publish requires only the
 `contents: read, id-token: write` permissions. Scan and source analysis have
 read-only permissions and receive no deployment secrets. Supply read-only
 registry credentials for base-image pulls; the server controls their scope.
-Jobs use only the `ubuntu-22.04-sh` Linux AMD64 runner. The retained `runs-on`
-input is for caller compatibility and cannot select another pool. Docker Hub
+The gated pipeline jobs use the `ubuntu-22.04-sh` Linux AMD64 runner. Their retained
+`runs-on` inputs are for caller compatibility and cannot select another pool.
+NetBox plugin tests and the pre-commit workflow retain configurable runner inputs
+for separate lint and test runner pools; both default to `ubuntu-22.04-sh`. Docker Hub
 build tools are digest-pinned to the authenticated registry mirror.
 
 Configure repository-managed CodeQL default setup separately with runner type

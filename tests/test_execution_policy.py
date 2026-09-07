@@ -1,4 +1,4 @@
-"""Prevent workflows from selecting public runners or public build-tool images."""
+"""Keep approved runner defaults, caller routing, and mirrored build-tool images."""
 
 from pathlib import Path
 import unittest
@@ -7,12 +7,18 @@ import yaml
 
 
 class ExecutionPolicyTests(unittest.TestCase):
-    def test_workflows_only_schedule_approved_runners(self):
+    def test_workflows_keep_runner_policy_and_configurable_defaults(self):
+        configurable_workflows = {'netbox-plugin-tests.yml', 'pre-commit.yml'}
         for path in Path('.github/workflows').glob('*.yml'):
             workflow = yaml.safe_load(path.read_text())
             for job in workflow.get('jobs', {}).values():
                 if 'runs-on' in job:
-                    self.assertEqual(job['runs-on'], 'ubuntu-22.04-sh', str(path))
+                    if path.name in configurable_workflows:
+                        self.assertEqual(job['runs-on'], '${{ inputs.runs-on }}', str(path))
+                        inputs = workflow[True]['workflow_call']['inputs']
+                        self.assertEqual(inputs['runs-on']['default'], 'ubuntu-22.04-sh', str(path))
+                    else:
+                        self.assertEqual(job['runs-on'], 'ubuntu-22.04-sh', str(path))
 
     def test_artifact_builds_authenticate_before_starting_mirrored_buildkit(self):
         for name, job_name in [('ci.yml', 'artifact_contract'), ('container-build.yml', 'build')]:

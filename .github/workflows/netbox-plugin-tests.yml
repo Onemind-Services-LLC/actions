@@ -18,10 +18,15 @@ on:
         default: '3.12'
         type: string
       runs-on:
-        description: Compatibility input; jobs always use ubuntu-22.04-sh
+        description: 'GitHub runner to use'
         required: false
         type: string
         default: 'ubuntu-22.04-sh'
+      lint-runs-on:
+        description: 'GitHub runner for pre-commit checks; defaults to runs-on'
+        required: false
+        type: string
+        default: ''
       coverage-minimum:
         description: 'Minimum acceptable code coverage percentage'
         required: false
@@ -56,11 +61,11 @@ jobs:
     name: Pre-commit
     uses: ./.github/workflows/pre-commit.yml
     with:
-      runs-on: ubuntu-22.04-sh
+      runs-on: ${{ inputs.lint-runs-on || inputs.runs-on }}
 
   test:
     name: Run Tests
-    runs-on: ubuntu-22.04-sh
+    runs-on: ${{ inputs.runs-on }}
     needs: lint
 
     services:
