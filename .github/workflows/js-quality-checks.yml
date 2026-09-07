@@ -6,7 +6,7 @@ on:
       runs-on:
         description: Runner label
         required: false
-        default: ubuntu-22.04-sh
+        default: ci-small
         type: string
       node-version:
         description: Node.js version

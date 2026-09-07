@@ -8,6 +8,27 @@ Consume via:
 
 See also: [Actions Overview](../actions/README.md)
 
+## Runner profiles
+
+Reusable workflows use these organization runner profiles by default. Override
+`runs-on` when the job needs a different profile or a runner outside this organization.
+
+| Profile | Default workflows | Capacity and tooling |
+| --- | --- | --- |
+| `ci-small` | Pre-commit, JavaScript quality checks, Helm charts, Python publishing | 2 CPU / 4 GiB requested; no Docker daemon |
+| `ci-test` | NetBox plugin tests | 4 CPU / 12 GiB runner plus 2 CPU / 3 GiB Docker |
+| `ci-build` | Docker builds, Cypress, Next.js bundle analysis, CodeQL | 12 CPU / 28 GiB runner plus 1 CPU / 2 GiB requested for Docker |
+
+NetBox pre-commit checks use `lint-runs-on: ci-small`. Jobs that use Docker actions,
+service containers, or Compose need `ci-test` or `ci-build`. Use `ci-build` for
+large container stacks, Android builds, and browser or bundle builds. JavaScript
+quality checks that enable TypeScript or bundle builds can override `runs-on`
+to `ci-test` or `ci-build` as needed.
+
+All three profiles have an idle minimum of zero. The initial maximum is two
+runners per profile while canary performance is evaluated. Listeners remain
+running to receive jobs. The legacy runner remains installed during migration.
+
 ## Authentication
 
 Workflows that install private GitHub dependencies or inject a Docker build token accept the optional `GIT_TOKEN` secret. Pass it explicitly or use `secrets: inherit`; no GitHub App credentials or token-selection flags are needed. Dependency installs use `GIT_TOKEN` when supplied and otherwise fall back to `GITHUB_TOKEN`. Docker passes `GIT_TOKEN` directly as a build secret when supplied. Same-repository checkouts, artifacts, and PR comments use `GITHUB_TOKEN`.
@@ -39,7 +60,7 @@ jobs:
   unit_test:
     uses: Onemind-Services-LLC/actions/.github/workflows/cypress-component-tests.yml@master
     with:
-      runs-on: ubuntu-22.04-sh
+      runs-on: ci-build
       browsers: '["chrome","edge","firefox"]'
       registry-scope: '@onemind-services-llc'
       registry-url: 'https://npm.pkg.github.com'
@@ -66,7 +87,7 @@ jobs:
   quality:
     uses: Onemind-Services-LLC/actions/.github/workflows/js-quality-checks.yml@master
     with:
-      runs-on: ubuntu-22.04-sh
+      runs-on: ci-small
       node-version: '22.x'
 ```
 
@@ -159,7 +180,7 @@ jobs:
 - File: `.github/workflows/netbox-plugin-tests.yml`
 - Purpose: Spin up Redis/Postgres, install NetBox + plugin, and run tests.
 - Permissions: `contents: read`, `pull-requests: write`.
-- Inputs: `plugin-name`, `netbox-version`, `python-version`, `runs-on`, `lint-runs-on` (defaults to `runs-on`), `coverage-minimum` (default `100`), `coverage-args` (default `--omit=*/migrations/*,*/templates/*,*/static/*,*/tests/*`).
+- Inputs: `plugin-name`, `netbox-version`, `python-version`, `runs-on`, `lint-runs-on` (default `ci-small`; an empty string uses `runs-on`), `coverage-minimum` (default `100`), `coverage-args` (default `--omit=*/migrations/*,*/templates/*,*/static/*,*/tests/*`).
 - Secrets: `GIT_TOKEN` (optional; private dependency access).
 - Usage: `uses: Onemind-Services-LLC/actions/.github/workflows/netbox-plugin-tests.yml@master`
 
@@ -171,7 +192,7 @@ Notes:
 - NetBox uses the plugin's `testing_configuration/configuration.py`, copied into its configuration directory and selected with `NETBOX_CONFIGURATION=netbox.configuration`. Put any `PLUGINS` and `PLUGINS_CONFIG` settings in that file.
 - Private dependency authentication is scoped to the plugin install step through Git's runtime environment configuration; the token is not written into global Git configuration.
 - Backing services use Redis (`redis:latest`) and Postgres (`postgres:17-alpine`) via our registry mirror.
-- Set `lint-runs-on` to an available lightweight runner and `runs-on` to a runner with Docker for the Redis/Postgres test services. Omitting `lint-runs-on` keeps both jobs on `runs-on`.
+- NetBox lint defaults to `ci-small`; tests default to `ci-test`, which provides Docker for Redis/Postgres services. Override `lint-runs-on` separately, or pass an empty string to run lint on the same label as `runs-on`.
 
 Example:
 
@@ -187,7 +208,8 @@ jobs:
       plugin-name: my_netbox_plugin
       netbox-version: v4.3.6
       python-version: '3.12'
-      runs-on: ubuntu-22.04-sh
+      runs-on: ci-test
+      lint-runs-on: ci-small
     secrets:
       GIT_TOKEN: ${{ secrets.GIT_TOKEN }}
 ```

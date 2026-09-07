@@ -6,7 +6,7 @@ on:
       runs-on:
         description: Runner label
         required: false
-        default: ubuntu-22.04-sh
+        default: ci-build
         type: string
       languages:
         description: Comma-separated CodeQL languages (e.g., 'javascript-typescript,python,go')

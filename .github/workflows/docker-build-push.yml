@@ -6,7 +6,7 @@ on:
       runs-on:
         description: GitHub runner label
         required: false
-        default: 'ubuntu-22.04-sh'
+        default: 'ci-build'
         type: string
       push:
         description: >-
