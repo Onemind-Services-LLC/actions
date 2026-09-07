@@ -4,9 +4,9 @@ on:
   workflow_call:
     inputs:
       runs-on:
-        description: Compatibility input; jobs always use ubuntu-24.04-sh
+        description: Compatibility input; jobs always use ubuntu-22.04-sh
         required: false
-        default: 'ubuntu-24.04-sh'
+        default: 'ubuntu-22.04-sh'
         type: string
       python-version:
         description: Python version to use
@@ -39,7 +39,7 @@ permissions:
 jobs:
   publish:
     name: Publish to Python Package Index (Token)
-    runs-on: ubuntu-24.04-sh
+    runs-on: ubuntu-22.04-sh
     defaults:
       run:
         working-directory: ${{ inputs.working-directory }}

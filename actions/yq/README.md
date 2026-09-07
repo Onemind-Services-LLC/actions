@@ -17,7 +17,7 @@ Note: This action runs the official `yq` container and prints output to the job 
 ```yaml
 jobs:
   example:
-    runs-on: ubuntu-24.04-sh
+    runs-on: ubuntu-22.04-sh
     steps:
       - uses: actions/checkout@v6
 

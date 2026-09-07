@@ -12,7 +12,7 @@ class ExecutionPolicyTests(unittest.TestCase):
             workflow = yaml.safe_load(path.read_text())
             for job in workflow.get('jobs', {}).values():
                 if 'runs-on' in job:
-                    self.assertEqual(job['runs-on'], 'ubuntu-24.04-sh', str(path))
+                    self.assertEqual(job['runs-on'], 'ubuntu-22.04-sh', str(path))
 
     def test_artifact_builds_authenticate_before_starting_mirrored_buildkit(self):
         for name, job_name in [('ci.yml', 'artifact_contract'), ('container-build.yml', 'build')]:

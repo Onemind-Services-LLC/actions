@@ -41,7 +41,7 @@ Run mypy type checks and pytest with coverage for Python libraries. Includes opt
 ```yaml
 jobs:
   tests:
-    runs-on: ubuntu-24.04-sh
+    runs-on: ubuntu-22.04-sh
     strategy:
       fail-fast: false
       matrix:

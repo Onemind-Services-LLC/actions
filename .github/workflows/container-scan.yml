@@ -12,9 +12,9 @@ on:
         required: true
         type: string
       runs-on:
-        description: Compatibility input; jobs always use ubuntu-24.04-sh
+        description: Compatibility input; jobs always use ubuntu-22.04-sh
         type: string
-        default: ubuntu-24.04-sh
+        default: ubuntu-22.04-sh
 
 permissions:
   contents: read
@@ -22,7 +22,7 @@ permissions:
 jobs:
   scan:
     name: Container Vulnerabilities
-    runs-on: ubuntu-24.04-sh
+    runs-on: ubuntu-22.04-sh
     timeout-minutes: 20
     steps:
       - name: Download Exact Artifact

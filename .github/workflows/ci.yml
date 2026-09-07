@@ -15,7 +15,7 @@ concurrency:
 jobs:
   lint:
     name: Lint and Pipeline Contracts
-    runs-on: ubuntu-24.04-sh
+    runs-on: ubuntu-22.04-sh
     timeout-minutes: 10
     steps:
       - name: Checkout
@@ -46,7 +46,7 @@ jobs:
   artifact_contract:
     name: OCI Artifact Contract
     needs: lint
-    runs-on: ubuntu-24.04-sh
+    runs-on: ubuntu-22.04-sh
     timeout-minutes: 15
     steps:
       - name: Checkout

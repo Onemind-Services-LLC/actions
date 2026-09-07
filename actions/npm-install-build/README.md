@@ -25,7 +25,7 @@ Installs dependencies and builds a Node.js project using npm with caching and op
 ```yaml
 jobs:
   build:
-    runs-on: ubuntu-24.04-sh
+    runs-on: ubuntu-22.04-sh
     steps:
       - uses: actions/checkout@v6
 

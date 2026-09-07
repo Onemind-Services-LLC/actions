@@ -9,15 +9,15 @@ on:
         default: '3.12'
         type: string
       runs-on:
-        description: Compatibility input; jobs always use ubuntu-24.04-sh
+        description: Compatibility input; jobs always use ubuntu-22.04-sh
         required: false
         type: string
-        default: 'ubuntu-24.04-sh'
+        default: 'ubuntu-22.04-sh'
 
 jobs:
   pre-commit:
     name: Run pre-commit hooks
-    runs-on: ubuntu-24.04-sh
+    runs-on: ubuntu-22.04-sh
     steps:
       - name: Checkout repository
         uses: actions/checkout@v6
