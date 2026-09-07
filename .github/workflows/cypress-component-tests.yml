@@ -33,11 +33,10 @@ on:
         required: false
         default: '22.x'
         type: string
-      use-org-github-token:
-        description: Use secrets.ORG_GITHUB_TOKEN instead of github.token for GitHub Packages auth
+    secrets:
+      GIT_TOKEN:
+        description: Token for private GitHub packages; defaults to github.token when omitted
         required: false
-        default: false
-        type: boolean
 
 permissions:
   contents: read
@@ -62,8 +61,6 @@ jobs:
           browser: ${{ matrix.browser }}
           registry-scope: ${{ inputs.registry-scope }}
           registry-url: ${{ inputs.registry-url }}
-          # `ORG_GITHUB_TOKEN` is intentionally consumed only via `secrets: inherit`
-          # so callers cannot remap a different secret under that name.
-          npm-token: ${{ inputs.use-org-github-token && secrets.ORG_GITHUB_TOKEN || github.token }}
+          npm-token: ${{ secrets.GIT_TOKEN || github.token }}
           working-directory: ${{ inputs.working-directory }}
           node-version: ${{ inputs.node-version }}

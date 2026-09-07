@@ -33,7 +33,7 @@ This document outlines how to work in this monorepo of reusable GitHub Actions a
 ## Testing Guidelines
 
 - This repo has no unit tests; validate by running the reusable workflows or consuming the composite actions in a sandbox repo.
-- For `netbox-plugin-tests.yml`, the workflow provides a baseline NetBox test configuration; pass plugin settings via the `plugin-configuration` input as an inner plugin config JSON string only (e.g., `'{"github_token":"ghp_xxx"}'`). The workflow wraps this under the plugin name and writes a valid Python `PLUGINS_CONFIG = {'<plugin-name>': {...}}` preserving quotes. Ensure your plugin supports the selected NetBox version and works with Redis/Postgres services.
+- For `netbox-plugin-tests.yml`, provide `testing_configuration/configuration.py` in the plugin repository with its `PLUGINS` and `PLUGINS_CONFIG` settings. The workflow copies this into NetBox's configuration directory. Ensure the plugin supports the selected NetBox version and Redis/Postgres services.
 - Use matrix or sample invocations in a test repo before changing defaults.
 - Verify documentation examples by copy-pasting into a scratch workflow.
 
@@ -43,13 +43,13 @@ This document outlines how to work in this monorepo of reusable GitHub Actions a
 - Use `[skip ci]` for docs-only changes if no validation is needed.
 - Open PRs with:
   - Clear description, linked Jira, and scope of change.
-  - Notes on backwards compatibility and any required secrets/permissions (e.g., optional use of inherited `secrets.ORG_GITHUB_TOKEN` plus any workflow flag that opts into it for NetBox plugin tests or package installs).
+  - Notes on backwards compatibility and any required secrets/permissions (e.g., optional `secrets.GIT_TOKEN` for private dependencies, passed explicitly or through `secrets: inherit`).
   - Screenshots or logs for behavior changes.
   - Keep diffs small and update module READMEs when inputs/behavior change.
 
 ## Security & Configuration Tips
 
-- Do not print secrets; prefer `GITHUB_TOKEN` when possible. For NetBox plugin tests or private package installs, use inherited `secrets.ORG_GITHUB_TOKEN` only when the selected workflow flag opts into broader org-level access.
+- Do not print secrets; prefer `GITHUB_TOKEN` for same-repository operations. For private dependencies, pass `secrets.GIT_TOKEN` explicitly or through `secrets: inherit`.
 - Use `@master` in examples for actions/workflows from this repo unless an action specifically calls out pinning.
 - Third‑party actions/workflows must always be pinned to a version tag or commit SHA (no floating refs like `@master`).
 - Limit permissions to the minimum needed in workflows.

@@ -8,13 +8,24 @@ Consume via:
 
 See also: [Actions Overview](../actions/README.md)
 
+## Authentication
+
+Workflows that install private GitHub dependencies or inject a Docker build token accept the optional `GIT_TOKEN` secret. Pass it explicitly or use `secrets: inherit`; no GitHub App credentials or token-selection flags are needed. These operations use `GIT_TOKEN` when supplied and otherwise fall back to `GITHUB_TOKEN`. Same-repository checkouts, artifacts, and PR comments use `GITHUB_TOKEN`.
+
+```yaml
+secrets:
+  GIT_TOKEN: ${{ secrets.GIT_TOKEN }}
+```
+
+The token must have access to the private repositories or packages being installed. When using composite actions directly, pass it through their existing `github-token` or `npm-token` input.
+
 ## Cypress Component Tests
 
 - File: `.github/workflows/cypress-component-tests.yml`
-- Purpose: Run Cypress component tests across a browser matrix with selectable GitHub Packages auth.
+- Purpose: Run Cypress component tests across a browser matrix with GitHub Packages auth.
 - Permissions: `contents: read`, `packages: read`.
-- Inputs: `runs-on`, `browsers` (JSON array), `registry-url`, `registry-scope`, `working-directory`, `node-version`, `use-org-github-token`.
-- Notes: If `use-org-github-token: true`, the workflow uses inherited `secrets.ORG_GITHUB_TOKEN` when available and otherwise falls back to `GITHUB_TOKEN`. When callers use `secrets: inherit`, the workflow can consume `ORG_GITHUB_TOKEN` without declaring it under `workflow_call.secrets`; that omission is intentional so callers cannot remap another secret under that name.
+- Inputs: `runs-on`, `browsers` (JSON array), `registry-url`, `registry-scope`, `working-directory`, `node-version`.
+- Secrets: `GIT_TOKEN` (optional; private dependency access).
 - Usage: `uses: Onemind-Services-LLC/actions/.github/workflows/cypress-component-tests.yml@master`
 
 Example:
@@ -22,6 +33,7 @@ Example:
 ```yaml
 permissions:
   contents: read
+  packages: read
 
 jobs:
   unit_test:
@@ -31,7 +43,6 @@ jobs:
       browsers: '["chrome","edge","firefox"]'
       registry-scope: '@onemind-services-llc'
       registry-url: 'https://npm.pkg.github.com'
-      use-org-github-token: true
     secrets: inherit
 ```
 
@@ -49,6 +60,7 @@ Example:
 ```yaml
 permissions:
   contents: read
+  packages: read
 
 jobs:
   quality:
@@ -63,23 +75,44 @@ jobs:
 - File: `.github/workflows/nextjs-bundle-analyzer.yml`
 - Purpose: Generates Next.js bundle report on PRs, uploads artifact, compares with base, and comments results.
 - Permissions: `contents: read`, `actions: read`, `packages: read`, `pull-requests: write`.
-- Inputs: `runs-on`, `node-version`, `registry-url`, `registry-scope`, `working-directory`, `install-command`, `build-command`, `extra-env`, `use-org-github-token`.
-- Notes: If `use-org-github-token: true`, the workflow uses inherited `secrets.ORG_GITHUB_TOKEN` when available and otherwise falls back to `GITHUB_TOKEN`. When callers use `secrets: inherit`, the workflow can consume `ORG_GITHUB_TOKEN` without declaring it under `workflow_call.secrets`; that omission is intentional so callers cannot remap another secret under that name.
+- Inputs: `runs-on`, `node-version`, `registry-url`, `registry-scope`, `working-directory`, `install-command`, `build-command`, `extra-env`.
+- Secrets: `GIT_TOKEN` (optional; private dependency access).
 
 ## Docker Build + Push + Sign
 
 - File: `.github/workflows/docker-build-push.yml`
 - Purpose: Build with Buildx, generate tags/labels, optionally push, and keyless‑sign images.
 - Permissions: `contents: read`, `packages: read`, `id-token: write`.
-- Inputs: `runs-on`, `push`, `image`, `meta-tags`, `annotations`, `build-args`, `build-secrets`, `cache-image`, `org-token`, `use-org-github-token`, `registry`.
-- Secrets: `username`, `password`.
+- Inputs: `runs-on`, `push`, `image`, `meta-tags`, `annotations`, `build-args`, `build-secrets`, `cache-image`, `org-token`, `registry`.
+- Secrets: `username`, `password`, `GIT_TOKEN` (optional; private build dependencies).
 - Usage: `uses: Onemind-Services-LLC/actions/.github/workflows/docker-build-push.yml@master`
 
 Notes:
-- When `org-token: 'true'`, the workflow injects `github_token=...` into Buildx secrets.
-- Set `use-org-github-token: true` to inject inherited `ORG_GITHUB_TOKEN` when available; otherwise it injects `GITHUB_TOKEN`.
-- When callers use `secrets: inherit`, the workflow can consume `ORG_GITHUB_TOKEN` without declaring it under `workflow_call.secrets`; that omission is intentional so callers cannot remap another secret under that name.
+- When `org-token: 'true'`, the workflow injects `GIT_TOKEN` (or `GITHUB_TOKEN` when omitted) into the Buildx secret named `github_token`. This flag only controls secret injection; it does not create a token.
 - Any user-provided `build-secrets` are merged with the selected token; duplicate keys are not de-duplicated (last write wins).
+- Merged secrets are passed directly through the step output without creating a credentials file in the Docker build context.
+
+Example with registry credentials and private build dependencies:
+
+```yaml
+permissions:
+  contents: read
+  packages: read
+  id-token: write
+
+jobs:
+  build:
+    uses: Onemind-Services-LLC/actions/.github/workflows/docker-build-push.yml@master
+    with:
+      registry: ghcr.io
+      image: ghcr.io/example/app
+      cache-image: ghcr.io/example/app:buildcache
+      org-token: ${{ 'true' }}
+    secrets:
+      username: ${{ secrets.DOCKER_USERNAME }}
+      password: ${{ secrets.DOCKER_PASSWORD }}
+      GIT_TOKEN: ${{ secrets.GIT_TOKEN }}
+```
 
 ## Helm Charts CI
 
@@ -127,8 +160,8 @@ jobs:
 - File: `.github/workflows/netbox-plugin-tests.yml`
 - Purpose: Spin up Redis/Postgres, install NetBox + plugin, and run tests.
 - Permissions: `contents: read`, `pull-requests: write`.
-- Inputs: `plugin-name`, `plugin-configuration`, `netbox-version`, `python-version`, `runs-on`, `coverage-minimum` (default `100`), `coverage-args` (default `--omit=*/migrations/*,*/templates/*,*/static/*,*/tests/*`), `use-org-github-token`.
-- Notes: If `use-org-github-token: true`, the workflow uses inherited `secrets.ORG_GITHUB_TOKEN` when available and otherwise falls back to `GITHUB_TOKEN`. When callers use `secrets: inherit`, the workflow can consume `ORG_GITHUB_TOKEN` without declaring it under `workflow_call.secrets`; that omission is intentional so callers cannot remap another secret under that name.
+- Inputs: `plugin-name`, `netbox-version`, `python-version`, `runs-on`, `coverage-minimum` (default `100`), `coverage-args` (default `--omit=*/migrations/*,*/templates/*,*/static/*,*/tests/*`).
+- Secrets: `GIT_TOKEN` (optional; private dependency access).
 - Usage: `uses: Onemind-Services-LLC/actions/.github/workflows/netbox-plugin-tests.yml@master`
 
 Notes:
@@ -136,12 +169,8 @@ Notes:
   - `actions/python-setup-install@master` to set up Python and install deps for NetBox and the plugin.
   - `actions/django-test-runner@master` to run checks, migrations, collectstatic, and tests.
     Coverage is restricted to the plugin package (excludes NetBox itself).
-- NetBox runs with `DJANGO_SETTINGS_MODULE=netbox.configuration` and a provided test configuration copied from `assets/netbox-plugin-tests/configuration.py`.
-- Pass plugin settings via the `plugin-configuration` input as an inner config JSON string (only):
-  - Example: `'{"github_token":"ghp_xxx"}'`
-  - The workflow wraps this under your plugin name and writes a valid Python literal:
-    `PLUGINS_CONFIG = {'<plugin-name>': {...}}` without stripping quotes.
-  - Tip: In YAML, wrap the JSON string in single quotes and keep inner quotes as double quotes.
+- NetBox uses the plugin's `testing_configuration/configuration.py`, copied into its configuration directory and selected with `NETBOX_CONFIGURATION=netbox.configuration`. Put any `PLUGINS` and `PLUGINS_CONFIG` settings in that file.
+- Private dependency authentication is scoped to the plugin install step through Git's runtime environment configuration; the token is not written into global Git configuration.
 - Backing services use Redis (`redis:latest`) and Postgres (`postgres:17-alpine`) via our registry mirror.
 
 Example:
@@ -149,18 +178,18 @@ Example:
 ```yaml
 permissions:
   contents: read
+  pull-requests: write
 
 jobs:
   test:
     uses: Onemind-Services-LLC/actions/.github/workflows/netbox-plugin-tests.yml@master
     with:
       plugin-name: my_netbox_plugin
-      plugin-configuration: '{"enabled": true}'
       netbox-version: v4.3.6
       python-version: '3.12'
       runs-on: ubuntu-22.04-sh
-      use-org-github-token: true
-    secrets: inherit
+    secrets:
+      GIT_TOKEN: ${{ secrets.GIT_TOKEN }}
 ```
 
 Security:
@@ -181,41 +210,3 @@ Security:
 
 Notes:
 - Internal CI for this repo lives in `.github/workflows/ci.yml` and is not reusable.
-
-## Kibana Sourcemaps Upload
-
-- File: `.github/workflows/kibana-sourcemaps-upload.yml`
-- Purpose: Install/build a JS project and upload Next.js sourcemaps to Kibana/Elastic APM without requiring any repo scripts or npm deps.
-- Permissions: `contents: read`, `packages: read`.
-- Inputs: `runs-on`, `node-version`, `package-manager`, `working-directory`, `install`, `build`, `build-command`, `registry-url`, `registry-scope`, `base-url`, `kibana-url`, `build-dir`, `delete-existing`, `chunks-dirs` (default `chunks`, searched recursively), `use-org-github-token`.
-- Secrets: `kibana-api-key` (exported internally for upload).
-- Notes: If `use-org-github-token: true`, the workflow uses inherited `secrets.ORG_GITHUB_TOKEN` when available and otherwise falls back to `GITHUB_TOKEN`. When callers use `secrets: inherit`, the workflow can consume `ORG_GITHUB_TOKEN` without declaring it under `workflow_call.secrets`; that omission is intentional so callers cannot remap another secret under that name.
-- Usage: `uses: Onemind-Services-LLC/actions/.github/workflows/kibana-sourcemaps-upload.yml@master`
-
-Example:
-
-```yaml
-permissions:
-  contents: read
-  packages: read
-
-jobs:
-  upload_sourcemaps:
-    uses: Onemind-Services-LLC/actions/.github/workflows/kibana-sourcemaps-upload.yml@master
-    with:
-      node-version: '22.x'
-      package-manager: npm
-      working-directory: '.'
-      install: true
-      build: true
-      base-url: https://cloudmylab.com/_next/static
-      use-org-github-token: true
-      # Optional overrides
-      # build-command: 'npm run build'
-      # kibana-url: https://kibana.onemindservices.com/api/apm/sourcemaps
-      # build-dir: .next/static
-      # chunks-dirs: 'chunks'  # searched recursively
-      # delete-existing: true
-    secrets:
-      kibana-api-key: ${{ secrets.KIBANA_API_KEY }}
-```

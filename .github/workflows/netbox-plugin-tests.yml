@@ -32,11 +32,10 @@ on:
         required: false
         type: string
         default: '--omit=*/migrations/*,*/templates/*,*/static/*,*/tests/*'
-      use-org-github-token:
-        description: 'Use secrets.ORG_GITHUB_TOKEN instead of github.token for repo checkout, installs, and PR comments'
+    secrets:
+      GIT_TOKEN:
+        description: Token for private plugin dependencies; defaults to github.token when omitted
         required: false
-        default: false
-        type: boolean
 
 env:
   ACTIONS_WORKING_DIRECTORY: actions
@@ -49,7 +48,7 @@ permissions:
 jobs:
   lint:
     name: Pre-commit
-    uses: Onemind-Services-LLC/actions/.github/workflows/pre-commit.yml@cf62d1269631735ccc36988e8065f8ef4b1b8868
+    uses: ./.github/workflows/pre-commit.yml
     with:
       runs-on: ${{ inputs.runs-on }}
 
@@ -57,10 +56,6 @@ jobs:
     name: Run Tests
     runs-on: ${{ inputs.runs-on }}
     needs: lint
-    # Intentionally rely on `secrets: inherit` from the caller so `ORG_GITHUB_TOKEN`
-    # cannot be remapped via `workflow_call.secrets`.
-    env:
-      SELECTED_GITHUB_TOKEN: ${{ inputs.use-org-github-token && secrets.ORG_GITHUB_TOKEN || github.token }}
 
     services:
       redis:
@@ -106,7 +101,6 @@ jobs:
           repository: "Onemind-Services-LLC/actions"
           path: ${{ env.ACTIONS_WORKING_DIRECTORY }}
           ref: 3cc80b064ebe1023e05533efa15b47c43ead5ef9
-          token: ${{ env.SELECTED_GITHUB_TOKEN }}
 
       - name: Setup NetBox Requirements
         uses: Onemind-Services-LLC/actions/actions/python-setup-install@3cc80b064ebe1023e05533efa15b47c43ead5ef9
@@ -119,10 +113,14 @@ jobs:
 
       - name: Setup Plugin Requirements
         uses: Onemind-Services-LLC/actions/actions/python-setup-install@3cc80b064ebe1023e05533efa15b47c43ead5ef9
+        # Limit Git authentication to this install step and its child processes.
+        env:
+          GIT_CONFIG_COUNT: '1'
+          GIT_CONFIG_KEY_0: url.https://x-access-token:${{ secrets.GIT_TOKEN || github.token }}@github.com/.insteadOf
+          GIT_CONFIG_VALUE_0: https://github.com/
         with:
           python-version: ${{ inputs.python-version }}
           working-directory: ${{ inputs.plugin-name }}
-          github-token: ${{ env.SELECTED_GITHUB_TOKEN }}
           extra-install-commands: |
             pip install -e .
 
@@ -139,7 +137,7 @@ jobs:
           django-settings-module: netbox.configuration
           test-args: ${{ inputs.plugin-name }}.tests
           coverage-report: true
-          coverage-github-token: ${{ env.SELECTED_GITHUB_TOKEN }}
+          coverage-github-token: ${{ github.token }}
           coverage-pull-request-number: ${{ github.event.pull_request.number || '' }}
           coverage-source: ${{ inputs.plugin-name }}
           coverage-minimum: ${{ inputs.coverage-minimum }}

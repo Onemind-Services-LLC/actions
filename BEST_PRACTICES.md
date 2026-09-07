@@ -11,7 +11,7 @@ Practical guidance for using the actions and reusable workflows in this repo saf
 
 - Least privilege: Declare only the permissions a job needs (e.g., `contents: read`). Add `id-token: write` only when required (e.g., OIDC signing).
 - Secrets hygiene: Never echo secrets. Pass via `secrets.*` or masked env vars, and prefer short‑lived tokens.
-- Git auth tokens: Use `GITHUB_TOKEN` by default. If a workflow needs broader package or cross-repo access, rely on inherited `ORG_GITHUB_TOKEN` and enable that workflow's org-token flag instead of adding GitHub App token plumbing. Reusable workflows intentionally consume it via `secrets: inherit` rather than `workflow_call.secrets` so callers cannot remap a different secret under that name.
+- Git auth tokens: Use `GITHUB_TOKEN` for same-repository operations. For private GitHub dependencies or Docker build secrets, provide `GIT_TOKEN` explicitly or through `secrets: inherit`. The reusable workflows declare this optional secret and use it directly, with `GITHUB_TOKEN` as the fallback.
 - Logs: Avoid printing sensitive configuration (e.g., plugin configs, tokens). Use summaries or artifacts for non‑sensitive outputs.
 
 ## Caching & Performance
@@ -35,7 +35,7 @@ Practical guidance for using the actions and reusable workflows in this repo saf
 
 ## NetBox Plugin Tests
 
-- Inputs: Provide `plugin-configuration` as an inner JSON string only, wrapped in YAML single quotes. Example: `'{"enabled": true}'`.
+- Configuration: Provide `testing_configuration/configuration.py` in the plugin repository with the required `PLUGINS` and `PLUGINS_CONFIG` settings.
 - Services: Ensure your plugin supports the selected NetBox version and works with Redis/Postgres.
 - Coverage: Limit coverage to the plugin package to exclude NetBox itself.
 
@@ -43,7 +43,7 @@ Practical guidance for using the actions and reusable workflows in this repo saf
 
 - Browser matrix: For reusable workflows, pass browsers as a JSON array string (e.g., `'["chrome","edge","firefox"]'`).
 - Component vs e2e: Use `component: true` for component tests; set `start` and `wait-on` for e2e.
-- Private npm: Use `GITHUB_TOKEN` by default, or enable a workflow's `use-org-github-token` flag with `secrets: inherit` when broader package access is required.
+- Private npm: Provide `GIT_TOKEN` to the Cypress or Next.js reusable workflow when the default `GITHUB_TOKEN` cannot access the required packages.
 
 ## Python Testing
 
