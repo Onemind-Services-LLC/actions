@@ -210,3 +210,62 @@ Security:
 
 Notes:
 - Internal CI for this repo lives in `.github/workflows/ci.yml` and is not reusable.
+
+
+## Gated container pipelines
+
+The new workflows are independently callable with `workflow_call`. Pin them to
+a reviewed commit SHA, and use `needs` in the caller to connect the pipeline.
+
+| Workflow | Inputs | Outputs / gate |
+| --- | --- | --- |
+| `python-security.yml` | `source-directories`, optional Python/runner versions | Blocking Bandit, pip-audit and redacted Gitleaks; report artifacts |
+| `container-build.yml` | `image`, `registry`, optional `build-args` | OCI `artifact-id` and `digest`; no registry push/cache write |
+| `container-scan.yml` | `artifact-id`, `digest` | Exact artifact digest check and blocking HIGH/CRITICAL Trivy scan |
+| `container-publish.yml` | `artifact-id`, `digest`, `image`, `registry`, `signer-identity` | Signed `image-ref` and `digest`; protected push only |
+
+Build requires explicit `registry-username` and `registry-password` secrets,
+plus `GIT_TOKEN` when private dependencies are needed. Publish requires only the registry credentials and
+`contents: read, id-token: write` permissions. Scan and source analysis have
+read-only permissions and receive no deployment secrets. Supply read-only
+registry credentials for base-image pulls; the server controls their scope.
+The gated pipeline jobs use the `ubuntu-22.04-sh` Linux AMD64 runner. Their retained
+`runs-on` inputs are for caller compatibility and cannot select another pool.
+NetBox plugin tests and the pre-commit workflow retain configurable runner inputs
+for separate lint and test runner pools; both default to `ubuntu-22.04-sh`. Docker Hub
+build tools are digest-pinned to the authenticated registry mirror.
+
+Configure repository-managed CodeQL default setup separately with runner type
+`labeled` and runner label `ubuntu-22.04-sh`. Keep this repository setting aligned
+with the workflow runner policy when enabling or resetting code scanning.
+
+The caller must gate publication on all source checks, tests, image scanning and
+application smoke checks. The publisher does not infer scan success from an
+artifact's existence. Pass `signer-identity` as the exact
+`https://github.com/OWNER/actions/.github/workflows/container-publish.yml@SHA`
+used in the workflow call; verification also binds the caller repository and SHA.
+
+The builder exports OCI with SBOM and maximum BuildKit provenance. Consumers
+retrieve an immutable artifact ID within the current run, not an arbitrary
+cross-run artifact or mutable tag. Skopeo copies all manifests while preserving
+digests. Publishing does not rebuild the image. It creates a SHA tag, signs and
+verifies the digest, then promotes the branch/release alias. Artifacts expire in
+three days; reports remain for 14 days.
+
+Source scanning expects both runtime and development locks with exact registry
+pins. VCS dependencies must use full commit SHAs; advisory coverage gaps are
+reported explicitly. There are no silent scanner failures, automatic vulnerability
+waivers, or `continue-on-error` gates. Install hooks in the Python setup composite
+remain explicit shell commands for trusted workflow authors.
+
+The legacy `docker-build-push.yml` now exposes its `digest` output and no longer
+writes `merged_secrets.txt` into the caller's build context. Existing consumers
+must update their pinned reference to receive those repairs. Prefer the separate
+build/scan/publish workflows for new gated pipelines.
+
+Build artifacts use GHA cache v2 scoped to image, architecture and ref. Validation
+scopes are separate from protected-push scopes; the default branch's trusted
+cache can be read as a fallback. Cache export failure only affects performance.
+The Dockerfile should order dependency installation before application source,
+use BuildKit secrets for private packages, and keep package caches out of final
+layers. Cache mounts themselves are not exported by the GHA layer-cache backend.

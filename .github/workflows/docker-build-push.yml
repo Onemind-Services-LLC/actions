@@ -4,7 +4,7 @@ on:
   workflow_call:
     inputs:
       runs-on:
-        description: GitHub runner label
+        description: Compatibility input; jobs always use ubuntu-22.04-sh
         required: false
         default: 'ubuntu-22.04-sh'
         type: string
@@ -52,6 +52,10 @@ on:
         description: Registry hostname for login (e.g., ghcr.io)
         required: true
         type: string
+    outputs:
+      digest:
+        description: Built image digest
+        value: ${{ jobs.build.outputs.digest }}
     secrets:
       GIT_TOKEN:
         description: Token for private build dependencies, passed directly as the github_token build secret when supplied
@@ -71,7 +75,9 @@ permissions:
 jobs:
   build:
     name: Build
-    runs-on: ${{ inputs.runs-on }}
+    runs-on: ubuntu-22.04-sh
+    outputs:
+      digest: ${{ steps.build.outputs.digest }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v6
@@ -108,17 +114,19 @@ jobs:
           GIT_TOKEN: ${{ secrets.GIT_TOKEN }}
         run: |
           {
-            echo "value<<EOF"
+            delimiter="build_secrets_$(openssl rand -hex 16)"
+            echo "value<<$delimiter"
             {
               if [ -n "${USER_SECRETS}" ]; then printf '%s\n' "${USER_SECRETS}"; fi
               if [ -n "${GIT_TOKEN:-}" ]; then
                 printf 'github_token=%s\n' "${GIT_TOKEN}"
               fi
             } | awk 'NF'
-            echo "EOF"
+            echo "$delimiter"
           } >> "$GITHUB_OUTPUT"
 
       - name: Build, push, sign
+        id: build
         uses: Onemind-Services-LLC/actions/actions/docker-build-push@cf62d1269631735ccc36988e8065f8ef4b1b8868
         with:
           images: ${{ inputs.image }}

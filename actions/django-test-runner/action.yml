@@ -65,19 +65,36 @@ inputs:
     description: Comma-separated modules/paths to measure coverage for (passed to `coverage run --source`)
     required: false
     default: ''
+  pytest-paths:
+    description: Optional space-separated pytest paths to run in addition to Django tests
+    required: false
+    default: ''
 
 runs:
   using: composite
   steps:
     - name: Export Django settings to env
       shell: bash
+      env:
+        SETTINGS_KEY: ${{ inputs.django-settings-module-key }}
+        SETTINGS_MODULE: ${{ inputs.django-settings-module }}
       run: |
-        echo "${{ inputs.django-settings-module-key }}=${{ inputs.django-settings-module }}" >> "$GITHUB_ENV"
+        python - <<'PYTHON'
+        import os
+        import re
+        key, module = os.environ['SETTINGS_KEY'], os.environ['SETTINGS_MODULE']
+        if not re.fullmatch(r'[A-Z][A-Z0-9_]*', key) or not re.fullmatch(r'[A-Za-z_][A-Za-z0-9_.]*', module):
+            raise SystemExit('Invalid settings environment key or Python module')
+        if not (key.endswith('_SETTINGS_MODULE') or key == 'NETBOX_CONFIGURATION'):
+            raise SystemExit('Settings key must end in _SETTINGS_MODULE or be NETBOX_CONFIGURATION')
+        with open(os.environ['GITHUB_ENV'], 'a') as output:
+            output.write(f'{key}={module}\n')
+        PYTHON
 
     - name: Install Coverage
       shell: bash
       working-directory: ${{ inputs.working-directory }}
-      run: pip install coverage
+      run: python -m pip install coverage==7.15.3
 
     - name: Check migrations
       shell: bash
@@ -87,7 +104,9 @@ runs:
     - name: Database migrations
       shell: bash
       working-directory: ${{ inputs.working-directory }}
-      run: python manage.py migrate -v ${{ inputs.verbosity }}
+      env:
+        VERBOSITY: ${{ inputs.verbosity }}
+      run: python manage.py migrate -v "$VERBOSITY"
 
     - name: Collect static files
       shell: bash
@@ -97,23 +116,58 @@ runs:
     - name: Run Django checks
       shell: bash
       working-directory: ${{ inputs.working-directory }}
-      run: python manage.py check -v ${{ inputs.verbosity }}
+      env:
+        VERBOSITY: ${{ inputs.verbosity }}
+      run: python manage.py check -v "$VERBOSITY"
 
     - name: Run tests with coverage
       shell: bash
       working-directory: ${{ inputs.working-directory }}
+      env:
+        COVERAGE_SOURCE: ${{ inputs.coverage-source }}
+        TEST_ARGS: ${{ inputs.test-args }}
       run: |
-        CMD=(coverage run)
-        if [ -n "${{ inputs.coverage-source }}" ]; then
-          CMD+=("--source=${{ inputs.coverage-source }}")
-        fi
-        "${CMD[@]}" manage.py test ${{ inputs.test-args }}
+        coverage erase
+        python - <<'PYTHON'
+        import os
+        import shlex
+        import subprocess
+        command = ['coverage', 'run']
+        if os.environ['COVERAGE_SOURCE']:
+            command += ['--source=' + os.environ['COVERAGE_SOURCE']]
+        subprocess.run(command + ['manage.py', 'test'] + shlex.split(os.environ['TEST_ARGS']), check=True)
+        PYTHON
+
+    - name: Run additional pytest tests
+      if: inputs.pytest-paths != ''
+      shell: bash
+      working-directory: ${{ inputs.working-directory }}
+      env:
+        PYTEST_PATHS: ${{ inputs.pytest-paths }}
+      run: |
+        read -r -a paths <<< "$PYTEST_PATHS"
+        coverage run --append -m pytest "${paths[@]}" --junitxml=pytest-results.xml
 
     - name: Generate coverage XML
       shell: bash
-      if: ${{ inputs.coverage-report == 'true' }}
       working-directory: ${{ inputs.working-directory }}
-      run: coverage xml ${{ inputs.coverage-args }}
+      env:
+        COVERAGE_ARGS: ${{ inputs.coverage-args }}
+      run: |
+        python - <<'PYTHON'
+        import os
+        import shlex
+        import subprocess
+        subprocess.run(['coverage', 'xml'] + shlex.split(os.environ['COVERAGE_ARGS']), check=True)
+        PYTHON
+
+    - name: Enforce coverage threshold
+      if: inputs.coverage-fail-below-threshold == 'true'
+      shell: bash
+      working-directory: ${{ inputs.working-directory }}
+      env:
+        COVERAGE_MINIMUM: ${{ inputs.coverage-minimum }}
+      run: coverage report --fail-under="$COVERAGE_MINIMUM"
 
     - name: Coverage Reporter
       if: ${{ inputs.coverage-report == 'true' }}

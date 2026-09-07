@@ -4,7 +4,7 @@ on:
   workflow_call:
     inputs:
       runs-on:
-        description: GitHub runner label
+        description: Compatibility input; jobs always use ubuntu-22.04-sh
         required: false
         default: 'ubuntu-22.04-sh'
         type: string
@@ -39,7 +39,7 @@ permissions:
 jobs:
   publish:
     name: Publish to Python Package Index (Token)
-    runs-on: ${{ inputs.runs-on }}
+    runs-on: ubuntu-22.04-sh
     defaults:
       run:
         working-directory: ${{ inputs.working-directory }}

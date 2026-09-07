@@ -2,24 +2,102 @@ name: CI
 
 on:
   push:
+    branches: [master]
   pull_request:
 
 permissions:
   contents: read
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event_name }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
 jobs:
   lint:
-    name: Lint
-    if: github.repository == 'Onemind-Services-LLC/actions'
+    name: Lint and Pipeline Contracts
     runs-on: ubuntu-22.04-sh
+    timeout-minutes: 10
     steps:
       - name: Checkout
-        uses: actions/checkout@v6
-
-      - name: Setup Python
-        uses: Onemind-Services-LLC/actions/actions/python-setup-install@3cc80b064ebe1023e05533efa15b47c43ead5ef9
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
         with:
-          github-token: ${{ github.token }}
+          persist-credentials: false
+      - name: Setup Python
+        uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6
+        with:
+          python-version: '3.12'
+      - name: Install Validators
+        run: |
+          python -m pip install yamllint==1.38.0 zizmor==1.30.0
+          curl --fail --silent --show-error --location --retry 3 \
+            https://github.com/rhysd/actionlint/releases/download/v1.7.12/actionlint_1.7.12_linux_amd64.tar.gz \
+            -o "$RUNNER_TEMP/actionlint.tar.gz"
+          echo "8aca8db96f1b94770f1b0d72b6dddcb1ebb8123cb3712530b08cc387b349a3d8  $RUNNER_TEMP/actionlint.tar.gz" | sha256sum --check
+          tar -xzf "$RUNNER_TEMP/actionlint.tar.gz" -C "$RUNNER_TEMP" actionlint
+      - name: Validate YAML and New Pipeline Workflows
+        run: |
+          yamllint .
+          "$RUNNER_TEMP/actionlint" .github/workflows/container-*.yml .github/workflows/python-security.yml .github/workflows/ci.yml
+          zizmor --offline --min-severity high .github/workflows/container-*.yml .github/workflows/python-security.yml \
+            .github/workflows/ci.yml actions/django-test-runner/action.yml actions/python-setup-install/action.yml
+      - name: Test Failure Gates and Credential Isolation
+        run: python -m unittest discover -s tests
 
-      - name: Run yamllint
-        uses: Onemind-Services-LLC/actions/actions/yamllint@3cc80b064ebe1023e05533efa15b47c43ead5ef9
+  artifact_contract:
+    name: OCI Artifact Contract
+    needs: lint
+    runs-on: ubuntu-22.04-sh
+    timeout-minutes: 15
+    steps:
+      - name: Checkout
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+        with:
+          persist-credentials: false
+      - name: Setup Python
+        uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6
+        with:
+          python-version: '3.12'
+      - name: Login for Build Tool Images
+        uses: docker/login-action@c94ce9fb468520275223c153574b00df6fe4bcc9 # v3
+        with:
+          registry: registry.onemindservices.com
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+      - name: Set Up Buildx
+        uses: docker/setup-buildx-action@8d2750c68a42422c14e847fe6c8ac0403b4cbd6f # v3
+        with:
+          driver-opts: image=registry.onemindservices.com/docker.io/moby/buildkit:buildx-stable-1@sha256:28a898719c18a33f4e8000685287fa36fd0dd9560c6440227d3a732d79bb41d8
+      - name: Build Fixture with Attestations
+        id: build
+        uses: docker/build-push-action@10e90e3645eae34f1e60eeb005ba3a3d33f178e8 # v6
+        with:
+          context: tests/oci
+          platforms: linux/amd64
+          outputs: type=oci,dest=${{ runner.temp }}/fixture.tar
+          provenance: mode=max
+          sbom: generator=registry.onemindservices.com/docker.io/docker/buildkit-syft-scanner:stable-1@sha256:ae4f3b554449e7e25548e7d8ccc029d17357348e30c6e3df01b92bc93654d6a9
+          push: false
+      - name: Verify Digest and Attestation Preservation
+        env:
+          EXPECTED_DIGEST: ${{ steps.build.outputs.digest }}
+        run: |
+          set -euo pipefail
+          sudo apt-get update -qq
+          sudo apt-get install -y --no-install-recommends skopeo
+          source="oci-archive:$RUNNER_TEMP/fixture.tar"
+          actual="sha256:$(skopeo inspect --raw "$source" | sha256sum | cut -d ' ' -f 1)"
+          test "$actual" = "$EXPECTED_DIGEST"
+          skopeo copy --all --preserve-digests "$source" "oci:$RUNNER_TEMP/copied:tested"
+          copied="sha256:$(skopeo inspect --raw "oci:$RUNNER_TEMP/copied:tested" | sha256sum | cut -d ' ' -f 1)"
+          test "$copied" = "$EXPECTED_DIGEST"
+          skopeo copy "$source" docker-daemon:ci-artifact:tested
+          python tests/verify_attestations.py "$RUNNER_TEMP/copied"
+      - name: Verify Scanner Can Read the OCI Layout
+        uses: aquasecurity/trivy-action@d2a0b60797ff03db6132bd4e2b293f9b37081297 # reviewed 2026-09-07
+        with:
+          version: v0.74.0
+          input: ${{ runner.temp }}/copied
+          scanners: vuln
+          severity: HIGH,CRITICAL
+          exit-code: '1'
+          cache: false
