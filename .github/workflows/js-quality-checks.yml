@@ -8,6 +8,14 @@ on:
         required: false
         default: ci-small
         type: string
+      registry-url:
+        description: Registry used for private npm packages
+        type: string
+        default: https://npm.pkg.github.com
+      registry-scope:
+        description: Scope used for private npm packages
+        type: string
+        default: "@onemind-services-llc"
       node-version:
         description: Node.js version
         required: false
@@ -83,6 +91,10 @@ on:
         required: false
         default: '--noEmit'
         type: string
+    secrets:
+      GIT_TOKEN:
+        description: Optional token for private packages; defaults to github.token
+        required: false
 
 permissions:
   contents: read
@@ -92,9 +104,20 @@ jobs:
   quality:
     name: JavaScript Quality Checks
     runs-on: ${{ inputs.run-bundle-check && 'ci-build' || inputs.run-typescript && 'ci-test' || 'ci-small' }}
+    timeout-minutes: 30
+    env:
+      NODE_AUTH_TOKEN: ${{ secrets.GIT_TOKEN || github.token }}
+      NPM_TOKEN: ${{ secrets.GIT_TOKEN || github.token }}
     steps:
       - name: Checkout
         uses: actions/checkout@v6
+
+      - name: Configure Package Registry
+        uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e
+        with:
+          node-version: ${{ inputs.node-version }}
+          registry-url: ${{ inputs.registry-url }}
+          scope: ${{ inputs.registry-scope }}
 
       - name: Prettier Check
         if: ${{ inputs.run-prettier }}

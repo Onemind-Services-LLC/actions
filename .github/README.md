@@ -296,3 +296,9 @@ cache can be read as a fallback. Cache export failure only affects performance.
 The Dockerfile should order dependency installation before application source,
 use BuildKit secrets for private packages, and keep package caches out of final
 layers. Cache mounts themselves are not exported by the GHA layer-cache backend.
+
+JavaScript quality checks accept optional `secrets.GIT_TOKEN` plus `registry-url`
+and `registry-scope`. Package authentication remains available to Browserslist
+and other checks that invoke npm after setup. The default token is `github.token`.
+NetBox jobs time out after 45 minutes; requirement setup is bounded to 10 minutes,
+and APT operations use bounded retries and skip installation when libpq-dev is present.
