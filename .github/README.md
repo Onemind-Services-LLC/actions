@@ -8,13 +8,24 @@ Consume via:
 
 See also: [Actions Overview](../actions/README.md)
 
+## Authentication
+
+Workflows that install private GitHub dependencies or inject a Docker build token accept the optional `GIT_TOKEN` secret. Pass it explicitly or use `secrets: inherit`; no GitHub App credentials or token-selection flags are needed. Dependency installs use `GIT_TOKEN` when supplied and otherwise fall back to `GITHUB_TOKEN`. Docker passes `GIT_TOKEN` directly as a build secret when supplied. Same-repository checkouts, artifacts, and PR comments use `GITHUB_TOKEN`.
+
+```yaml
+secrets:
+  GIT_TOKEN: ${{ secrets.GIT_TOKEN }}
+```
+
+The token must have access to the private repositories or packages being installed. When using composite actions directly, pass it through their existing `github-token` or `npm-token` input.
+
 ## Cypress Component Tests
 
 - File: `.github/workflows/cypress-component-tests.yml`
-- Purpose: Run Cypress component tests across a browser matrix with optional private npm auth via a GitHub App token.
-- Permissions: `contents: read`.
-- Inputs: `runs-on`, `browsers` (JSON array), `registry-url`, `registry-scope`, `working-directory`, `node-version`, `app-id`.
-- Secrets: `private-key` (optional; GitHub App private key for npm auth).
+- Purpose: Run Cypress component tests across a browser matrix with GitHub Packages auth.
+- Permissions: `contents: read`, `packages: read`.
+- Inputs: `runs-on`, `browsers` (JSON array), `registry-url`, `registry-scope`, `working-directory`, `node-version`.
+- Secrets: `GIT_TOKEN` (optional; private dependency access).
 - Usage: `uses: Onemind-Services-LLC/actions/.github/workflows/cypress-component-tests.yml@master`
 
 Example:
@@ -22,6 +33,7 @@ Example:
 ```yaml
 permissions:
   contents: read
+  packages: read
 
 jobs:
   unit_test:
@@ -31,17 +43,15 @@ jobs:
       browsers: '["chrome","edge","firefox"]'
       registry-scope: '@onemind-services-llc'
       registry-url: 'https://npm.pkg.github.com'
-      app-id: ${{ vars.APP_ID }}
-    secrets:
-      private-key: ${{ secrets.APP_PRIVATE_KEY }}
+    secrets: inherit
 ```
 
 ## JavaScript Quality Checks
 
 - File: `.github/workflows/js-quality-checks.yml`
 - Purpose: Orchestrates Prettier, ESLint, Browserslist DB lock, optional TypeScript type check and bundle integrity checks.
-- Permissions: `contents: read`.
-- Inputs: `runs-on`, `app-id` (optional; falls back to `vars.APP_ID`), `node-version`, `prettier-version`, `eslint-version`, `working-directory`, `patterns`, `eslint-args`, `run-prettier`, `run-eslint`, `run-browserslist`, `run-typescript`, `run-bundle-check`, `bundle-dist-path`, `bundle-command`, `tsconfig`, `tsc-args`.
+- Permissions: `contents: read`, `packages: read`.
+- Inputs: `runs-on`, `node-version`, `prettier-version`, `eslint-version`, `working-directory`, `patterns`, `eslint-args`, `run-prettier`, `run-eslint`, `run-browserslist`, `run-typescript`, `run-bundle-check`, `bundle-dist-path`, `bundle-command`, `tsconfig`, `tsc-args`.
 - Notes: Prettier/ESLint are executed via `npx` in their actions and do not install repository dependencies. If your project requires installs for other steps (TypeScript, bundle), configure those in the respective actions.
 - Secrets: none required by default for these checks.
 
@@ -50,6 +60,7 @@ Example:
 ```yaml
 permissions:
   contents: read
+  packages: read
 
 jobs:
   quality:
@@ -57,40 +68,58 @@ jobs:
     with:
       runs-on: ubuntu-22.04-sh
       node-version: '22.x'
-      # Optionally override app-id; defaults to vars.APP_ID if set in caller repo
-      app-id: ${{ vars.APP_ID }}
-    secrets:
-      private-key: ${{ secrets.APP_PRIVATE_KEY }}
 ```
 
 ## Next.js Bundle Analysis
 
 - File: `.github/workflows/nextjs-bundle-analyzer.yml`
 - Purpose: Generates Next.js bundle report on PRs, uploads artifact, compares with base, and comments results.
-- Permissions: `contents: read`, `actions: read`, `pull-requests: write`.
-- Inputs: `runs-on`, `node-version`, `registry-url`, `registry-scope`, `working-directory`, `install-command`, `build-command`, `extra-env`, `app-id` (required).
-- Secrets: `private-key` (required; GitHub App private key used to mint a token for artifact access and PR comments).
+- Permissions: `contents: read`, `actions: read`, `packages: read`, `pull-requests: write`.
+- Inputs: `runs-on`, `node-version`, `registry-url`, `registry-scope`, `working-directory`, `install-command`, `build-command`, `extra-env`.
+- Secrets: `GIT_TOKEN` (optional; private dependency access).
 
 ## Docker Build + Push + Sign
 
 - File: `.github/workflows/docker-build-push.yml`
 - Purpose: Build with Buildx, generate tags/labels, optionally push, and keyless‑sign images.
-- Permissions: `contents: read`, `id-token: write`.
-- Inputs: `runs-on`, `push`, `image`, `meta-tags`, `annotations`, `build-args`, `build-secrets`, `cache-image`, `org-token`, `app-id`, `registry`.
-- Secrets: `private-key` (optional; required when `org-token: 'true'`), `username`, `password`.
+- Permissions: `contents: read`, `packages: read`, `id-token: write`.
+- Inputs: `runs-on`, `push`, `image`, `meta-tags`, `annotations`, `build-args`, `build-secrets`, `cache-image`, `registry`.
+- Secrets: `username`, `password`, `GIT_TOKEN` (optional; private build dependencies).
 - Usage: `uses: Onemind-Services-LLC/actions/.github/workflows/docker-build-push.yml@master`
 
 Notes:
-- When `org-token: 'true'`, the workflow uses the provided GitHub App credentials (`inputs.app-id`, `secrets.private-key`) to mint an installation token and merges it into build secrets as `GITHUB_TOKEN=...`.
-- Any user-provided `build-secrets` are merged with the generated token; duplicate keys are not de-duplicated (last write wins).
+- When supplied, `GIT_TOKEN` is passed directly into the Buildx secret named `github_token`. No token is generated or automatically injected when this secret is omitted.
+- Any user-provided `build-secrets` are merged with `GIT_TOKEN`; duplicate keys are not de-duplicated (last write wins).
+- Merged secrets are passed directly through the step output without creating a credentials file in the Docker build context.
+
+Example with registry credentials and private build dependencies:
+
+```yaml
+permissions:
+  contents: read
+  packages: read
+  id-token: write
+
+jobs:
+  build:
+    uses: Onemind-Services-LLC/actions/.github/workflows/docker-build-push.yml@master
+    with:
+      registry: ghcr.io
+      image: ghcr.io/example/app
+      cache-image: ghcr.io/example/app:buildcache
+    secrets:
+      username: ${{ secrets.DOCKER_USERNAME }}
+      password: ${{ secrets.DOCKER_PASSWORD }}
+      GIT_TOKEN: ${{ secrets.GIT_TOKEN }}
+```
 
 ## Helm Charts CI
 
 - File: `.github/workflows/helm-charts-ci.yml`
 - Purpose: Lint/test charts on PRs and package/push on tags; optional keyless signing.
 - Permissions: `contents: read`, `id-token: write`.
-- Inputs: `runs-on`, `python-version`, `charts-dir`, `registry`, `oci-namespace`, `app-id`.
-- Secrets: `docker-username`, `docker-password` (optional for authenticated push), `private-key` (optional; for App token).
+- Inputs: `runs-on`, `python-version`, `charts-dir`, `registry`, `oci-namespace`.
+- Secrets: `docker-username`, `docker-password` (optional for authenticated push).
 - Usage: `uses: Onemind-Services-LLC/actions/.github/workflows/helm-charts-ci.yml@master`
 
 ## Python Package Publish (Token)
@@ -98,8 +127,8 @@ Notes:
 - File: `.github/workflows/python-publish.yml`
 - Purpose: Build distributions (sdist/wheel) and publish to PyPI using an API token.
 - Permissions: `contents: read`.
-- Inputs: `runs-on`, `python-version`, `working-directory`, `build-command`, `skip-existing`, `app-id`.
-- Secrets: `pypi-token` (required; project-scoped PyPI API token), `private-key` (optional; for App token).
+- Inputs: `runs-on`, `python-version`, `working-directory`, `build-command`, `skip-existing`.
+- Secrets: `pypi-token` (required; project-scoped PyPI API token).
 - Usage: `uses: Onemind-Services-LLC/actions/.github/workflows/python-publish.yml@master`
 
 Example (tagged release):
@@ -129,23 +158,18 @@ jobs:
 
 - File: `.github/workflows/netbox-plugin-tests.yml`
 - Purpose: Spin up Redis/Postgres, install NetBox + plugin, and run tests.
-- Permissions: `contents: read`, `checks: write`.
-- Inputs: `app-id`, `plugin-name`, `plugin-configuration`, `netbox-version`, `python-version`, `runs-on`, `coverage-minimum` (default `80`), `coverage-args` (default `--omit=*/migrations/*,*/templates/*,*/static/*,*/tests/*`).
-- Secrets: `private-key` (optional; GitHub App private key used to mint an installation token).
+- Permissions: `contents: read`, `pull-requests: write`.
+- Inputs: `plugin-name`, `netbox-version`, `python-version`, `runs-on`, `coverage-minimum` (default `100`), `coverage-args` (default `--omit=*/migrations/*,*/templates/*,*/static/*,*/tests/*`).
+- Secrets: `GIT_TOKEN` (optional; private dependency access).
 - Usage: `uses: Onemind-Services-LLC/actions/.github/workflows/netbox-plugin-tests.yml@master`
 
 Notes:
 - Internally reuses composite actions from this repo.
-  - `actions/create-repo-token@master` to mint an installation token.
   - `actions/python-setup-install@master` to set up Python and install deps for NetBox and the plugin.
   - `actions/django-test-runner@master` to run checks, migrations, collectstatic, and tests.
     Coverage is restricted to the plugin package (excludes NetBox itself).
-- NetBox runs with `DJANGO_SETTINGS_MODULE=netbox.configuration` and a provided test configuration copied from `assets/netbox-plugin-tests/configuration.py`.
-- Pass plugin settings via the `plugin-configuration` input as an inner config JSON string (only):
-  - Example: `'{"github_token":"ghp_xxx"}'`
-  - The workflow wraps this under your plugin name and writes a valid Python literal:
-    `PLUGINS_CONFIG = {'<plugin-name>': {...}}` without stripping quotes.
-  - Tip: In YAML, wrap the JSON string in single quotes and keep inner quotes as double quotes.
+- NetBox uses the plugin's `testing_configuration/configuration.py`, copied into its configuration directory and selected with `NETBOX_CONFIGURATION=netbox.configuration`. Put any `PLUGINS` and `PLUGINS_CONFIG` settings in that file.
+- Private dependency authentication is scoped to the plugin install step through Git's runtime environment configuration; the token is not written into global Git configuration.
 - Backing services use Redis (`redis:latest`) and Postgres (`postgres:17-alpine`) via our registry mirror.
 
 Example:
@@ -153,19 +177,18 @@ Example:
 ```yaml
 permissions:
   contents: read
+  pull-requests: write
 
 jobs:
   test:
     uses: Onemind-Services-LLC/actions/.github/workflows/netbox-plugin-tests.yml@master
     with:
-      app-id: ${{ vars.APP_ID }}
       plugin-name: my_netbox_plugin
-      plugin-configuration: '{"enabled": true}'
       netbox-version: v4.3.6
       python-version: '3.12'
       runs-on: ubuntu-22.04-sh
     secrets:
-      private-key: ${{ secrets.APP_PRIVATE_KEY }}
+      GIT_TOKEN: ${{ secrets.GIT_TOKEN }}
 ```
 
 Security:
@@ -176,53 +199,13 @@ Security:
 - File: `.github/workflows/codeql-analysis.yml`
 - Purpose: Initialize, optionally build, and run CodeQL analysis.
 - Permissions: `contents: read`, `actions: read`, `security-events: write`.
-- Inputs: `runs-on`, `languages`, `source-root`, `app-id`, `build-mode`, `build-command`, `queries`, `packs`, `config-file`, `tools`.
-- Secrets: `private-key` (optional; for App token).
+- Inputs: `runs-on`, `languages`, `source-root`, `build-mode`, `build-command`, `queries`, `packs`, `config-file`, `tools`.
 
 ## Pre-commit Checks
 
 - File: `.github/workflows/pre-commit.yml`
 - Purpose: Run pre-commit hooks with a pinned action.
-- Inputs: `runs-on`, `python-version`, `app-id`.
-- Secrets: `private-key` (optional; for App token).
+- Inputs: `runs-on`, `python-version`.
 
 Notes:
 - Internal CI for this repo lives in `.github/workflows/ci.yml` and is not reusable.
-
-## Kibana Sourcemaps Upload
-
-- File: `.github/workflows/kibana-sourcemaps-upload.yml`
-- Purpose: Install/build a JS project and upload Next.js sourcemaps to Kibana/Elastic APM without requiring any repo scripts or npm deps.
-- Permissions: `contents: read`, `packages: read`.
-- Inputs: `runs-on`, `node-version`, `package-manager`, `working-directory`, `install`, `build`, `build-command`, `registry-url`, `registry-scope`, `app-id`, `base-url`, `kibana-url`, `build-dir`, `delete-existing`, `chunks-dirs` (default `chunks`, searched recursively).
-- Secrets: `private-key` (optional; for App token), `kibana-api-key` (exported internally for upload).
-- Usage: `uses: Onemind-Services-LLC/actions/.github/workflows/kibana-sourcemaps-upload.yml@master`
-
-Example:
-
-```yaml
-permissions:
-  contents: read
-  packages: read
-
-jobs:
-  upload_sourcemaps:
-    uses: Onemind-Services-LLC/actions/.github/workflows/kibana-sourcemaps-upload.yml@master
-    with:
-      node-version: '22.x'
-      package-manager: npm
-      working-directory: '.'
-      install: true
-      build: true
-      base-url: https://cloudmylab.com/_next/static
-      # Optional overrides
-      # build-command: 'npm run build'
-      # kibana-url: https://kibana.onemindservices.com/api/apm/sourcemaps
-      # build-dir: .next/static
-      # chunks-dirs: 'chunks'  # searched recursively
-      # delete-existing: true
-      app-id: ${{ vars.APP_ID }}
-    secrets:
-      private-key: ${{ secrets.APP_PRIVATE_KEY }}
-      kibana-api-key: ${{ secrets.KIBANA_API_KEY }}
-```

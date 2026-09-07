@@ -8,10 +8,6 @@ on:
         required: false
         default: ubuntu-22.04-sh
         type: string
-      app-id:
-        description: GitHub App ID for generating installation token (falls back to vars.APP_ID if omitted)
-        required: false
-        type: string
       node-version:
         description: Node.js version
         required: false
@@ -87,10 +83,6 @@ on:
         required: false
         default: '--noEmit'
         type: string
-    secrets:
-      private-key:
-        description: GitHub App private key (PEM) used to mint installation tokens
-        required: false
 
 permissions:
   contents: read

@@ -43,18 +43,15 @@ on:
         required: false
         default: ''
         type: string
-      app-id:
-        description: GitHub App ID for generating installation token (falls back to vars.APP_ID if omitted)
-        required: true
-        type: string
     secrets:
-      private-key:
-        description: GitHub App private key (PEM) used to mint installation tokens
-        required: true
+      GIT_TOKEN:
+        description: Token for private GitHub packages; defaults to github.token when omitted
+        required: false
 
 permissions:
   contents: read
   actions: read
+  packages: read
   pull-requests: write
 
 jobs:
@@ -67,15 +64,6 @@ jobs:
       run:
         working-directory: ${{ inputs.working-directory }}
     steps:
-      - name: Create App Token
-        id: repo-token
-        uses: Onemind-Services-LLC/actions/actions/create-repo-token@3cc80b064ebe1023e05533efa15b47c43ead5ef9
-        with:
-          app-id: ${{ inputs.app-id }}
-          private-key: ${{ secrets.private-key }}
-          owner: Onemind-Services-LLC
-          github-token: ${{ github.actor == 'dependabot[bot]' && github.token || '' }}
-
       - name: Ensure PR context
         if: ${{ github.event_name != 'pull_request' }}
         run: |
@@ -110,7 +98,7 @@ jobs:
           build-command: ${{ inputs.build-command }}
           registry-url: ${{ inputs.registry-url }}
           registry-scope: ${{ inputs.registry-scope }}
-          npm-token: ${{ steps.repo-token.outputs.token }}
+          npm-token: ${{ secrets.GIT_TOKEN || github.token }}
 
       - name: Analyze bundle
         run: npx -y -p nextjs-bundle-analysis report
@@ -127,7 +115,7 @@ jobs:
         with:
           branch: ${{ github.event.pull_request.base.ref }}
           path: .next/analyze/base
-          github_token: ${{ steps.repo-token.outputs.token }}
+          github_token: ${{ github.token }}
           if_no_artifact_found: warn
 
       - name: Compare with base
@@ -147,7 +135,7 @@ jobs:
         with:
           issue-number: ${{ github.event.pull_request.number }}
           body-includes: '<!-- __NEXTJS_BUNDLE -->'
-          token: ${{ steps.repo-token.outputs.token }}
+          token: ${{ github.token }}
 
       - name: Create Comment
         if: steps.fc.outputs.comment-id == 0
@@ -155,7 +143,7 @@ jobs:
         with:
           issue-number: ${{ github.event.pull_request.number }}
           body: ${{ steps.get-comment-body.outputs.body }}
-          token: ${{ steps.repo-token.outputs.token }}
+          token: ${{ github.token }}
 
       - name: Update Comment
         if: steps.fc.outputs.comment-id != 0
@@ -165,4 +153,4 @@ jobs:
           body: ${{ steps.get-comment-body.outputs.body }}
           comment-id: ${{ steps.fc.outputs.comment-id }}
           edit-mode: replace
-          token: ${{ steps.repo-token.outputs.token }}
+          token: ${{ github.token }}

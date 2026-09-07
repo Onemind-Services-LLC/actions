@@ -11,7 +11,7 @@ Practical guidance for using the actions and reusable workflows in this repo saf
 
 - Least privilege: Declare only the permissions a job needs (e.g., `contents: read`). Add `id-token: write` only when required (e.g., OIDC signing).
 - Secrets hygiene: Never echo secrets. Pass via `secrets.*` or masked env vars, and prefer short‑lived tokens.
-- GitHub App tokens: Prefer GitHub App auth over PATs. Use `actions/create-repo-token@master` from this repo to mint installation tokens scoped to specific repos.
+- Git auth tokens: Use `GITHUB_TOKEN` for same-repository operations. For private GitHub dependencies or Docker build secrets, provide `GIT_TOKEN` explicitly or through `secrets: inherit`. Dependency installs fall back to `GITHUB_TOKEN` when omitted. Docker injects the `github_token` build secret only when `GIT_TOKEN` is supplied.
 - Logs: Avoid printing sensitive configuration (e.g., plugin configs, tokens). Use summaries or artifacts for non‑sensitive outputs.
 
 ## Caching & Performance
@@ -35,7 +35,7 @@ Practical guidance for using the actions and reusable workflows in this repo saf
 
 ## NetBox Plugin Tests
 
-- Inputs: Provide `plugin-configuration` as an inner JSON string only, wrapped in YAML single quotes. Example: `'{"enabled": true}'`.
+- Configuration: Provide `testing_configuration/configuration.py` in the plugin repository with the required `PLUGINS` and `PLUGINS_CONFIG` settings.
 - Services: Ensure your plugin supports the selected NetBox version and works with Redis/Postgres.
 - Coverage: Limit coverage to the plugin package to exclude NetBox itself.
 
@@ -43,7 +43,7 @@ Practical guidance for using the actions and reusable workflows in this repo saf
 
 - Browser matrix: For reusable workflows, pass browsers as a JSON array string (e.g., `'["chrome","edge","firefox"]'`).
 - Component vs e2e: Use `component: true` for component tests; set `start` and `wait-on` for e2e.
-- Private npm: Use GitHub App credentials to mint a token for scoped private registry access.
+- Private npm: Provide `GIT_TOKEN` to the Cypress or Next.js reusable workflow when the default `GITHUB_TOKEN` cannot access the required packages.
 
 ## Python Testing
 
