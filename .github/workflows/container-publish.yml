@@ -1,0 +1,118 @@
+name: Publish Verified Container
+
+on:
+  workflow_call:
+    inputs:
+      artifact-id:
+        description: Immutable artifact ID from the successful build and verification jobs
+        required: true
+        type: string
+      digest:
+        description: Verified OCI image index digest
+        required: true
+        type: string
+      image:
+        description: Destination image repository without a tag
+        required: true
+        type: string
+      registry:
+        description: Destination registry
+        required: true
+        type: string
+      signer-identity:
+        description: Exact https://github.com/OWNER/REPO/.github/workflows/container-publish.yml@SHA identity of this reusable workflow
+        required: true
+        type: string
+      runs-on:
+        description: Compatibility input; jobs always use ci-build
+        type: string
+        default: ci-build
+    secrets:
+      registry-username:
+        required: true
+      registry-password:
+        required: true
+    outputs:
+      image-ref:
+        description: Signed immutable image reference for downstream deployment
+        value: ${{ jobs.publish.outputs.image-ref }}
+      digest:
+        description: Published digest, identical to the tested artifact
+        value: ${{ jobs.publish.outputs.digest }}
+
+permissions:
+  contents: read
+  id-token: write
+
+jobs:
+  publish:
+    name: Publish and Sign
+    # A caller must additionally gate this job on all required checks.
+    if: github.event_name == 'push' && github.ref_protected
+    runs-on: ci-build
+    timeout-minutes: 20
+    concurrency:
+      group: publish-${{ github.repository }}-${{ github.ref }}
+      cancel-in-progress: false
+    outputs:
+      image-ref: ${{ steps.publish.outputs.image-ref }}
+      digest: ${{ steps.publish.outputs.digest }}
+    steps:
+      - name: Download Exact Artifact
+        uses: actions/download-artifact@634f93cb2916e3fdff6788551b99b062d0335ce0 # v5
+        with:
+          artifact-ids: ${{ inputs.artifact-id }}
+          merge-multiple: true
+          path: ${{ runner.temp }}/container
+      - name: Install OCI Tools
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y --no-install-recommends skopeo
+      - name: Login to Registry
+        uses: docker/login-action@c94ce9fb468520275223c153574b00df6fe4bcc9 # v3
+        with:
+          registry: ${{ inputs.registry }}
+          username: ${{ secrets.registry-username }}
+          password: ${{ secrets.registry-password }}
+      - name: Publish Without Rebuilding
+        id: publish
+        env:
+          IMAGE: ${{ inputs.image }}
+          EXPECTED_DIGEST: ${{ inputs.digest }}
+          SOURCE_SHA: ${{ github.sha }}
+        run: |
+          set -euo pipefail
+          source="oci-archive:$RUNNER_TEMP/container/image.tar"
+          actual="sha256:$(skopeo inspect --raw "$source" | sha256sum | cut -d ' ' -f 1)"
+          test "$actual" = "$EXPECTED_DIGEST"
+          skopeo copy --all --preserve-digests --authfile "$HOME/.docker/config.json" \
+            --digestfile "$RUNNER_TEMP/published-digest" "$source" "docker://$IMAGE:sha-$SOURCE_SHA"
+          test "$(cat "$RUNNER_TEMP/published-digest")" = "$EXPECTED_DIGEST"
+          printf 'digest=%s\nimage-ref=%s@%s\n' "$EXPECTED_DIGEST" "$IMAGE" "$EXPECTED_DIGEST" >> "$GITHUB_OUTPUT"
+      - name: Install Cosign
+        uses: sigstore/cosign-installer@398d4b0eeef1380460a10c8013a76f728fb906ac # v3
+      - name: Sign and Verify Published Digest
+        env:
+          IMAGE_REF: ${{ steps.publish.outputs.image-ref }}
+          WORKFLOW_IDENTITY: ${{ inputs.signer-identity }}
+        run: |
+          set -euo pipefail
+          cosign sign --yes "$IMAGE_REF"
+          cosign verify --certificate-identity "$WORKFLOW_IDENTITY" \
+            --certificate-github-workflow-repository "$GITHUB_REPOSITORY" \
+            --certificate-github-workflow-sha "$GITHUB_SHA" \
+            --certificate-oidc-issuer https://token.actions.githubusercontent.com "$IMAGE_REF" > "$RUNNER_TEMP/signature.json"
+          printf 'Published and verified %s\n' "$IMAGE_REF" >> "$GITHUB_STEP_SUMMARY"
+      - name: Promote Verified Digest to Branch or Release Tag
+        env:
+          IMAGE: ${{ inputs.image }}
+          DIGEST: ${{ steps.publish.outputs.digest }}
+          REF_NAME: ${{ github.ref_name }}
+          REF_TYPE: ${{ github.ref_type }}
+        run: |
+          set -euo pipefail
+          tag="$REF_NAME"
+          if [[ "$REF_TYPE" == tag ]]; then tag="${tag#v}"; fi
+          [[ "$tag" =~ ^[a-zA-Z0-9_][a-zA-Z0-9_.-]{0,127}$ ]]
+          skopeo copy --all --preserve-digests --authfile "$HOME/.docker/config.json" \
+            "docker://$IMAGE@$DIGEST" "docker://$IMAGE:$tag"

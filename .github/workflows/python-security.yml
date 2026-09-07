@@ -1,0 +1,99 @@
+name: Python Security
+
+on:
+  workflow_call:
+    inputs:
+      runs-on:
+        description: Compatibility input; jobs always use ci-test
+        type: string
+        default: ci-test
+      python-version:
+        description: Python version used by the application
+        type: string
+        default: '3.12'
+      source-directories:
+        description: Space-separated application source directories for Bandit
+        type: string
+        required: true
+
+permissions:
+  contents: read
+
+jobs:
+  security:
+    name: Source and Dependency Security
+    runs-on: ci-test
+    timeout-minutes: 20
+    steps:
+      - name: Checkout Full History
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Setup Python
+        uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6
+        with:
+          python-version: ${{ inputs.python-version }}
+      - name: Install Scanners
+        id: install
+        run: |
+          set -euo pipefail
+          python -m pip install bandit==1.9.4 pip-audit==2.10.1
+          mkdir -p "$RUNNER_TEMP/security-tools" reports
+          archive="$RUNNER_TEMP/security-tools/gitleaks.tar.gz"
+          curl --fail --silent --show-error --location --retry 3 \
+            https://github.com/gitleaks/gitleaks/releases/download/v8.30.1/gitleaks_8.30.1_linux_x64.tar.gz -o "$archive"
+          echo "551f6fc83ea457d62a0d98237cbad105af8d557003051f41f3e7ca7b3f2470eb  $archive" | sha256sum --check
+          tar -xzf "$archive" -C "$RUNNER_TEMP/security-tools" gitleaks
+      - name: Scan Python Code
+        if: ${{ !cancelled() && steps.install.outcome == 'success' }}
+        env:
+          SOURCE_DIRECTORIES: ${{ inputs.source-directories }}
+        run: |
+          read -r -a sources <<< "$SOURCE_DIRECTORIES"
+          bandit -r "${sources[@]}" --severity-level high --confidence-level medium \
+            --exclude '*/tests/*,*/migrations/*' --format json --output reports/bandit.json
+      - name: Audit Locked Dependencies
+        if: ${{ !cancelled() && steps.install.outcome == 'success' }}
+        run: |
+          set -euo pipefail
+          python - <<'PYTHON'
+          import pathlib
+          import re
+          locked = set()
+          unscanned = []
+          for filename in ('requirements.txt', 'requirements-dev.txt'):
+              for line in pathlib.Path(filename).read_text().splitlines():
+                  line = line.strip()
+                  if not line or line.startswith(('#', '-c ', '--constraint ')):
+                      continue
+                  if 'git+' in line:
+                      if not re.search(r'@[0-9a-f]{40}(?:$|#)', line):
+                          raise SystemExit(f'{filename}: VCS dependency must be pinned to a full commit SHA')
+                      unscanned.append(line)
+                  elif re.fullmatch(r'[A-Za-z0-9_.-]+(?:\[[^]]+\])?==[^ ;]+', line):
+                      locked.add(line)
+                  else:
+                      raise SystemExit(f'{filename}: unsupported dependency syntax; audit is incomplete')
+          if not locked:
+              raise SystemExit('No pinned dependencies found')
+          pathlib.Path('reports/audit-requirements.txt').write_text('\n'.join(sorted(locked)) + '\n')
+          pathlib.Path('reports/vcs-audit-gaps.txt').write_text('\n'.join(unscanned) + '\n')
+          with open(__import__('os').environ['GITHUB_STEP_SUMMARY'], 'a') as summary:
+              summary.write(f'Python advisory audit: {len(locked)} pins; {len(unscanned)} VCS dependencies lack advisory coverage.\n')
+          PYTHON
+          pip-audit --no-deps --disable-pip --strict --requirement reports/audit-requirements.txt \
+            --format json --output reports/pip-audit.json
+      - name: Scan Git History for Secrets
+        if: ${{ !cancelled() && steps.install.outcome == 'success' }}
+        run: |
+          "$RUNNER_TEMP/security-tools/gitleaks" git . --redact --no-banner \
+            --report-format json --report-path reports/gitleaks.json
+      - name: Retain Security Reports
+        if: ${{ !cancelled() }}
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: source-security-${{ github.run_attempt }}
+          path: reports/
+          if-no-files-found: error
+          retention-days: 14

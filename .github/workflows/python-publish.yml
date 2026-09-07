@@ -4,7 +4,7 @@ on:
   workflow_call:
     inputs:
       runs-on:
-        description: GitHub runner label
+        description: Compatibility input; jobs always use ci-test
         required: false
         default: 'ci-test'
         type: string
@@ -39,7 +39,7 @@ permissions:
 jobs:
   publish:
     name: Publish to Python Package Index (Token)
-    runs-on: ${{ inputs.runs-on }}
+    runs-on: ci-test
     defaults:
       run:
         working-directory: ${{ inputs.working-directory }}

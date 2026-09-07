@@ -4,7 +4,7 @@ on:
   workflow_call:
     inputs:
       runs-on:
-        description: GitHub runner label
+        description: Compatibility input; jobs always use ci-build
         required: false
         default: 'ci-build'
         type: string
@@ -45,7 +45,7 @@ permissions:
 jobs:
   component_tests:
     name: Component Tests
-    runs-on: ${{ inputs.runs-on }}
+    runs-on: ci-build
     strategy:
       fail-fast: false
       matrix:

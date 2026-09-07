@@ -4,7 +4,7 @@ on:
   workflow_call:
     inputs:
       runs-on:
-        description: Runner label
+        description: Compatibility input; jobs always use ci-build
         required: false
         default: ci-build
         type: string
@@ -57,7 +57,7 @@ permissions:
 jobs:
   analyze:
     name: CodeQL Analyze
-    runs-on: ${{ inputs.runs-on }}
+    runs-on: ci-build
     defaults:
       run:
         shell: bash

@@ -1,0 +1,114 @@
+name: Build Container Artifact
+
+on:
+  workflow_call:
+    inputs:
+      image:
+        description: Image repository without a tag
+        required: true
+        type: string
+      registry:
+        description: Registry containing private base images
+        required: true
+        type: string
+      build-args:
+        description: Non-secret build arguments, one KEY=VALUE per line
+        type: string
+        default: ''
+      runs-on:
+        description: Compatibility input; jobs always use ci-build
+        type: string
+        default: ci-build
+    secrets:
+      registry-username:
+        required: true
+      registry-password:
+        required: true
+      GIT_TOKEN:
+        description: Token with read access to private build dependencies
+        required: false
+    outputs:
+      digest:
+        description: Digest of the OCI image index, including attestations
+        value: ${{ jobs.build.outputs.digest }}
+      artifact-id:
+        description: Immutable artifact ID in this workflow run
+        value: ${{ jobs.build.outputs.artifact-id }}
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    name: Build OCI Artifact
+    runs-on: ci-build
+    timeout-minutes: 30
+    outputs:
+      digest: ${{ steps.build.outputs.digest }}
+      artifact-id: ${{ steps.upload.outputs.artifact-id }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+        with:
+          persist-credentials: false
+      - name: Login for Base Image Pulls
+        uses: docker/login-action@c94ce9fb468520275223c153574b00df6fe4bcc9 # v3
+        with:
+          registry: ${{ inputs.registry }}
+          username: ${{ secrets.registry-username }}
+          password: ${{ secrets.registry-password }}
+      - name: Set Up Buildx
+        uses: docker/setup-buildx-action@8d2750c68a42422c14e847fe6c8ac0403b4cbd6f # v3
+        with:
+          driver-opts: image=registry.onemindservices.com/docker.io/moby/buildkit:buildx-stable-1@sha256:28a898719c18a33f4e8000685287fa36fd0dd9560c6440227d3a732d79bb41d8
+      - name: Select Isolated Build Cache
+        id: cache
+        env:
+          IMAGE: ${{ inputs.image }}
+          DEFAULT_BRANCH: ${{ github.event.repository.default_branch }}
+          TRUSTED: ${{ github.event_name == 'push' && github.ref_protected }}
+        run: |
+          python3 - <<'PY'
+          import hashlib
+          import os
+
+          def scope(ref):
+              value = f"{os.environ['IMAGE']}:linux/amd64:{ref}"
+              return hashlib.sha256(value.encode()).hexdigest()[:24]
+
+          current = scope(os.environ['GITHUB_REF'])
+          fallback = scope(f"refs/heads/{os.environ['DEFAULT_BRANCH']}")
+          prefix = 'trusted' if os.environ['TRUSTED'] == 'true' else 'validation'
+          with open(os.environ['GITHUB_OUTPUT'], 'a') as output:
+              output.write(f"current={prefix}-{current}\n")
+              output.write(f"fallback=trusted-{fallback}\n")
+          PY
+      - name: Build Once with Attestations
+        id: build
+        uses: docker/build-push-action@10e90e3645eae34f1e60eeb005ba3a3d33f178e8 # v6
+        with:
+          context: .
+          platforms: linux/amd64
+          push: false
+          outputs: type=oci,dest=${{ runner.temp }}/image.tar
+          tags: ${{ inputs.image }}:sha-${{ github.sha }}
+          build-args: ${{ inputs.build-args }}
+          cache-from: |
+            type=gha,version=2,scope=${{ steps.cache.outputs.current }}
+            type=gha,version=2,scope=${{ steps.cache.outputs.fallback }}
+          cache-to: type=gha,version=2,scope=${{ steps.cache.outputs.current }},mode=max,ignore-error=true,timeout=5m
+          labels: |
+            org.opencontainers.image.revision=${{ github.sha }}
+            org.opencontainers.image.source=${{ github.server_url }}/${{ github.repository }}
+          secrets: github_token=${{ secrets.GIT_TOKEN }}
+          provenance: mode=max
+          sbom: generator=registry.onemindservices.com/docker.io/docker/buildkit-syft-scanner:stable-1@sha256:ae4f3b554449e7e25548e7d8ccc029d17357348e30c6e3df01b92bc93654d6a9
+      - name: Store Image Artifact
+        id: upload
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: container-${{ github.run_id }}-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/image.tar
+          if-no-files-found: error
+          compression-level: 0
+          retention-days: 3
