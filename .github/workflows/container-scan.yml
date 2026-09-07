@@ -42,11 +42,14 @@ jobs:
           set -euo pipefail
           actual="sha256:$(skopeo inspect --raw "oci-archive:$RUNNER_TEMP/container/image.tar" | sha256sum | cut -d ' ' -f 1)"
           test "$actual" = "$EXPECTED_DIGEST"
+          # Trivy accepts an OCI layout directory, not a BuildKit OCI tar archive.
+          skopeo copy --all --preserve-digests "oci-archive:$RUNNER_TEMP/container/image.tar" \
+            "oci:$RUNNER_TEMP/scan-layout:tested"
       - name: Scan Image
         uses: aquasecurity/trivy-action@d2a0b60797ff03db6132bd4e2b293f9b37081297 # reviewed 2026-09-07
         with:
           version: v0.74.0
-          input: ${{ runner.temp }}/container/image.tar
+          input: ${{ runner.temp }}/scan-layout
           scanners: vuln
           severity: HIGH,CRITICAL
           ignore-unfixed: false

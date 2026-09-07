@@ -80,3 +80,12 @@ jobs:
           test "$copied" = "$EXPECTED_DIGEST"
           skopeo copy "$source" docker-daemon:ci-artifact:tested
           python tests/verify_attestations.py "$RUNNER_TEMP/copied"
+      - name: Verify Scanner Can Read the OCI Layout
+        uses: aquasecurity/trivy-action@d2a0b60797ff03db6132bd4e2b293f9b37081297 # reviewed 2026-09-07
+        with:
+          version: v0.74.0
+          input: ${{ runner.temp }}/copied
+          scanners: vuln
+          severity: HIGH,CRITICAL
+          exit-code: '1'
+          cache: false
