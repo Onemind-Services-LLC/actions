@@ -1,0 +1,57 @@
+name: Docker Bake
+description: Build a caller-owned Bake graph and expose its selected image digest.
+inputs:
+  files:
+    description: Newline-separated Bake definition files
+    required: true
+  source:
+    description: Bake source context; use the checkout by default
+    default: .
+  target:
+    description: Target whose containerimage.digest should be returned
+    default: ''
+  targets:
+    description: Targets to build; empty uses the Bake default group
+    default: ''
+  allow:
+    description: Newline-separated explicit Buildx entitlements
+    default: ''
+  set:
+    description: Newline-separated Bake target overrides
+    default: ''
+  push:
+    description: Push output to registries; false preserves caller-selected outputs
+    default: 'false'
+outputs:
+  metadata:
+    description: Complete Buildx metadata JSON; avoid placing it in a process environment variable
+    value: ${{ steps.bake.outputs.metadata }}
+  digest:
+    description: Image digest for the selected target, or empty when no target is selected
+    value: ${{ steps.identity.outputs.digest }}
+runs:
+  using: composite
+  steps:
+    - name: Build Bake Graph
+      id: bake
+      uses: docker/bake-action@d3418bd7d0e9324001bca92fa8ba175ea7e6dc9b # v7.3.0
+      with:
+        source: ${{ inputs.source }}
+        files: ${{ inputs.files }}
+        targets: ${{ inputs.targets }}
+        allow: ${{ inputs.allow }}
+        set: ${{ inputs.set }}
+        push: ${{ inputs.push }}
+    - name: Record Selected Image Digest
+      if: inputs.target != ''
+      id: identity
+      shell: bash
+      env:
+        DIGEST: ${{ fromJSON(steps.bake.outputs.metadata || '{}')[inputs.target]['containerimage.digest'] }}
+      run: |
+        set -euo pipefail
+        if [[ ! "$DIGEST" =~ ^sha256:[0-9a-f]{64}$ ]]; then
+          echo "Selected Bake target has no valid image digest" >&2
+          exit 1
+        fi
+        printf 'digest=%s\n' "$DIGEST" >> "$GITHUB_OUTPUT"
