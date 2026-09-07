@@ -39,7 +39,9 @@ jobs:
           yamllint .
           "$RUNNER_TEMP/actionlint" .github/workflows/container-*.yml .github/workflows/python-security.yml .github/workflows/ci.yml
           zizmor --offline --min-severity high .github/workflows/container-*.yml .github/workflows/python-security.yml \
-            .github/workflows/ci.yml actions/django-test-runner/action.yml actions/python-setup-install/action.yml
+            .github/workflows/ci.yml actions/django-test-runner/action.yml actions/python-setup-install/action.yml \
+            actions/docker-setup/action.yml actions/docker-bake/action.yml \
+            actions/artifact-upload/action.yml actions/artifact-download/action.yml
       - name: Test Failure Gates and Credential Isolation
         run: python -m unittest discover -s tests
 
@@ -57,26 +59,61 @@ jobs:
         uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6
         with:
           python-version: '3.12'
-      - name: Login for Build Tool Images
-        uses: docker/login-action@c94ce9fb468520275223c153574b00df6fe4bcc9 # v3
+      - name: Set Up Authenticated Build Tools
+        uses: ./actions/docker-setup
         with:
           registry: registry.onemindservices.com
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_PASSWORD }}
-      - name: Set Up Buildx
-        uses: docker/setup-buildx-action@8d2750c68a42422c14e847fe6c8ac0403b4cbd6f # v3
-        with:
-          driver-opts: image=registry.onemindservices.com/docker.io/moby/buildkit:buildx-stable-1@sha256:28a898719c18a33f4e8000685287fa36fd0dd9560c6440227d3a732d79bb41d8
       - name: Build Fixture with Attestations
         id: build
-        uses: docker/build-push-action@10e90e3645eae34f1e60eeb005ba3a3d33f178e8 # v6
+        uses: ./actions/docker-bake
         with:
-          context: tests/oci
-          platforms: linux/amd64
-          outputs: type=oci,dest=${{ runner.temp }}/fixture.tar
-          provenance: mode=max
-          sbom: generator=registry.onemindservices.com/docker.io/docker/buildkit-syft-scanner:stable-1@sha256:ae4f3b554449e7e25548e7d8ccc029d17357348e30c6e3df01b92bc93654d6a9
+          files: tests/oci/docker-bake.hcl
+          target: fixture
+          allow: fs.write=${{ runner.temp }}
+          set: fixture.output=type=oci,dest=${{ runner.temp }}/fixture.tar
           push: false
+      - name: Record Artifact Fixture
+        env:
+          EXPECTED_DIGEST: ${{ steps.build.outputs.digest }}
+        run: |
+          python3 - <<'PY'
+          import json
+          import os
+          from pathlib import Path
+          record = {'digest': os.environ['EXPECTED_DIGEST'], 'sha': os.environ['GITHUB_SHA']}
+          (Path(os.environ['RUNNER_TEMP']) / 'fixture.json').write_text(json.dumps(record))
+          PY
+      - name: Upload Image Fixture
+        uses: ./actions/artifact-upload
+        with:
+          name: oci-contract-image
+          path: |
+            ${{ runner.temp }}/fixture.tar
+            ${{ runner.temp }}/fixture.json
+          if-no-files-found: error
+          compression-level: 0
+          retention-days: 1
+      - name: Upload Metadata Fixture
+        uses: ./actions/artifact-upload
+        with:
+          name: oci-contract-metadata
+          path: ${{ runner.temp }}/fixture.json
+          if-no-files-found: error
+          retention-days: 1
+      - name: Download Named Artifact Directories
+        uses: ./actions/artifact-download
+        with:
+          pattern: oci-contract-*
+          path: ${{ runner.temp }}/downloaded
+          merge-multiple: false
+      - name: Verify Artifact Transfer
+        run: |
+          set -euo pipefail
+          cmp "$RUNNER_TEMP/fixture.tar" "$RUNNER_TEMP/downloaded/oci-contract-image/fixture.tar"
+          cmp "$RUNNER_TEMP/fixture.json" "$RUNNER_TEMP/downloaded/oci-contract-image/fixture.json"
+          cmp "$RUNNER_TEMP/fixture.json" "$RUNNER_TEMP/downloaded/oci-contract-metadata/fixture.json"
       - name: Verify Digest and Attestation Preservation
         env:
           EXPECTED_DIGEST: ${{ steps.build.outputs.digest }}

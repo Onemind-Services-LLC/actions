@@ -1,0 +1,71 @@
+name: Download Archived Artifacts
+description: Validate artifact downloads and safely extract ZIPs without deprecated Node ZIP APIs.
+inputs:
+  name:
+    description: Select one artifact by name
+    default: ''
+  artifact-ids:
+    description: Comma-separated immutable artifact IDs
+    default: ''
+  pattern:
+    description: Glob pattern selecting artifact names
+    default: ''
+  path:
+    description: Extraction directory, relative to the workspace or absolute
+    default: .
+  merge-multiple:
+    description: Extract multiple artifacts into one directory instead of named subdirectories
+    default: 'false'
+  github-token:
+    description: Token with actions read permission; required for a different workflow run or repository
+    default: ''
+  repository:
+    description: Repository containing the artifacts
+    default: ${{ github.repository }}
+  run-id:
+    description: Workflow run containing the artifacts
+    default: ${{ github.run_id }}
+outputs:
+  download-path:
+    description: Absolute directory containing the extracted artifacts
+    value: ${{ steps.extract.outputs.download-path }}
+runs:
+  using: composite
+  steps:
+    - name: Allocate Download Directory
+      id: stage
+      shell: bash
+      run: |
+        set -euo pipefail
+        staging_dir=$(mktemp -d "$RUNNER_TEMP/artifact-download.XXXXXX")
+        printf 'path=%s\n' "$staging_dir" >> "$GITHUB_OUTPUT"
+    - name: Download and Validate ZIP Artifacts
+      uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+      with:
+        name: ${{ inputs.name }}
+        artifact-ids: ${{ inputs.artifact-ids }}
+        pattern: ${{ inputs.pattern }}
+        path: ${{ steps.stage.outputs.path }}
+        merge-multiple: ${{ inputs.merge-multiple }}
+        github-token: ${{ inputs.github-token }}
+        repository: ${{ inputs.repository }}
+        run-id: ${{ inputs.run-id }}
+        skip-decompress: true
+        digest-mismatch: error
+    - name: Extract Verified ZIP Artifacts
+      id: extract
+      shell: bash
+      env:
+        ACTION_PATH: ${{ github.action_path }}
+        STAGING_DIR: ${{ steps.stage.outputs.path }}
+        DESTINATION: ${{ inputs.path }}
+      run: python3 "$ACTION_PATH/extract.py"
+    - name: Clean Download Directory
+      if: always()
+      shell: bash
+      env:
+        STAGING_DIR: ${{ steps.stage.outputs.path }}
+      run: |
+        if [[ -n "$STAGING_DIR" && "$STAGING_DIR" == "$RUNNER_TEMP"/artifact-download.* ]]; then
+          rm -rf -- "$STAGING_DIR"
+        fi
