@@ -11,7 +11,7 @@ Practical guidance for using the actions and reusable workflows in this repo saf
 
 - Least privilege: Declare only the permissions a job needs (e.g., `contents: read`). Add `id-token: write` only when required (e.g., OIDC signing).
 - Secrets hygiene: Never echo secrets. Pass via `secrets.*` or masked env vars, and prefer short‑lived tokens.
-- Git auth tokens: Use `GITHUB_TOKEN` for same-repository operations. For private GitHub dependencies or Docker build secrets, provide `GIT_TOKEN` explicitly or through `secrets: inherit`. The reusable workflows declare this optional secret and use it directly, with `GITHUB_TOKEN` as the fallback.
+- Git auth tokens: Use `GITHUB_TOKEN` for same-repository operations. For private GitHub dependencies or Docker build secrets, provide `GIT_TOKEN` explicitly or through `secrets: inherit`. Dependency installs fall back to `GITHUB_TOKEN` when omitted. Docker injects the `github_token` build secret only when `GIT_TOKEN` is supplied.
 - Logs: Avoid printing sensitive configuration (e.g., plugin configs, tokens). Use summaries or artifacts for non‑sensitive outputs.
 
 ## Caching & Performance

@@ -10,7 +10,7 @@ See also: [Actions Overview](../actions/README.md)
 
 ## Authentication
 
-Workflows that install private GitHub dependencies or inject a Docker build token accept the optional `GIT_TOKEN` secret. Pass it explicitly or use `secrets: inherit`; no GitHub App credentials or token-selection flags are needed. These operations use `GIT_TOKEN` when supplied and otherwise fall back to `GITHUB_TOKEN`. Same-repository checkouts, artifacts, and PR comments use `GITHUB_TOKEN`.
+Workflows that install private GitHub dependencies or inject a Docker build token accept the optional `GIT_TOKEN` secret. Pass it explicitly or use `secrets: inherit`; no GitHub App credentials or token-selection flags are needed. Dependency installs use `GIT_TOKEN` when supplied and otherwise fall back to `GITHUB_TOKEN`. Docker passes `GIT_TOKEN` directly as a build secret when supplied. Same-repository checkouts, artifacts, and PR comments use `GITHUB_TOKEN`.
 
 ```yaml
 secrets:
@@ -83,13 +83,13 @@ jobs:
 - File: `.github/workflows/docker-build-push.yml`
 - Purpose: Build with Buildx, generate tags/labels, optionally push, and keyless‑sign images.
 - Permissions: `contents: read`, `packages: read`, `id-token: write`.
-- Inputs: `runs-on`, `push`, `image`, `meta-tags`, `annotations`, `build-args`, `build-secrets`, `cache-image`, `org-token`, `registry`.
+- Inputs: `runs-on`, `push`, `image`, `meta-tags`, `annotations`, `build-args`, `build-secrets`, `cache-image`, `registry`.
 - Secrets: `username`, `password`, `GIT_TOKEN` (optional; private build dependencies).
 - Usage: `uses: Onemind-Services-LLC/actions/.github/workflows/docker-build-push.yml@master`
 
 Notes:
-- When `org-token: 'true'`, the workflow injects `GIT_TOKEN` (or `GITHUB_TOKEN` when omitted) into the Buildx secret named `github_token`. This flag only controls secret injection; it does not create a token.
-- Any user-provided `build-secrets` are merged with the selected token; duplicate keys are not de-duplicated (last write wins).
+- When supplied, `GIT_TOKEN` is passed directly into the Buildx secret named `github_token`. No token is generated or automatically injected when this secret is omitted.
+- Any user-provided `build-secrets` are merged with `GIT_TOKEN`; duplicate keys are not de-duplicated (last write wins).
 - Merged secrets are passed directly through the step output without creating a credentials file in the Docker build context.
 
 Example with registry credentials and private build dependencies:
@@ -107,7 +107,6 @@ jobs:
       registry: ghcr.io
       image: ghcr.io/example/app
       cache-image: ghcr.io/example/app:buildcache
-      org-token: ${{ 'true' }}
     secrets:
       username: ${{ secrets.DOCKER_USERNAME }}
       password: ${{ secrets.DOCKER_PASSWORD }}

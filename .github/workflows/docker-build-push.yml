@@ -48,18 +48,13 @@ on:
         description: Registry reference used by Buildx cache (e.g., ghcr.io/org/app:buildcache-main)
         required: true
         type: string
-      org-token:
-        description: "If 'true', inject GIT_TOKEN (or github.token) as a build secret named github_token"
-        required: false
-        default: 'false'
-        type: string
       registry:
         description: Registry hostname for login (e.g., ghcr.io)
         required: true
         type: string
     secrets:
       GIT_TOKEN:
-        description: Token for private build dependencies; defaults to github.token when omitted
+        description: Token for private build dependencies, passed directly as the github_token build secret when supplied
         required: false
       username:
         description: Registry username
@@ -110,14 +105,13 @@ jobs:
         shell: bash
         env:
           USER_SECRETS: ${{ inputs.build-secrets }}
-          INJECT_GIT_TOKEN: ${{ inputs.org-token }}
-          GIT_TOKEN: ${{ secrets.GIT_TOKEN || github.token }}
+          GIT_TOKEN: ${{ secrets.GIT_TOKEN }}
         run: |
           {
             echo "value<<EOF"
             {
               if [ -n "${USER_SECRETS}" ]; then printf '%s\n' "${USER_SECRETS}"; fi
-              if [ "${INJECT_GIT_TOKEN}" = "true" ] && [ -n "${GIT_TOKEN:-}" ]; then
+              if [ -n "${GIT_TOKEN:-}" ]; then
                 printf 'github_token=%s\n' "${GIT_TOKEN}"
               fi
             } | awk 'NF'
