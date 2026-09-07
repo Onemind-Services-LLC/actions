@@ -15,8 +15,8 @@ Reusable workflows use these organization runner profiles by default. Override
 
 | Profile | Default workflows | Capacity and tooling |
 | --- | --- | --- |
-| `ci-small` | Pre-commit, JavaScript quality checks, Helm charts, Python publishing | 2 CPU / 4 GiB requested; no Docker daemon |
-| `ci-test` | NetBox plugin tests | 4 CPU / 12 GiB runner plus 2 CPU / 3 GiB Docker |
+| `ci-small` | Pre-commit, JavaScript quality checks, Helm charts | 2 CPU / 4 GiB requested; no Docker daemon |
+| `ci-test` | NetBox plugin tests, Python publishing | 4 CPU / 12 GiB runner plus 2 CPU / 3 GiB Docker |
 | `ci-build` | Docker builds, Cypress, Next.js bundle analysis, CodeQL | 12 CPU / 28 GiB runner plus 1 CPU / 2 GiB requested for Docker |
 
 NetBox pre-commit checks use `lint-runs-on: ci-small`. Jobs that use Docker actions,

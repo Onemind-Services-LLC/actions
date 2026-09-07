@@ -6,7 +6,7 @@ on:
       runs-on:
         description: GitHub runner label
         required: false
-        default: 'ci-small'
+        default: 'ci-test'
         type: string
       python-version:
         description: Python version to use
