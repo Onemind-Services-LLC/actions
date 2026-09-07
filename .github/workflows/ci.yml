@@ -50,6 +50,8 @@ jobs:
     needs: lint
     runs-on: ci-build
     timeout-minutes: 15
+    outputs:
+      digest: ${{ steps.build.outputs.digest }}
     steps:
       - name: Checkout
         uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
@@ -138,3 +140,34 @@ jobs:
           severity: HIGH,CRITICAL
           exit-code: '1'
           cache: false
+
+  artifact_outputs:
+    name: Verify Outputs After Cleanup
+    needs: artifact_contract
+    runs-on: ci-small
+    timeout-minutes: 5
+    steps:
+      - name: Checkout
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+        with:
+          persist-credentials: false
+      - name: Download Recorded Image Identity
+        uses: ./actions/artifact-download
+        with:
+          name: oci-contract-metadata
+          path: ${{ runner.temp }}/identity
+      - name: Compare Exported Digest with Recorded Identity
+        env:
+          EXPECTED_DIGEST: ${{ needs.artifact_contract.outputs.digest }}
+        run: |
+          python3 - <<'PY'
+          import json
+          import os
+          import re
+          from pathlib import Path
+          expected = os.environ['EXPECTED_DIGEST']
+          assert re.fullmatch(r'sha256:[0-9a-f]{64}', expected), 'Missing exported Bake digest'
+          record = json.loads((Path(os.environ['RUNNER_TEMP']) / 'identity/fixture.json').read_text())
+          assert record['digest'] == expected, 'Bake digest changed after cleanup'
+          assert record['sha'] == os.environ['GITHUB_SHA'], 'Artifact source changed'
+          PY
