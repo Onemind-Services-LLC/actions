@@ -46,7 +46,7 @@ Notes
 ## Testing Guidelines
 
 - This repo has no unit tests; validate by running reusable workflows or consuming composite actions in a sandbox repo.
-- For `netbox-plugin-tests.yml`, pass plugin settings via the `plugin-configuration` input as an inner JSON string only (e.g., `'{"github_token":"ghp_xxx"}'`). The workflow wraps this under the plugin name and writes a valid Python `PLUGINS_CONFIG = {'<plugin-name>': {...}}` preserving quotes.
+- For `netbox-plugin-tests.yml`, provide `testing_configuration/configuration.py` in the plugin repository with its `PLUGINS` and `PLUGINS_CONFIG` settings. The workflow copies this into NetBox's configuration directory.
 - Ensure your plugin supports the selected NetBox version and works with Redis/Postgres services.
 - Use a matrix or sample invocations in a test repo before changing defaults.
 
@@ -56,7 +56,7 @@ Notes
 - Use `[skip ci]` for docs-only changes if no validation is needed.
 - Open PRs with:
   - Clear description, linked Jira, and scope of change.
-  - Notes on backwards compatibility and any required secrets/permissions (e.g., `vars.APP_ID`, `secrets.APP_PRIVATE_KEY`).
+  - Notes on backwards compatibility and any required secrets/permissions (e.g., optional `secrets.GIT_TOKEN` for private dependencies, passed explicitly or through `secrets: inherit`).
   - Screenshots or logs for behavior changes.
   - Keep diffs small and update module READMEs when inputs/behavior change.
 

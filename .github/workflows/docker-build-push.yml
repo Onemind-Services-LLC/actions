@@ -48,22 +48,17 @@ on:
         description: Registry reference used by Buildx cache (e.g., ghcr.io/org/app:buildcache-main)
         required: true
         type: string
-      org-token:
-        description: "If 'true', generate a GitHub App installation token and pass as build secret GITHUB_TOKEN=..."
-        required: false
-        default: 'false'
-        type: string
-      app-id:
-        description: GitHub App ID used to mint installation tokens (only when org-token is 'true')
-        required: false
-        type: string
       registry:
         description: Registry hostname for login (e.g., ghcr.io)
         required: true
         type: string
+    outputs:
+      digest:
+        description: Built image digest
+        value: ${{ jobs.build.outputs.digest }}
     secrets:
-      private-key:
-        description: GitHub App private key (PEM) used to mint installation tokens
+      GIT_TOKEN:
+        description: Token for private build dependencies, passed directly as the github_token build secret when supplied
         required: false
       username:
         description: Registry username
@@ -71,24 +66,18 @@ on:
       password:
         description: Registry password/token
         required: true
-      github-token:
-        description: Token used to authenticate GitHub API requests
-        required: false
-    outputs:
-      digest:
-        description: Published image digest
-        value: ${{ jobs.build.outputs.digest }}
 
 permissions:
   contents: read
   id-token: write
+  packages: read
 
 jobs:
   build:
     name: Build
     runs-on: ${{ inputs.runs-on }}
     outputs:
-      digest: ${{ steps.image.outputs.digest }}
+      digest: ${{ steps.build.outputs.digest }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v6
@@ -117,35 +106,27 @@ jobs:
             fi
           fi
 
-      - name: Create repository token
-        id: org_token
-        if: inputs.org-token == 'true'
-        uses: Onemind-Services-LLC/actions/actions/create-repo-token@3cc80b064ebe1023e05533efa15b47c43ead5ef9
-        with:
-          app-id: ${{ inputs.app-id }}
-          private-key: ${{ secrets.private-key }}
-          owner: Onemind-Services-LLC
-          github-token: ${{ github.actor == 'dependabot[bot]' && github.token || '' }}
-
-      - name: Merge user build-secrets with org token
+      - name: Merge user build-secrets with Git token
         id: merged_secrets
         shell: bash
         env:
           USER_SECRETS: ${{ inputs.build-secrets }}
-          ORG_TOKEN: ${{ steps.org_token.outputs.token }}
-          GITHUB_TOKEN: ${{ secrets.github-token }}
+          GIT_TOKEN: ${{ secrets.GIT_TOKEN }}
         run: |
-          delimiter="secrets-$(openssl rand -hex 16)"
           {
-            printf 'value<<%s\n' "$delimiter"
-            if [ -n "${USER_SECRETS}" ]; then printf '%s\n' "${USER_SECRETS}"; fi
-            if [ -n "${ORG_TOKEN:-}" ]; then printf 'github_token=%s\n' "${ORG_TOKEN}"; fi
-            if [ -n "${GITHUB_TOKEN:-}" ]; then printf 'github_token=%s\n' "${GITHUB_TOKEN}"; fi
-            printf '%s\n' "$delimiter"
+            delimiter="build_secrets_$(openssl rand -hex 16)"
+            echo "value<<$delimiter"
+            {
+              if [ -n "${USER_SECRETS}" ]; then printf '%s\n' "${USER_SECRETS}"; fi
+              if [ -n "${GIT_TOKEN:-}" ]; then
+                printf 'github_token=%s\n' "${GIT_TOKEN}"
+              fi
+            } | awk 'NF'
+            echo "$delimiter"
           } >> "$GITHUB_OUTPUT"
 
       - name: Build, push, sign
-        id: image
+        id: build
         uses: Onemind-Services-LLC/actions/actions/docker-build-push@cf62d1269631735ccc36988e8065f8ef4b1b8868
         with:
           images: ${{ inputs.image }}

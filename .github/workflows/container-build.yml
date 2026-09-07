@@ -19,21 +19,14 @@ on:
         description: Linux AMD64 runner with Docker
         type: string
         default: ubuntu-22.04-sh
-      app-id:
-        description: GitHub App used to read private dependencies
-        type: string
-        required: true
-      dependency-repositories:
-        description: Repositories that the dependency token can read
-        type: string
-        required: true
     secrets:
       registry-username:
         required: true
       registry-password:
         required: true
-      app-private-key:
-        required: true
+      GIT_TOKEN:
+        description: Token with read access to private build dependencies
+        required: false
     outputs:
       digest:
         description: Digest of the OCI image index, including attestations
@@ -58,15 +51,6 @@ jobs:
         uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
         with:
           persist-credentials: false
-      - name: Create Dependency Token
-        id: dependencies
-        uses: actions/create-github-app-token@fee1f7d63c2ff003460e3d139729b119787bc349 # v2
-        with:
-          app-id: ${{ inputs.app-id }}
-          private-key: ${{ secrets.app-private-key }}
-          owner: ${{ github.repository_owner }}
-          repositories: ${{ inputs.dependency-repositories }}
-          permission-contents: read
       - name: Login for Base Image Pulls
         uses: docker/login-action@c94ce9fb468520275223c153574b00df6fe4bcc9 # v3
         with:
@@ -114,7 +98,7 @@ jobs:
           labels: |
             org.opencontainers.image.revision=${{ github.sha }}
             org.opencontainers.image.source=${{ github.server_url }}/${{ github.repository }}
-          secrets: github_token=${{ steps.dependencies.outputs.token }}
+          secrets: github_token=${{ secrets.GIT_TOKEN }}
           provenance: mode=max
           sbom: true
       - name: Store Image Artifact

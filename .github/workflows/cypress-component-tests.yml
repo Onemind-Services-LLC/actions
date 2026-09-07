@@ -33,13 +33,9 @@ on:
         required: false
         default: '22.x'
         type: string
-      app-id:
-        description: GitHub App ID for generating installation token (falls back to vars.APP_ID if omitted)
-        required: false
-        type: string
     secrets:
-      private-key:
-        description: GitHub App private key (PEM) used to mint installation tokens
+      GIT_TOKEN:
+        description: Token for private GitHub packages; defaults to github.token when omitted
         required: false
 
 permissions:
@@ -65,6 +61,6 @@ jobs:
           browser: ${{ matrix.browser }}
           registry-scope: ${{ inputs.registry-scope }}
           registry-url: ${{ inputs.registry-url }}
-          npm-token: ${{ github.token }}
+          npm-token: ${{ secrets.GIT_TOKEN || github.token }}
           working-directory: ${{ inputs.working-directory }}
           node-version: ${{ inputs.node-version }}

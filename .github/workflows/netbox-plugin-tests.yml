@@ -3,10 +3,6 @@ name: NetBox Plugin Tests
 on:
   workflow_call:
     inputs:
-      app-id:
-        description: 'The GitHub App ID to use for checkout of private repositories'
-        required: false
-        type: string
       plugin-name:
         description: 'The name of the NetBox plugin, eg: netbox_secrets'
         required: true
@@ -37,8 +33,8 @@ on:
         type: string
         default: '--omit=*/migrations/*,*/templates/*,*/static/*,*/tests/*'
     secrets:
-      private-key:
-        description: 'The private key for the GitHub App to use for checkout of private repositories'
+      GIT_TOKEN:
+        description: Token for private plugin dependencies; defaults to github.token when omitted
         required: false
 
 env:
@@ -52,7 +48,7 @@ permissions:
 jobs:
   lint:
     name: Pre-commit
-    uses: Onemind-Services-LLC/actions/.github/workflows/pre-commit.yml@cf62d1269631735ccc36988e8065f8ef4b1b8868
+    uses: ./.github/workflows/pre-commit.yml
     with:
       runs-on: ${{ inputs.runs-on }}
 
@@ -87,15 +83,6 @@ jobs:
           --health-retries 5
 
     steps:
-      - name: Create App Token
-        id: repo-token
-        uses: Onemind-Services-LLC/actions/actions/create-repo-token@3cc80b064ebe1023e05533efa15b47c43ead5ef9
-        with:
-          app-id: ${{ inputs.app-id }}
-          private-key: ${{ secrets.private-key }}
-          owner: Onemind-Services-LLC
-          github-token: ${{ github.actor == 'dependabot[bot]' && github.token || secrets.GIT_TOKEN }}
-
       - name: Checkout NetBox Repository
         uses: actions/checkout@v6
         with:
@@ -114,7 +101,6 @@ jobs:
           repository: "Onemind-Services-LLC/actions"
           path: ${{ env.ACTIONS_WORKING_DIRECTORY }}
           ref: 3cc80b064ebe1023e05533efa15b47c43ead5ef9
-          token: ${{ steps.repo-token.outputs.token }}
 
       - name: Setup NetBox Requirements
         uses: Onemind-Services-LLC/actions/actions/python-setup-install@3cc80b064ebe1023e05533efa15b47c43ead5ef9
@@ -127,10 +113,14 @@ jobs:
 
       - name: Setup Plugin Requirements
         uses: Onemind-Services-LLC/actions/actions/python-setup-install@3cc80b064ebe1023e05533efa15b47c43ead5ef9
+        # Limit Git authentication to this install step and its child processes.
+        env:
+          GIT_CONFIG_COUNT: '1'
+          GIT_CONFIG_KEY_0: url.https://x-access-token:${{ secrets.GIT_TOKEN || github.token }}@github.com/.insteadOf
+          GIT_CONFIG_VALUE_0: https://github.com/
         with:
           python-version: ${{ inputs.python-version }}
           working-directory: ${{ inputs.plugin-name }}
-          github-token: ${{ steps.repo-token.outputs.token }}
           extra-install-commands: |
             pip install -e .
 
@@ -147,7 +137,7 @@ jobs:
           django-settings-module: netbox.configuration
           test-args: ${{ inputs.plugin-name }}.tests
           coverage-report: true
-          coverage-github-token: ${{ steps.repo-token.outputs.token }}
+          coverage-github-token: ${{ github.token }}
           coverage-pull-request-number: ${{ github.event.pull_request.number || '' }}
           coverage-source: ${{ inputs.plugin-name }}
           coverage-minimum: ${{ inputs.coverage-minimum }}
