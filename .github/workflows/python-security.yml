@@ -80,7 +80,7 @@ jobs:
           pathlib.Path('reports/audit-requirements.txt').write_text('\n'.join(sorted(locked)) + '\n')
           pathlib.Path('reports/vcs-audit-gaps.txt').write_text('\n'.join(unscanned) + '\n')
           with open(__import__('os').environ['GITHUB_STEP_SUMMARY'], 'a') as summary:
-              summary.write(f'Python advisory audit: {len(locked)} pins; {len(unscanned)} VCS dependencies lack registry advisory coverage. See artifact.\n')
+              summary.write(f'Python advisory audit: {len(locked)} pins; {len(unscanned)} VCS dependencies lack advisory coverage.\n')
           PYTHON
           pip-audit --no-deps --disable-pip --strict --requirement reports/audit-requirements.txt \
             --format json --output reports/pip-audit.json

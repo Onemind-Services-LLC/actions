@@ -102,7 +102,7 @@ jobs:
             --certificate-github-workflow-repository "$GITHUB_REPOSITORY" \
             --certificate-github-workflow-sha "$GITHUB_SHA" \
             --certificate-oidc-issuer https://token.actions.githubusercontent.com "$IMAGE_REF" > "$RUNNER_TEMP/signature.json"
-          printf 'Published and verified `%s`\n' "$IMAGE_REF" >> "$GITHUB_STEP_SUMMARY"
+          printf 'Published and verified %s\n' "$IMAGE_REF" >> "$GITHUB_STEP_SUMMARY"
       - name: Promote Verified Digest to Branch or Release Tag
         env:
           IMAGE: ${{ inputs.image }}
