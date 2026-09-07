@@ -232,6 +232,10 @@ Jobs use only the `ubuntu-22.04-sh` Linux AMD64 runner. The retained `runs-on`
 input is for caller compatibility and cannot select another pool. Docker Hub
 build tools are digest-pinned to the authenticated registry mirror.
 
+Configure repository-managed CodeQL default setup separately with runner type
+`labeled` and runner label `ubuntu-22.04-sh`. Keep this repository setting aligned
+with the workflow runner policy when enabling or resetting code scanning.
+
 The caller must gate publication on all source checks, tests, image scanning and
 application smoke checks. The publisher does not infer scan success from an
 artifact's existence. Pass `signer-identity` as the exact
