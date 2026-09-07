@@ -41,7 +41,7 @@ runs:
   using: composite
   steps:
     - name: Set Up Python
-      uses: actions/setup-python@v6
+      uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6
       with:
         python-version: ${{ inputs.python-version }}
         cache: 'pip'
@@ -49,13 +49,6 @@ runs:
           ${{ inputs.working-directory }}/setup.py
           ${{ inputs.working-directory }}/pyproject.toml
           ${{ inputs.working-directory }}/requirements*.txt
-
-    - name: Configure GitHub Token
-      if: ${{ inputs.github-token != '' }}
-      shell: bash
-      env:
-        TOKEN: ${{ inputs.github-token }}
-      run: git config --global url."https://x-access-token:${TOKEN}@github.com/".insteadOf "https://github.com/"
 
     - name: Upgrade Pip
       if: ${{ inputs.upgrade-pip == 'true' }}
@@ -66,31 +59,61 @@ runs:
       if: ${{ inputs.pre-install-commands != '' }}
       shell: bash
       working-directory: ${{ inputs.working-directory }}
-      run: ${{ inputs.pre-install-commands }}
+      env:
+        INSTALL_COMMANDS: ${{ inputs.pre-install-commands }}
+      # This input is an intentional shell hook for trusted workflow authors.
+      run: bash --noprofile --norc -e -o pipefail -c "$INSTALL_COMMANDS"
 
     - name: Install From requirements.txt
       if: hashFiles(format('{0}/requirements.txt', inputs.working-directory))
       shell: bash
       working-directory: ${{ inputs.working-directory }}
-      run: pip install -r requirements.txt
+      env:
+        DEPENDENCY_TOKEN: ${{ inputs.github-token }}
+      run: |
+        if [[ -n "$DEPENDENCY_TOKEN" ]]; then
+          export GIT_CONFIG_COUNT=1
+          export GIT_CONFIG_KEY_0="url.https://x-access-token:${DEPENDENCY_TOKEN}@github.com/.insteadOf"
+          export GIT_CONFIG_VALUE_0="https://github.com/"
+        fi
+        python -m pip install -r requirements.txt
 
     - name: Install From requirements-dev.txt
       if: hashFiles(format('{0}/requirements-dev.txt', inputs.working-directory))
       shell: bash
       working-directory: ${{ inputs.working-directory }}
-      run: pip install -r requirements-dev.txt
+      env:
+        DEPENDENCY_TOKEN: ${{ inputs.github-token }}
+      run: |
+        if [[ -n "$DEPENDENCY_TOKEN" ]]; then
+          export GIT_CONFIG_COUNT=1
+          export GIT_CONFIG_KEY_0="url.https://x-access-token:${DEPENDENCY_TOKEN}@github.com/.insteadOf"
+          export GIT_CONFIG_VALUE_0="https://github.com/"
+        fi
+        python -m pip install -r requirements-dev.txt
 
     - name: Install From requirements_dev.txt
       if: hashFiles(format('{0}/requirements_dev.txt', inputs.working-directory))
       shell: bash
       working-directory: ${{ inputs.working-directory }}
-      run: pip install -r requirements_dev.txt
+      env:
+        DEPENDENCY_TOKEN: ${{ inputs.github-token }}
+      run: |
+        if [[ -n "$DEPENDENCY_TOKEN" ]]; then
+          export GIT_CONFIG_COUNT=1
+          export GIT_CONFIG_KEY_0="url.https://x-access-token:${DEPENDENCY_TOKEN}@github.com/.insteadOf"
+          export GIT_CONFIG_VALUE_0="https://github.com/"
+        fi
+        python -m pip install -r requirements_dev.txt
 
     - name: Run Extra Install Commands
       if: ${{ inputs.extra-install-commands != '' }}
       shell: bash
       working-directory: ${{ inputs.working-directory }}
-      run: ${{ inputs.extra-install-commands }}
+      env:
+        INSTALL_COMMANDS: ${{ inputs.extra-install-commands }}
+      # This input is an intentional shell hook for trusted workflow authors.
+      run: bash --noprofile --norc -e -o pipefail -c "$INSTALL_COMMANDS"
 
 branding:
   icon: package

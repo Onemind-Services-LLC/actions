@@ -10,6 +10,7 @@ Run Django checks, apply migrations, collect static files, and execute tests wit
 - **verbosity**: Django command verbosity (default: `3`).
 - **test-args**: Extra args appended to `manage.py test`.
 - **coverage-args**: Extra args appended to `coverage xml`.
+- **pytest-paths**: Optional space-separated standalone pytest paths, run after Django tests with coverage appended. Install pytest in development requirements.
 - **coverage-source**: Comma-separated modules/paths to measure (passed to `coverage run --source`).
 
 ### Optional Coverage Report
@@ -26,12 +27,14 @@ Run Django checks, apply migrations, collect static files, and execute tests wit
 
 ## What it does
 
-- Installs `coverage` via pip.
+- Installs the pinned `coverage==7.15.3` tool.
 - Runs `makemigrations --check --dry-run` to enforce committed migrations.
 - Runs `migrate -v <verbosity>`.
 - Runs `collectstatic --noinput`.
 - Runs `check -v <verbosity>`.
-- Runs tests via `coverage run manage.py test` and generates `coverage.xml` via `coverage xml`.
+- Clears stale coverage, runs Django tests, optionally appends pytest coverage, and generates `coverage.xml`.
+- Enforces `coverage-minimum` in an independent, blocking command whenever `coverage-fail-below-threshold` is true. This also applies when PR reporting is disabled; `coverage-continue-on-error` only affects report posting.
+- Parses test/coverage arguments with `shlex`, without shell evaluation. Settings keys must end in `_SETTINGS_MODULE` or be `NETBOX_CONFIGURATION`.
   - Tip: Use `coverage-source` to restrict measurement to your app/package (e.g., only a NetBox plugin) and exclude framework code.
 - Optionally generates a Code Coverage Summary and posts a sticky PR comment using the `cobertura-report` composite action (wrapper for pinned third‑party actions) when `coverage-report: 'true'`.
 

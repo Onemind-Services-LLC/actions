@@ -1,0 +1,64 @@
+name: Scan Container Artifact
+
+on:
+  workflow_call:
+    inputs:
+      artifact-id:
+        description: Immutable OCI artifact ID from the build job
+        required: true
+        type: string
+      digest:
+        description: Expected OCI image index digest
+        required: true
+        type: string
+      runs-on:
+        description: Linux AMD64 runner
+        type: string
+        default: ubuntu-22.04-sh
+
+permissions:
+  contents: read
+
+jobs:
+  scan:
+    name: Container Vulnerabilities
+    runs-on: ${{ inputs.runs-on }}
+    timeout-minutes: 20
+    steps:
+      - name: Download Exact Artifact
+        uses: actions/download-artifact@634f93cb2916e3fdff6788551b99b062d0335ce0 # v5
+        with:
+          artifact-ids: ${{ inputs.artifact-id }}
+          merge-multiple: true
+          path: ${{ runner.temp }}/container
+      - name: Install OCI Tools
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y --no-install-recommends skopeo
+      - name: Verify Image Digest
+        env:
+          EXPECTED_DIGEST: ${{ inputs.digest }}
+        run: |
+          set -euo pipefail
+          actual="sha256:$(skopeo inspect --raw "oci-archive:$RUNNER_TEMP/container/image.tar" | sha256sum | cut -d ' ' -f 1)"
+          test "$actual" = "$EXPECTED_DIGEST"
+      - name: Scan Image
+        uses: aquasecurity/trivy-action@d2a0b60797ff03db6132bd4e2b293f9b37081297 # reviewed 2026-09-07
+        with:
+          version: v0.74.0
+          input: ${{ runner.temp }}/container/image.tar
+          scanners: vuln
+          severity: HIGH,CRITICAL
+          ignore-unfixed: false
+          exit-code: '1'
+          format: json
+          output: ${{ runner.temp }}/trivy.json
+          cache: false
+      - name: Retain Scan Report
+        if: ${{ !cancelled() }}
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: container-security-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/trivy.json
+          if-no-files-found: error
+          retention-days: 14

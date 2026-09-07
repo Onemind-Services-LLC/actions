@@ -14,7 +14,7 @@ Set up Python, optionally upgrade `pip`, and install dependencies from `requirem
 ## Behavior
 
 - Uses `actions/setup-python@v6` to install the requested Python version.
-- If provided, configures a temporary git URL rewrite using the token for private repo access.
+- If provided, configures the Git URL rewrite only in the environment of each dependency installation. It never writes the token to the global Git configuration or build context. Pre/post-install hooks do not receive this token automatically.
 - Installs from the following files if they exist in the repo root:
   - `requirements.txt`
   - `requirements-dev.txt`

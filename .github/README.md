@@ -226,3 +226,47 @@ jobs:
       private-key: ${{ secrets.APP_PRIVATE_KEY }}
       kibana-api-key: ${{ secrets.KIBANA_API_KEY }}
 ```
+
+## Gated container pipelines
+
+The new workflows are independently callable with `workflow_call`. Pin them to
+a reviewed commit SHA, and use `needs` in the caller to connect the pipeline.
+
+| Workflow | Inputs | Outputs / gate |
+| --- | --- | --- |
+| `python-security.yml` | `source-directories`, optional Python/runner versions | Blocking Bandit, pip-audit and redacted Gitleaks; report artifacts |
+| `container-build.yml` | `image`, `registry`, `app-id`, `dependency-repositories` | OCI `artifact-id` and `digest`; no registry push/cache write |
+| `container-scan.yml` | `artifact-id`, `digest` | Exact artifact digest check and blocking HIGH/CRITICAL Trivy scan |
+| `container-publish.yml` | `artifact-id`, `digest`, `image`, `registry`, `signer-identity` | Signed `image-ref` and `digest`; protected push only |
+
+Build requires explicit `registry-username`, `registry-password`, and
+`app-private-key` secrets. Publish requires only the registry credentials and
+`contents: read, id-token: write` permissions. Scan and source analysis have
+read-only permissions and receive no deployment secrets. Supply read-only
+registry credentials for base-image pulls; the server controls their scope.
+The default runner is the existing `ubuntu-22.04-sh` Linux AMD64 label; override
+`runs-on` for an isolated compatible runner.
+
+The caller must gate publication on all source checks, tests, image scanning and
+application smoke checks. The publisher does not infer scan success from an
+artifact's existence. Pass `signer-identity` as the exact
+`https://github.com/OWNER/actions/.github/workflows/container-publish.yml@SHA`
+used in the workflow call; verification also binds the caller repository and SHA.
+
+The builder exports OCI with SBOM and maximum BuildKit provenance. Consumers
+retrieve an immutable artifact ID within the current run, not an arbitrary
+cross-run artifact or mutable tag. Skopeo copies all manifests while preserving
+digests. Publishing does not rebuild the image. It creates a SHA tag, signs and
+verifies the digest, then promotes the branch/release alias. Artifacts expire in
+three days; reports remain for 14 days.
+
+Source scanning expects both runtime and development locks with exact registry
+pins. VCS dependencies must use full commit SHAs; advisory coverage gaps are
+reported explicitly. There are no silent scanner failures, automatic vulnerability
+waivers, or `continue-on-error` gates. Install hooks in the Python setup composite
+remain explicit shell commands for trusted workflow authors.
+
+The legacy `docker-build-push.yml` now exposes its `digest` output and no longer
+writes `merged_secrets.txt` into the caller's build context. Existing consumers
+must update their pinned reference to receive those repairs. Prefer the separate
+build/scan/publish workflows for new gated pipelines.
