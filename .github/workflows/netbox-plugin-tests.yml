@@ -66,6 +66,7 @@ jobs:
   test:
     name: Run Tests
     runs-on: ${{ inputs.runs-on }}
+    timeout-minutes: 45
     needs: lint
 
     services:
@@ -120,12 +121,16 @@ jobs:
           ref: 3cc80b064ebe1023e05533efa15b47c43ead5ef9
 
       - name: Setup NetBox Requirements
+        timeout-minutes: 10
         uses: Onemind-Services-LLC/actions/actions/python-setup-install@3cc80b064ebe1023e05533efa15b47c43ead5ef9
         with:
           python-version: ${{ inputs.python-version }}
           working-directory: ${{ env.NETBOX_WORKING_DIRECTORY }}
           pre-install-commands: |
-            sudo apt-get update && sudo apt-get install -y libpq-dev
+            if ! dpkg-query -W -f='${Status}' libpq-dev 2>/dev/null | grep -q "install ok installed"; then
+              sudo timeout 180s apt-get -o Acquire::Retries=2 -o Acquire::http::Timeout=30 -o Acquire::https::Timeout=30 update
+              sudo timeout 180s apt-get -o Acquire::Retries=2 -o Acquire::http::Timeout=30 -o Acquire::https::Timeout=30 install -y libpq-dev
+            fi
             python3 -m pip install "setuptools<81"
 
       - name: Setup Plugin Requirements
