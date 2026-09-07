@@ -25,9 +25,11 @@ large container stacks, Android builds, and browser or bundle builds. JavaScript
 quality checks that enable TypeScript or bundle builds can override `runs-on`
 to `ci-test` or `ci-build` as needed.
 
-All three profiles have an idle minimum of zero. The initial maximum is two
-runners per profile while canary performance is evaluated. Listeners remain
-running to receive jobs. The legacy runner remains installed during migration.
+All three profiles have an idle minimum of zero. After the two-repository canary,
+the rollout caps are 32 small, 16 test, and 8 build runners. These are per-profile
+ceilings, not capacity reservations: Kubernetes schedules their resource requests
+within the shared worker pool, which can scale from zero to eight nodes. Listeners
+remain running to receive jobs. The legacy runner remains installed during migration.
 
 ## Authentication
 
