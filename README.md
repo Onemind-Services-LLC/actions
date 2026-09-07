@@ -13,6 +13,8 @@ Start here:
 
 Pinning: Use `@master` in examples unless an action explicitly requires a tag or SHA.
 
+For stable consumer workflows, pin this repository to a full commit SHA. Internal action and workflow dependencies are also pinned, so later changes to `master` do not change the behavior of that commit.
+
 Notes
 - Use `@master` for actions/workflows from this repo in examples unless otherwise specified.
 - Third-party actions/workflows must always be pinned to a version tag or commit SHA (do not use floating refs like `@master`).
