@@ -4,9 +4,9 @@ on:
   workflow_call:
     inputs:
       runs-on:
-        description: GitHub runner label
+        description: Compatibility input; jobs always use ubuntu-24.04-sh
         required: false
-        default: 'ubuntu-22.04-sh'
+        default: 'ubuntu-24.04-sh'
         type: string
       push:
         description: >-
@@ -75,7 +75,7 @@ permissions:
 jobs:
   build:
     name: Build
-    runs-on: ${{ inputs.runs-on }}
+    runs-on: ubuntu-24.04-sh
     outputs:
       digest: ${{ steps.build.outputs.digest }}
     steps:

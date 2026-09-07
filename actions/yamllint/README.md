@@ -14,7 +14,7 @@ Lint YAML files using yamllint (installed via pip in the runner environment). Su
 ```yaml
 jobs:
   lint:
-    runs-on: ubuntu-22.04-sh
+    runs-on: ubuntu-24.04-sh
     steps:
       - uses: actions/checkout@v6
       - name: Yamllint

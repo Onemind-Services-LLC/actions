@@ -29,7 +29,7 @@ Set up Python, optionally upgrade `pip`, and install dependencies from `requirem
 ```yaml
 jobs:
   build:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04-sh
     steps:
       - uses: actions/checkout@v6
 
@@ -62,7 +62,7 @@ jobs:
 ```yaml
 jobs:
   test:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04-sh
     strategy:
       matrix:
         python-version: ['3.10', '3.11', '3.12']

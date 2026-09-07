@@ -18,10 +18,10 @@ on:
         default: '3.12'
         type: string
       runs-on:
-        description: 'GitHub runner to use'
+        description: Compatibility input; jobs always use ubuntu-24.04-sh
         required: false
         type: string
-        default: 'ubuntu-22.04-sh'
+        default: 'ubuntu-24.04-sh'
       coverage-minimum:
         description: 'Minimum acceptable code coverage percentage'
         required: false
@@ -33,6 +33,12 @@ on:
         type: string
         default: '--omit=*/migrations/*,*/templates/*,*/static/*,*/tests/*'
     secrets:
+      DOCKER_USERNAME:
+        description: Registry username for service image pulls
+        required: true
+      DOCKER_PASSWORD:
+        description: Registry password for service image pulls
+        required: true
       GIT_TOKEN:
         description: Token for private plugin dependencies; defaults to github.token when omitted
         required: false
@@ -50,16 +56,19 @@ jobs:
     name: Pre-commit
     uses: ./.github/workflows/pre-commit.yml
     with:
-      runs-on: ${{ inputs.runs-on }}
+      runs-on: ubuntu-24.04-sh
 
   test:
     name: Run Tests
-    runs-on: ${{ inputs.runs-on }}
+    runs-on: ubuntu-24.04-sh
     needs: lint
 
     services:
       redis:
         image: registry.onemindservices.com/docker.io/library/redis:latest
+        credentials:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
         ports:
           - 6379:6379
         options: >-
@@ -70,6 +79,9 @@ jobs:
 
       postgres:
         image: registry.onemindservices.com/docker.io/library/postgres:17-alpine
+        credentials:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
         env:
           POSTGRES_USER: netbox
           POSTGRES_PASSWORD: netbox

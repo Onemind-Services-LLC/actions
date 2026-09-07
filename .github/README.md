@@ -39,7 +39,7 @@ jobs:
   unit_test:
     uses: Onemind-Services-LLC/actions/.github/workflows/cypress-component-tests.yml@master
     with:
-      runs-on: ubuntu-22.04-sh
+      runs-on: ubuntu-24.04-sh
       browsers: '["chrome","edge","firefox"]'
       registry-scope: '@onemind-services-llc'
       registry-url: 'https://npm.pkg.github.com'
@@ -66,7 +66,7 @@ jobs:
   quality:
     uses: Onemind-Services-LLC/actions/.github/workflows/js-quality-checks.yml@master
     with:
-      runs-on: ubuntu-22.04-sh
+      runs-on: ubuntu-24.04-sh
       node-version: '22.x'
 ```
 
@@ -186,7 +186,7 @@ jobs:
       plugin-name: my_netbox_plugin
       netbox-version: v4.3.6
       python-version: '3.12'
-      runs-on: ubuntu-22.04-sh
+      runs-on: ubuntu-24.04-sh
     secrets:
       GIT_TOKEN: ${{ secrets.GIT_TOKEN }}
 ```
@@ -228,8 +228,9 @@ plus `GIT_TOKEN` when private dependencies are needed. Publish requires only the
 `contents: read, id-token: write` permissions. Scan and source analysis have
 read-only permissions and receive no deployment secrets. Supply read-only
 registry credentials for base-image pulls; the server controls their scope.
-The default runner is the existing `ubuntu-22.04-sh` Linux AMD64 label; override
-`runs-on` for an isolated compatible runner.
+Jobs use only the `ubuntu-24.04-sh` Linux AMD64 runner. The retained `runs-on`
+input is for caller compatibility and cannot select another pool. Docker Hub
+build tools are digest-pinned to the authenticated registry mirror.
 
 The caller must gate publication on all source checks, tests, image scanning and
 application smoke checks. The publisher does not infer scan success from an

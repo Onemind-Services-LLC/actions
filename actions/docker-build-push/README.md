@@ -43,7 +43,7 @@ permissions:
 
 jobs:
   build:
-    runs-on: ubuntu-22.04-sh
+    runs-on: ubuntu-24.04-sh
     steps:
       - uses: actions/checkout@v6
 
@@ -105,7 +105,7 @@ permissions:
 
 jobs:
   build-only:
-    runs-on: ubuntu-22.04-sh
+    runs-on: ubuntu-24.04-sh
     steps:
       - uses: actions/checkout@v6
       - name: Build Only (no push)

@@ -4,9 +4,9 @@ on:
   workflow_call:
     inputs:
       runs-on:
-        description: Runner label
+        description: Compatibility input; jobs always use ubuntu-24.04-sh
         required: false
-        default: ubuntu-22.04-sh
+        default: ubuntu-24.04-sh
         type: string
       languages:
         description: Comma-separated CodeQL languages (e.g., 'javascript-typescript,python,go')
@@ -57,7 +57,7 @@ permissions:
 jobs:
   analyze:
     name: CodeQL Analyze
-    runs-on: ${{ inputs.runs-on }}
+    runs-on: ubuntu-24.04-sh
     defaults:
       run:
         shell: bash

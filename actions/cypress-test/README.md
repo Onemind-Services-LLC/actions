@@ -23,7 +23,7 @@ Wraps `cypress-io/github-action` to run Cypress component or e2e tests, with opt
 ```yaml
 jobs:
   cypress-component:
-    runs-on: ubuntu-22.04-sh
+    runs-on: ubuntu-24.04-sh
     steps:
       - uses: actions/checkout@v6
       - name: Run unit tests (Cypress component)
@@ -38,7 +38,7 @@ jobs:
 ```yaml
 jobs:
   cypress-e2e:
-    runs-on: ubuntu-22.04-sh
+    runs-on: ubuntu-24.04-sh
     steps:
       - uses: actions/checkout@v6
       - name: Run e2e tests
@@ -56,7 +56,7 @@ jobs:
 ```yaml
 jobs:
   cypress-e2e-private:
-    runs-on: ubuntu-22.04-sh
+    runs-on: ubuntu-24.04-sh
     steps:
       - uses: actions/checkout@v6
       - name: Run Cypress with private deps

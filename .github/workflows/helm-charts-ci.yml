@@ -4,9 +4,9 @@ on:
   workflow_call:
     inputs:
       runs-on:
-        description: GitHub runner label
+        description: Compatibility input; jobs always use ubuntu-24.04-sh
         required: false
-        default: 'ubuntu-22.04-sh'
+        default: 'ubuntu-24.04-sh'
         type: string
       python-version:
         description: Python version for chart-testing
@@ -43,7 +43,7 @@ permissions:
 jobs:
   lint-test:
     name: Lint & Test Charts
-    runs-on: ${{ inputs.runs-on }}
+    runs-on: ubuntu-24.04-sh
     outputs:
       changed: ${{ steps.list-changed.outputs.changed }}
       changed-dirs: ${{ steps.list-changed.outputs.changed_dirs }}
@@ -89,7 +89,7 @@ jobs:
 
   release:
     name: Package & Push Charts
-    runs-on: ${{ inputs.runs-on }}
+    runs-on: ubuntu-24.04-sh
     needs: lint-test
     if: startsWith(github.ref, 'refs/tags/')
     steps:
