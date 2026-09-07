@@ -235,7 +235,7 @@ a reviewed commit SHA, and use `needs` in the caller to connect the pipeline.
 | Workflow | Inputs | Outputs / gate |
 | --- | --- | --- |
 | `python-security.yml` | `source-directories`, optional Python/runner versions | Blocking Bandit, pip-audit and redacted Gitleaks; report artifacts |
-| `container-build.yml` | `image`, `registry`, `app-id`, `dependency-repositories` | OCI `artifact-id` and `digest`; no registry push/cache write |
+| `container-build.yml` | `image`, `registry`, `app-id`, `dependency-repositories`, optional `build-args` | OCI `artifact-id` and `digest`; no registry push/cache write |
 | `container-scan.yml` | `artifact-id`, `digest` | Exact artifact digest check and blocking HIGH/CRITICAL Trivy scan |
 | `container-publish.yml` | `artifact-id`, `digest`, `image`, `registry`, `signer-identity` | Signed `image-ref` and `digest`; protected push only |
 
@@ -270,3 +270,10 @@ The legacy `docker-build-push.yml` now exposes its `digest` output and no longer
 writes `merged_secrets.txt` into the caller's build context. Existing consumers
 must update their pinned reference to receive those repairs. Prefer the separate
 build/scan/publish workflows for new gated pipelines.
+
+Build artifacts use GHA cache v2 scoped to image, architecture and ref. Validation
+scopes are separate from protected-push scopes; the default branch's trusted
+cache can be read as a fallback. Cache export failure only affects performance.
+The Dockerfile should order dependency installation before application source,
+use BuildKit secrets for private packages, and keep package caches out of final
+layers. Cache mounts themselves are not exported by the GHA layer-cache backend.
