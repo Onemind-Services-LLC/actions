@@ -28,7 +28,7 @@ outputs:
     value: ${{ steps.bake.outputs.metadata }}
   digest:
     description: Image digest for the selected target, or empty when no target is selected
-    value: ${{ inputs.target != '' && fromJSON(steps.bake.outputs.metadata)[inputs.target]['containerimage.digest'] || '' }}
+    value: ${{ steps.identity.outputs.digest }}
 runs:
   using: composite
   steps:
@@ -42,3 +42,16 @@ runs:
         allow: ${{ inputs.allow }}
         set: ${{ inputs.set }}
         push: ${{ inputs.push }}
+    - name: Record Selected Image Digest
+      if: inputs.target != ''
+      id: identity
+      shell: bash
+      env:
+        DIGEST: ${{ fromJSON(steps.bake.outputs.metadata || '{}')[inputs.target]['containerimage.digest'] }}
+      run: |
+        set -euo pipefail
+        if [[ ! "$DIGEST" =~ ^sha256:[0-9a-f]{64}$ ]]; then
+          echo "Selected Bake target has no valid image digest" >&2
+          exit 1
+        fi
+        printf 'digest=%s\n' "$DIGEST" >> "$GITHUB_OUTPUT"
