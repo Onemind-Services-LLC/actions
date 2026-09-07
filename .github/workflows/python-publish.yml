@@ -4,9 +4,9 @@ on:
   workflow_call:
     inputs:
       runs-on:
-        description: Compatibility input; jobs always use ubuntu-22.04-sh
+        description: Compatibility input; jobs always use ci-test
         required: false
-        default: 'ubuntu-22.04-sh'
+        default: 'ci-test'
         type: string
       python-version:
         description: Python version to use
@@ -39,7 +39,7 @@ permissions:
 jobs:
   publish:
     name: Publish to Python Package Index (Token)
-    runs-on: ubuntu-22.04-sh
+    runs-on: ci-test
     defaults:
       run:
         working-directory: ${{ inputs.working-directory }}

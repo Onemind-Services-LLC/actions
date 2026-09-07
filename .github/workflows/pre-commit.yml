@@ -12,7 +12,7 @@ on:
         description: 'GitHub runner to use'
         required: false
         type: string
-        default: 'ubuntu-22.04-sh'
+        default: 'ci-small'
 
 jobs:
   pre-commit:

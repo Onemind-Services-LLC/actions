@@ -4,9 +4,9 @@ on:
   workflow_call:
     inputs:
       runs-on:
-        description: Compatibility input; jobs always use ubuntu-22.04-sh
+        description: Compatibility input; jobs always use ci-build
         required: false
-        default: 'ubuntu-22.04-sh'
+        default: 'ci-build'
         type: string
       node-version:
         description: Node.js version to use
@@ -57,7 +57,7 @@ permissions:
 jobs:
   analyze:
     name: Analyze Bundle
-    runs-on: ubuntu-22.04-sh
+    runs-on: ci-build
     env:
       NEXT_TELEMETRY_DISABLED: 1
     defaults:

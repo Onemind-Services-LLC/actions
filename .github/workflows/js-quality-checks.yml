@@ -4,9 +4,9 @@ on:
   workflow_call:
     inputs:
       runs-on:
-        description: Compatibility input; jobs always use ubuntu-22.04-sh
+        description: Compatibility input; job selects ci-small, ci-test, or ci-build for enabled checks
         required: false
-        default: ubuntu-22.04-sh
+        default: ci-small
         type: string
       node-version:
         description: Node.js version
@@ -91,7 +91,7 @@ permissions:
 jobs:
   quality:
     name: JavaScript Quality Checks
-    runs-on: ubuntu-22.04-sh
+    runs-on: ${{ inputs.run-bundle-check && 'ci-build' || inputs.run-typescript && 'ci-test' || 'ci-small' }}
     steps:
       - name: Checkout
         uses: actions/checkout@v6

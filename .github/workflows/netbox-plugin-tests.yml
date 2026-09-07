@@ -21,12 +21,12 @@ on:
         description: 'GitHub runner to use'
         required: false
         type: string
-        default: 'ubuntu-22.04-sh'
+        default: 'ci-test'
       lint-runs-on:
-        description: 'GitHub runner for pre-commit checks; defaults to runs-on'
+        description: 'GitHub runner for pre-commit checks; empty uses runs-on'
         required: false
         type: string
-        default: ''
+        default: 'ci-small'
       coverage-minimum:
         description: 'Minimum acceptable code coverage percentage'
         required: false

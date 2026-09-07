@@ -16,9 +16,9 @@ on:
         type: string
         default: ''
       runs-on:
-        description: Compatibility input; jobs always use ubuntu-22.04-sh
+        description: Compatibility input; jobs always use ci-build
         type: string
-        default: ubuntu-22.04-sh
+        default: ci-build
     secrets:
       registry-username:
         required: true
@@ -41,7 +41,7 @@ permissions:
 jobs:
   build:
     name: Build OCI Artifact
-    runs-on: ubuntu-22.04-sh
+    runs-on: ci-build
     timeout-minutes: 30
     outputs:
       digest: ${{ steps.build.outputs.digest }}

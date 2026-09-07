@@ -12,9 +12,9 @@ on:
         required: true
         type: string
       runs-on:
-        description: Compatibility input; jobs always use ubuntu-22.04-sh
+        description: Compatibility input; jobs always use ci-build
         type: string
-        default: ubuntu-22.04-sh
+        default: ci-build
 
 permissions:
   contents: read
@@ -22,7 +22,7 @@ permissions:
 jobs:
   scan:
     name: Container Vulnerabilities
-    runs-on: ubuntu-22.04-sh
+    runs-on: ci-build
     timeout-minutes: 20
     steps:
       - name: Download Exact Artifact

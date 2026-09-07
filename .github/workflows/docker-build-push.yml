@@ -4,9 +4,9 @@ on:
   workflow_call:
     inputs:
       runs-on:
-        description: Compatibility input; jobs always use ubuntu-22.04-sh
+        description: Compatibility input; jobs always use ci-build
         required: false
-        default: 'ubuntu-22.04-sh'
+        default: 'ci-build'
         type: string
       push:
         description: >-
@@ -75,7 +75,7 @@ permissions:
 jobs:
   build:
     name: Build
-    runs-on: ubuntu-22.04-sh
+    runs-on: ci-build
     outputs:
       digest: ${{ steps.build.outputs.digest }}
     steps:

@@ -4,9 +4,9 @@ on:
   workflow_call:
     inputs:
       runs-on:
-        description: Compatibility input; jobs always use ubuntu-22.04-sh
+        description: Compatibility input; jobs always use ci-test
         type: string
-        default: ubuntu-22.04-sh
+        default: ci-test
       python-version:
         description: Python version used by the application
         type: string
@@ -22,7 +22,7 @@ permissions:
 jobs:
   security:
     name: Source and Dependency Security
-    runs-on: ubuntu-22.04-sh
+    runs-on: ci-test
     timeout-minutes: 20
     steps:
       - name: Checkout Full History

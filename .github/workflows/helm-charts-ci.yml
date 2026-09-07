@@ -4,9 +4,9 @@ on:
   workflow_call:
     inputs:
       runs-on:
-        description: Compatibility input; jobs always use ubuntu-22.04-sh
+        description: Compatibility input; jobs always use ci-small
         required: false
-        default: 'ubuntu-22.04-sh'
+        default: 'ci-small'
         type: string
       python-version:
         description: Python version for chart-testing
@@ -43,7 +43,7 @@ permissions:
 jobs:
   lint-test:
     name: Lint & Test Charts
-    runs-on: ubuntu-22.04-sh
+    runs-on: ci-small
     outputs:
       changed: ${{ steps.list-changed.outputs.changed }}
       changed-dirs: ${{ steps.list-changed.outputs.changed_dirs }}
@@ -89,7 +89,7 @@ jobs:
 
   release:
     name: Package & Push Charts
-    runs-on: ubuntu-22.04-sh
+    runs-on: ci-small
     needs: lint-test
     if: startsWith(github.ref, 'refs/tags/')
     steps:

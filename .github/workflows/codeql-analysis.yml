@@ -4,9 +4,9 @@ on:
   workflow_call:
     inputs:
       runs-on:
-        description: Compatibility input; jobs always use ubuntu-22.04-sh
+        description: Compatibility input; jobs always use ci-build
         required: false
-        default: ubuntu-22.04-sh
+        default: ci-build
         type: string
       languages:
         description: Comma-separated CodeQL languages (e.g., 'javascript-typescript,python,go')
@@ -57,7 +57,7 @@ permissions:
 jobs:
   analyze:
     name: CodeQL Analyze
-    runs-on: ubuntu-22.04-sh
+    runs-on: ci-build
     defaults:
       run:
         shell: bash
