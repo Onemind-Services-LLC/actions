@@ -1,0 +1,32 @@
+name: Docker Registry and Buildx Setup
+description: Authenticate before starting the pinned mirrored BuildKit image.
+inputs:
+  registry:
+    description: Registry hostname for authentication
+    required: true
+  username:
+    description: Registry username
+    required: true
+  password:
+    description: Registry password or token
+    required: true
+  setup-buildx:
+    description: Set false for jobs that only need registry authentication
+    default: 'true'
+  driver-opts:
+    description: Newline-separated Buildx driver options
+    default: image=registry.onemindservices.com/docker.io/moby/buildkit:buildx-stable-1@sha256:28a898719c18a33f4e8000685287fa36fd0dd9560c6440227d3a732d79bb41d8
+runs:
+  using: composite
+  steps:
+    - name: Login to Registry
+      uses: docker/login-action@dbcb813823bdd20940b903addbd779551569679f # v4.6.0
+      with:
+        registry: ${{ inputs.registry }}
+        username: ${{ inputs.username }}
+        password: ${{ inputs.password }}
+    - name: Set Up Buildx
+      if: inputs.setup-buildx == 'true'
+      uses: docker/setup-buildx-action@37fe631027851001ddb9b187196cc803df7f5f0e # v4.3.0
+      with:
+        driver-opts: ${{ inputs.driver-opts }}

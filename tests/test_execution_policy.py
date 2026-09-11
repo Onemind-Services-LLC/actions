@@ -34,9 +34,20 @@ class ExecutionPolicyTests(unittest.TestCase):
         for name, job_name in [('ci.yml', 'artifact_contract'), ('container-build.yml', 'build')]:
             workflow = yaml.safe_load((Path('.github/workflows') / name).read_text())
             steps = workflow['jobs'][job_name]['steps']
+            if name == 'ci.yml':
+                setup = next(i for i, item in enumerate(steps) if item.get('uses') == './actions/docker-setup')
+                build = next(i for i, item in enumerate(steps) if item.get('uses') == './actions/docker-bake')
+                self.assertLess(setup, build)
+                action = yaml.safe_load(Path('actions/docker-setup/action.yml').read_text())
+                steps = action['runs']['steps']
+                self.assertTrue(action['inputs']['driver-opts']['default'].startswith('image=registry.onemindservices.com/docker.io/'))
             login = next(i for i, step in enumerate(steps) if step.get('uses', '').startswith('docker/login-action@'))
             buildx = next(i for i, step in enumerate(steps) if step.get('uses', '').startswith('docker/setup-buildx-action@'))
             self.assertLess(login, buildx, name)
+            if name == 'ci.yml':
+                fixture = Path('tests/oci/docker-bake.hcl').read_text()
+                self.assertIn('type=sbom,generator=registry.onemindservices.com/docker.io/', fixture)
+                continue
             self.assertTrue(steps[buildx]['with']['driver-opts'].startswith('image=registry.onemindservices.com/docker.io/'))
             build = next(step for step in steps if step.get('uses', '').startswith('docker/build-push-action@'))
             self.assertTrue(build['with']['sbom'].startswith('generator=registry.onemindservices.com/docker.io/'))
