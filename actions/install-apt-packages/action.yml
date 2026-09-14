@@ -1,0 +1,16 @@
+name: Install APT Packages
+description: Install Ubuntu packages from a signed HTTPS mirror with bounded retries
+
+inputs:
+  packages:
+    description: Whitespace-separated package names, optionally with architecture or version pins
+    required: true
+
+runs:
+  using: composite
+  steps:
+    - name: Install Packages
+      shell: bash
+      env:
+        APT_PACKAGES: ${{ inputs.packages }}
+      run: bash "$GITHUB_ACTION_PATH/install_apt_packages.sh"

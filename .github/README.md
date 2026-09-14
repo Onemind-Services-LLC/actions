@@ -272,9 +272,11 @@ artifact's existence. Pass `signer-identity` as the exact
 `https://github.com/OWNER/actions/.github/workflows/container-publish.yml@SHA`
 used in the workflow call; verification also binds the caller repository and SHA.
 
-OCI tool installation uses the kernel.org Ubuntu mirror over HTTPS to avoid
-stalled connections to Canonical archive backends. APT retains Ubuntu archive
-signature verification and fails if package indexes cannot be refreshed.
+OCI tool installation uses the shared `install-apt-packages` action. It selects
+the kernel.org Ubuntu mirror over HTTPS to avoid stalled connections to Canonical
+archive backends. APT retains Ubuntu archive signature verification and fails if
+package indexes cannot be refreshed. Consumers pass package names instead of
+maintaining their own installer scripts.
 
 The builder exports OCI with SBOM and maximum BuildKit provenance. Consumers
 retrieve an immutable artifact ID within the current run, not an arbitrary

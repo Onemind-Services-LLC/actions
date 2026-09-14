@@ -4,6 +4,7 @@ Reusable composite GitHub Actions maintained in this repository. Each action inc
 
 ## Available Actions
 
+- Install APT Packages: Install Ubuntu packages through a signed HTTPS mirror with bounded retries. [Docs](install-apt-packages/README.md)
 - Node Install & Build: Install dependencies and build a Node.js project using npm, Yarn, pnpm, or npx (build only) with caching and optional private registry auth. [Docs](node-install-build/README.md)
 - Detect Package Manager: Detect npm/yarn/pnpm from lockfiles with a fallback output. [Docs](detect-package-manager/README.md)
 - Git Diff Check: Compute changed files between refs using git, with filtering and optional failure. [Docs](git-diff-check/README.md)
