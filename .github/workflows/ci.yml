@@ -82,7 +82,18 @@ jobs:
           EXPECTED_DIGEST: ${{ steps.build.outputs.digest }}
         run: |
           set -euo pipefail
-          sudo apt-get update -qq
+          # Canonical archive backends can stall TLS connections on runner networks.
+          # Use the kernel.org Ubuntu mirror; APT still verifies Ubuntu signatures.
+          for source in /etc/apt/sources.list /etc/apt/sources.list.d/ubuntu.sources; do
+            if test -f "$source"; then
+              sudo sed -i \
+                -e 's|https\?://archive.ubuntu.com/ubuntu|https://mirrors.edge.kernel.org/ubuntu|g' \
+                -e 's|https\?://security.ubuntu.com/ubuntu|https://mirrors.edge.kernel.org/ubuntu|g' \
+                "$source"
+            fi
+          done
+          sudo apt-get -o APT::Update::Error-Mode=any -o Acquire::Retries=3 \
+            -o Acquire::https::Timeout=20 update -qq
           sudo apt-get install -y --no-install-recommends skopeo
           source="oci-archive:$RUNNER_TEMP/fixture.tar"
           actual="sha256:$(skopeo inspect --raw "$source" | sha256sum | cut -d ' ' -f 1)"

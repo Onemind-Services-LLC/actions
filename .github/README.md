@@ -272,6 +272,10 @@ artifact's existence. Pass `signer-identity` as the exact
 `https://github.com/OWNER/actions/.github/workflows/container-publish.yml@SHA`
 used in the workflow call; verification also binds the caller repository and SHA.
 
+OCI tool installation uses the kernel.org Ubuntu mirror over HTTPS to avoid
+stalled connections to Canonical archive backends. APT retains Ubuntu archive
+signature verification and fails if package indexes cannot be refreshed.
+
 The builder exports OCI with SBOM and maximum BuildKit provenance. Consumers
 retrieve an immutable artifact ID within the current run, not an arbitrary
 cross-run artifact or mutable tag. Skopeo copies all manifests while preserving
