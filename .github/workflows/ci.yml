@@ -78,6 +78,21 @@ jobs:
           provenance: mode=max
           sbom: generator=registry.onemindservices.com/docker.io/docker/buildkit-syft-scanner:stable-1@sha256:ae4f3b554449e7e25548e7d8ccc029d17357348e30c6e3df01b92bc93654d6a9
           push: false
+      - name: Upload OCI Fixture
+        id: artifact
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: oci-contract-image-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/fixture.tar
+          if-no-files-found: error
+          compression-level: 0
+          retention-days: 1
+      - name: Download Exact OCI Fixture
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          artifact-ids: ${{ steps.artifact.outputs.artifact-id }}
+          merge-multiple: true
+          path: ${{ runner.temp }}/downloaded
       - name: Install OCI Tools
         uses: ./actions/install-apt-packages
         with:
@@ -87,7 +102,7 @@ jobs:
           EXPECTED_DIGEST: ${{ steps.build.outputs.digest }}
         run: |
           set -euo pipefail
-          source="oci-archive:$RUNNER_TEMP/fixture.tar"
+          source="oci-archive:$RUNNER_TEMP/downloaded/fixture.tar"
           actual="sha256:$(skopeo inspect --raw "$source" | sha256sum | cut -d ' ' -f 1)"
           test "$actual" = "$EXPECTED_DIGEST"
           skopeo copy --all --preserve-digests "$source" "oci:$RUNNER_TEMP/copied:tested"

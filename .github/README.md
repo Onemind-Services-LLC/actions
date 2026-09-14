@@ -278,6 +278,10 @@ archive backends. APT retains Ubuntu archive signature verification and fails if
 package indexes cannot be refreshed. Consumers pass package names instead of
 maintaining their own installer scripts.
 
+Artifact uploads and downloads use pinned Node.js 24 actions (runner 2.327.1
+or newer). The OCI contract test uploads a fixture, downloads its immutable
+artifact ID and verifies the image digest and attestations after transport.
+
 The builder exports OCI with SBOM and maximum BuildKit provenance. Consumers
 retrieve an immutable artifact ID within the current run, not an arbitrary
 cross-run artifact or mutable tag. Skopeo copies all manifests while preserving
