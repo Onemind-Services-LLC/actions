@@ -39,7 +39,8 @@ jobs:
           yamllint .
           "$RUNNER_TEMP/actionlint" .github/workflows/container-*.yml .github/workflows/python-security.yml .github/workflows/ci.yml
           zizmor --offline --min-severity high .github/workflows/container-*.yml .github/workflows/python-security.yml \
-            .github/workflows/ci.yml actions/django-test-runner/action.yml actions/python-setup-install/action.yml
+            .github/workflows/ci.yml actions/django-test-runner/action.yml actions/python-setup-install/action.yml \
+            actions/install-apt-packages/action.yml
       - name: Test Failure Gates and Credential Isolation
         run: python -m unittest discover -s tests
 
@@ -77,24 +78,15 @@ jobs:
           provenance: mode=max
           sbom: generator=registry.onemindservices.com/docker.io/docker/buildkit-syft-scanner:stable-1@sha256:ae4f3b554449e7e25548e7d8ccc029d17357348e30c6e3df01b92bc93654d6a9
           push: false
+      - name: Install OCI Tools
+        uses: ./actions/install-apt-packages
+        with:
+          packages: skopeo
       - name: Verify Digest and Attestation Preservation
         env:
           EXPECTED_DIGEST: ${{ steps.build.outputs.digest }}
         run: |
           set -euo pipefail
-          # Canonical archive backends can stall TLS connections on runner networks.
-          # Use the kernel.org Ubuntu mirror; APT still verifies Ubuntu signatures.
-          for source in /etc/apt/sources.list /etc/apt/sources.list.d/ubuntu.sources; do
-            if test -f "$source"; then
-              sudo sed -i \
-                -e 's|https\?://archive.ubuntu.com/ubuntu|https://mirrors.edge.kernel.org/ubuntu|g' \
-                -e 's|https\?://security.ubuntu.com/ubuntu|https://mirrors.edge.kernel.org/ubuntu|g' \
-                "$source"
-            fi
-          done
-          sudo apt-get -o APT::Update::Error-Mode=any -o Acquire::Retries=3 \
-            -o Acquire::https::Timeout=20 update -qq
-          sudo apt-get install -y --no-install-recommends skopeo
           source="oci-archive:$RUNNER_TEMP/fixture.tar"
           actual="sha256:$(skopeo inspect --raw "$source" | sha256sum | cut -d ' ' -f 1)"
           test "$actual" = "$EXPECTED_DIGEST"

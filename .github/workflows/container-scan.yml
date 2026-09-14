@@ -32,20 +32,9 @@ jobs:
           merge-multiple: true
           path: ${{ runner.temp }}/container
       - name: Install OCI Tools
-        run: |
-          # Canonical archive backends can stall TLS connections on runner networks.
-          # Use the kernel.org Ubuntu mirror; APT still verifies Ubuntu signatures.
-          for source in /etc/apt/sources.list /etc/apt/sources.list.d/ubuntu.sources; do
-            if test -f "$source"; then
-              sudo sed -i \
-                -e 's|https\?://archive.ubuntu.com/ubuntu|https://mirrors.edge.kernel.org/ubuntu|g' \
-                -e 's|https\?://security.ubuntu.com/ubuntu|https://mirrors.edge.kernel.org/ubuntu|g' \
-                "$source"
-            fi
-          done
-          sudo apt-get -o APT::Update::Error-Mode=any -o Acquire::Retries=3 \
-            -o Acquire::https::Timeout=20 update -qq
-          sudo apt-get install -y --no-install-recommends skopeo
+        uses: Onemind-Services-LLC/actions/actions/install-apt-packages@c092b25b4c78cd2cf3dc9b5cf27aaaa5e39c519a
+        with:
+          packages: skopeo
       - name: Verify Image Digest
         env:
           EXPECTED_DIGEST: ${{ inputs.digest }}
