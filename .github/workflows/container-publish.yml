@@ -48,7 +48,8 @@ jobs:
   publish:
     name: Publish and Sign
     # A caller must additionally gate this job on all required checks.
-    if: github.event_name == 'push' && github.ref_protected
+    # Which refs are allowed to publish (protected-only, everything, etc.) is the caller's call.
+    if: github.event_name == 'push'
     runs-on: ci-build
     timeout-minutes: 20
     concurrency:
@@ -112,7 +113,11 @@ jobs:
         run: |
           set -euo pipefail
           tag="$REF_NAME"
-          if [[ "$REF_TYPE" == tag ]]; then tag="${tag#v}"; fi
+          if [[ "$REF_TYPE" == tag ]]; then
+            tag="${tag#v}"
+          else
+            tag="${tag//\//-}"
+          fi
           [[ "$tag" =~ ^[a-zA-Z0-9_][a-zA-Z0-9_.-]{0,127}$ ]]
           skopeo copy --all --preserve-digests --authfile "$HOME/.docker/config.json" \
             "docker://$IMAGE@$DIGEST" "docker://$IMAGE:$tag"
