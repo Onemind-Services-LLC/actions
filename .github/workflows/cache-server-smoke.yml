@@ -1,0 +1,111 @@
+name: Cache Server Smoke
+
+on:
+  push:
+    branches: [ops/cache-server-upgrade]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: cache-server-smoke
+  cancel-in-progress: false
+
+jobs:
+  save:
+    name: Save (${{ matrix.runner }})
+    strategy:
+      fail-fast: false
+      matrix:
+        runner: [ci-small, ci-test, ci-build, ubuntu-22.04-sh]
+    runs-on: ${{ matrix.runner }}
+    timeout-minutes: 15
+    steps:
+      - name: Check TLS and Authentication
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$ACTIONS_RESULTS_URL" = 'https://gha-cache.production-apps.onemindservices.com'
+          curl --fail --silent --show-error "$ACTIONS_RESULTS_URL/health"
+          status=$(curl --silent --show-error -o /dev/null -w '%{http_code}' \
+            -X POST -H 'Content-Type: application/json' -d '{}' \
+            "$ACTIONS_RESULTS_URL/twirp/github.actions.results.api.v1.CacheService/GetCacheEntryDownloadURL")
+          test "$status" = 401
+      - name: Generate Payload
+        shell: bash
+        run: |
+          mkdir -p smoke-cache
+          head -c 8388608 /dev/urandom > smoke-cache/payload.bin
+          sha256sum smoke-cache/payload.bin > smoke-cache/checksum.txt
+      - name: Save Cache
+        uses: actions/cache/save@caa296126883cff596d87d8935842f9db880ef25 # v5
+        with:
+          path: smoke-cache
+          key: cache-upgrade-${{ github.run_id }}-${{ github.run_attempt }}-${{ matrix.runner }}
+      - name: Upload Artifact Through Results Passthrough
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: smoke-${{ matrix.runner }}
+          path: smoke-cache
+          compression-level: 0
+          retention-days: 1
+          if-no-files-found: error
+  restore:
+    name: Restore (${{ matrix.runner }})
+    needs: save
+    strategy:
+      fail-fast: false
+      matrix:
+        runner: [ci-small, ci-test, ci-build, ubuntu-22.04-sh]
+    runs-on: ${{ matrix.runner }}
+    timeout-minutes: 15
+    steps:
+      - name: Restore Cache on a Fresh Runner
+        id: cache
+        uses: actions/cache/restore@caa296126883cff596d87d8935842f9db880ef25 # v5
+        with:
+          path: smoke-cache
+          key: cache-upgrade-${{ github.run_id }}-${{ github.run_attempt }}-${{ matrix.runner }}
+          fail-on-cache-miss: true
+      - name: Verify Cache Payload
+        env:
+          CACHE_HIT: ${{ steps.cache.outputs.cache-hit }}
+        run: |
+          test "$CACHE_HIT" = true
+          sha256sum --check smoke-cache/checksum.txt
+      - name: Download Artifact Through Results Passthrough
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8
+        with:
+          name: smoke-${{ matrix.runner }}
+          path: artifact-copy
+      - name: Verify Artifact Payload
+        run: cmp smoke-cache/payload.bin artifact-copy/payload.bin
+  buildkit:
+    name: BuildKit Cache Round Trip
+    runs-on: ci-build
+    timeout-minutes: 20
+    steps:
+      - name: Set Up Buildx
+        uses: docker/setup-buildx-action@8d2750c68a42422c14e847fe6c8ac0403b4cbd6f # v3
+        with:
+          driver-opts: image=registry.onemindservices.com/docker.io/moby/buildkit:buildx-stable-1@sha256:28a898719c18a33f4e8000685287fa36fd0dd9560c6440227d3a732d79bb41d8
+      - name: Prepare Fixture
+        run: |
+          mkdir fixture
+          head -c 8388608 /dev/urandom > fixture/payload.bin
+          printf 'FROM scratch\nCOPY payload.bin /payload.bin\n' > fixture/Dockerfile
+      - name: Export GHA Cache
+        uses: docker/build-push-action@10e90e3645eae34f1e60eeb005ba3a3d33f178e8 # v6
+        with:
+          context: fixture
+          cache-to: type=gha,version=2,mode=max,scope=cache-upgrade-${{ github.run_id }}
+          outputs: type=cacheonly
+      - name: Remove Local Build Cache
+        run: docker buildx prune --all --force
+      - name: Import GHA Cache
+        uses: docker/build-push-action@10e90e3645eae34f1e60eeb005ba3a3d33f178e8 # v6
+        with:
+          context: fixture
+          cache-from: type=gha,version=2,scope=cache-upgrade-${{ github.run_id }}
+          outputs: type=cacheonly
