@@ -33,7 +33,7 @@ Compute changed files between a base and HEAD using git. Supports automatic base
 
 ```yaml
 steps:
-  - uses: actions/checkout@v6
+  - uses: actions/checkout@v7.0.1
 
   - id: diff
     uses: Onemind-Services-LLC/actions/actions/git-diff-check@master

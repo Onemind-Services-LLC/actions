@@ -25,7 +25,7 @@ Re-run your bundling step and fail if committed dist artifacts change. This enfo
 
 ```yaml
 steps:
-  - uses: actions/checkout@v6
+  - uses: actions/checkout@v7.0.1
 
   - name: Bundle Integrity Check
     uses: Onemind-Services-LLC/actions/actions/bundle-integrity-check@master

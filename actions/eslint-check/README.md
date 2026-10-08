@@ -13,7 +13,7 @@ Run ESLint and fail on any issue (treats warnings as errors). The action execute
 
 ```yaml
 steps:
-  - uses: actions/checkout@v6
+  - uses: actions/checkout@v7.0.1
   - name: ESLint
     uses: Onemind-Services-LLC/actions/actions/eslint-check@master
     with:

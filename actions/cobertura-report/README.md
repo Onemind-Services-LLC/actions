@@ -17,7 +17,7 @@ Generates a Markdown code coverage summary from Cobertura XML using the pinned `
 
 ```yaml
 steps:
-  - uses: actions/checkout@v6
+  - uses: actions/checkout@v7.0.1
   - name: Generate coverage
     run: |
       coverage run -m pytest

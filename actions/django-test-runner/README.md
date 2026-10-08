@@ -27,7 +27,7 @@ Run Django checks, apply migrations, collect static files, and execute tests wit
 
 ## What it does
 
-- Installs the pinned `coverage==7.15.3` tool.
+- Installs the pinned `coverage==7.16.2` tool.
 - Runs `makemigrations --check --dry-run` to enforce committed migrations.
 - Runs `migrate -v <verbosity>`.
 - Runs `collectstatic --noinput`.

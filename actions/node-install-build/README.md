@@ -36,7 +36,7 @@ jobs:
   build:
     runs-on: ubuntu-22.04-sh
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7.0.1
 
       - name: Install & Build (npm)
         uses: Onemind-Services-LLC/actions/actions/node-install-build@master

@@ -19,7 +19,7 @@ jobs:
   example:
     runs-on: ubuntu-22.04-sh
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7.0.1
 
       - name: Read a value
         uses: Onemind-Services-LLC/actions/actions/yq@master

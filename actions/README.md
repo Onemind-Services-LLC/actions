@@ -36,3 +36,15 @@ Third‑party actions/workflows: In all examples and consumer workflows, third�
 - Inputs include clear descriptions and sensible defaults.
 - Steps are small, composable, and pinned to versions.
 - YAML and Markdown use 2‑space indentation.
+
+## Dependency compatibility
+
+Third-party action dependencies use stable release commit pins verified on
+2026-10-08. Node.js actions require Actions Runner 2.327.1 or newer. Setup Node v7
+requires callers authenticating to private registries to supply `npm-token`; it no
+longer provides a dummy `NODE_AUTH_TOKEN`. Application Node/Python version inputs
+remain caller-controlled.
+
+The signing action installs Cosign 3.1.3 explicitly. Cosign v3 changes its default
+signature storage format; consumers verifying signatures should also use Cosign
+v3. Django coverage checks use coverage.py 7.16.2.

@@ -27,7 +27,7 @@ jobs:
   build:
     runs-on: ubuntu-22.04-sh
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7.0.1
 
       - name: Install & Build
         uses: Onemind-Services-LLC/actions/actions/npm-install-build@master

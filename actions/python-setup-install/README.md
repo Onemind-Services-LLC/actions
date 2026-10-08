@@ -31,7 +31,7 @@ jobs:
   build:
     runs-on: ubuntu-22.04-sh
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7.0.1
 
       - name: Python Setup & Install
         uses: OWNER/REPO/actions/python-setup-install@master
@@ -67,7 +67,7 @@ jobs:
       matrix:
         python-version: ['3.10', '3.11', '3.12']
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7.0.1
 
       - name: Python Setup & Install
         uses: OWNER/REPO/actions/python-setup-install@master

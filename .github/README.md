@@ -8,6 +8,23 @@ Consume via:
 
 See also: [Actions Overview](../actions/README.md)
 
+## Dependency compatibility
+
+Third-party actions are pinned to the latest stable release commits checked on
+2026-10-08. Node.js actions require Actions Runner 2.327.1 or newer. Checkout v7
+rejects unsafe fork checkouts under `pull_request_target` and `workflow_run` by
+default; consumers should use `pull_request` for untrusted pull request checks.
+
+CI uses yamllint 1.38.0, zizmor 1.30.1, and actionlint 1.7.12. Actionlint is already
+at its latest published release and does not yet accept the new parallel-step
+syntax. Parallel execution remains disabled pending validator support and a
+GitHub canary. Container scanning uses Trivy 0.75.0; publishing explicitly installs
+Cosign 3.1.3 rather than relying on the installer's older default.
+
+Reusable workflows retain their existing pins to this repository's composite
+actions. When publishing dependency upgrades, update those internal pins to the
+reviewed commit containing the composite changes so callers receive them too.
+
 ## Runner profiles
 
 Reusable workflows use these organization runner profiles. NetBox tests and

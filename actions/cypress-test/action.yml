@@ -83,7 +83,7 @@ runs:
             libu2f-udev
 
     - id: setup-chrome
-      uses: browser-actions/setup-chrome@b94431e051d1c52dcbe9a7092a4f10f827795416 # v2.1.0
+      uses: browser-actions/setup-chrome@48ad923757ca74d66703209fe939badbdf80f2f4 # v2.2.0
       if: ${{ inputs.browser == 'chrome-for-testing' || inputs.browser == 'chrome' }}
 
     - name: Expose Chrome binary on PATH
@@ -108,7 +108,7 @@ runs:
         chrome --version || true
 
     - id: setup-firefox
-      uses: browser-actions/setup-firefox@fcf821c621167805dd63a29662bd7cb5676c81a8 # v1.7.1
+      uses: browser-actions/setup-firefox@0bc507ddf224827e3b1af68e014d5e42ab93e795 # v1.7.2
       if: ${{ inputs.browser == 'firefox' }}
 
     - name: Expose Firefox binary on PATH
@@ -131,7 +131,7 @@ runs:
         firefox --version || true
 
     - id: setup-edge
-      uses: browser-actions/setup-edge@5a55d8fc0f012aa6e16b582df5bf9d6274bda7da # v1.1.1
+      uses: browser-actions/setup-edge@e2f31d5d9f2e6d75e72516221b4df8528e6325cf # v1.1.2
       if: ${{ inputs.browser == 'edge' }}
 
     - name: Expose Edge binary on PATH
@@ -160,7 +160,7 @@ runs:
         microsoft-edge-stable --version || true
 
     - name: Run Cypress tests
-      uses: cypress-io/github-action@7ef72e250a9e564efb4ed4c2433971ada4cc38b4 # v6.10.4
+      uses: cypress-io/github-action@c541a95ea92d9239347a2355f2e895cd4b3f8060 # v7.4.6
       with:
         component: ${{ inputs.component }}
         install: false
@@ -176,7 +176,7 @@ runs:
 
     - name: Upload screenshots on failure
       if: ${{ failure() }}
-      uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+      uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
       with:
         name: cypress-screenshots-${{ inputs.browser }}
         path: cypress/screenshots
