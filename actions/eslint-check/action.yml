@@ -24,12 +24,12 @@ runs:
   steps:
     - name: Detect Package Manager
       id: pm
-      uses: Onemind-Services-LLC/actions/actions/detect-package-manager@3cc80b064ebe1023e05533efa15b47c43ead5ef9
+      uses: Onemind-Services-LLC/actions/actions/detect-package-manager@b78ae46162b6855b616623b241e73374afc794cd
       with:
         working-directory: ${{ inputs.working-directory }}
 
     - name: Setup Node
-      uses: Onemind-Services-LLC/actions/actions/node-install-build@3cc80b064ebe1023e05533efa15b47c43ead5ef9
+      uses: Onemind-Services-LLC/actions/actions/node-install-build@b78ae46162b6855b616623b241e73374afc794cd
       with:
         package-manager: ${{ steps.pm.outputs.package-manager }}
         node-version: ${{ inputs.node-version }}
