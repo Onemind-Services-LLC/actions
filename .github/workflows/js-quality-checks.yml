@@ -98,7 +98,7 @@ jobs:
 
       - name: Prettier Check
         if: ${{ inputs.run-prettier }}
-        uses: Onemind-Services-LLC/actions/actions/prettier-check@cf62d1269631735ccc36988e8065f8ef4b1b8868
+        uses: Onemind-Services-LLC/actions/actions/prettier-check@334a662a25fab25232599ca598a9dbfd08b83c20
         with:
           node-version: ${{ inputs.node-version }}
           working-directory: ${{ inputs.working-directory }}
@@ -107,7 +107,7 @@ jobs:
 
       - name: ESLint Check
         if: ${{ inputs.run-eslint }}
-        uses: Onemind-Services-LLC/actions/actions/eslint-check@cf62d1269631735ccc36988e8065f8ef4b1b8868
+        uses: Onemind-Services-LLC/actions/actions/eslint-check@334a662a25fab25232599ca598a9dbfd08b83c20
         with:
           node-version: ${{ inputs.node-version }}
           working-directory: ${{ inputs.working-directory }}
@@ -116,14 +116,14 @@ jobs:
 
       - name: Browserslist Lock Check
         if: ${{ inputs.run-browserslist }}
-        uses: Onemind-Services-LLC/actions/actions/browserslist-lock-check@cf62d1269631735ccc36988e8065f8ef4b1b8868
+        uses: Onemind-Services-LLC/actions/actions/browserslist-lock-check@334a662a25fab25232599ca598a9dbfd08b83c20
         with:
           node-version: ${{ inputs.node-version }}
           working-directory: ${{ inputs.working-directory }}
 
       - name: Bundle Integrity Check
         if: ${{ inputs.run-bundle-check }}
-        uses: Onemind-Services-LLC/actions/actions/bundle-integrity-check@cf62d1269631735ccc36988e8065f8ef4b1b8868
+        uses: Onemind-Services-LLC/actions/actions/bundle-integrity-check@334a662a25fab25232599ca598a9dbfd08b83c20
         with:
           node-version: ${{ inputs.node-version }}
           working-directory: ${{ inputs.working-directory }}
@@ -132,7 +132,7 @@ jobs:
 
       - name: TypeScript Type Check
         if: ${{ inputs.run-typescript }}
-        uses: Onemind-Services-LLC/actions/actions/typescript-check@cf62d1269631735ccc36988e8065f8ef4b1b8868
+        uses: Onemind-Services-LLC/actions/actions/typescript-check@334a662a25fab25232599ca598a9dbfd08b83c20
         with:
           node-version: ${{ inputs.node-version }}
           working-directory: ${{ inputs.working-directory }}

@@ -120,7 +120,7 @@ jobs:
           ref: 3cc80b064ebe1023e05533efa15b47c43ead5ef9
 
       - name: Setup NetBox Requirements
-        uses: Onemind-Services-LLC/actions/actions/python-setup-install@3cc80b064ebe1023e05533efa15b47c43ead5ef9
+        uses: Onemind-Services-LLC/actions/actions/python-setup-install@334a662a25fab25232599ca598a9dbfd08b83c20
         with:
           python-version: ${{ inputs.python-version }}
           working-directory: ${{ env.NETBOX_WORKING_DIRECTORY }}
@@ -129,7 +129,7 @@ jobs:
             python3 -m pip install "setuptools<81"
 
       - name: Setup Plugin Requirements
-        uses: Onemind-Services-LLC/actions/actions/python-setup-install@3cc80b064ebe1023e05533efa15b47c43ead5ef9
+        uses: Onemind-Services-LLC/actions/actions/python-setup-install@334a662a25fab25232599ca598a9dbfd08b83c20
         # Limit Git authentication to this install step and its child processes.
         env:
           GIT_CONFIG_COUNT: '1'
@@ -147,7 +147,7 @@ jobs:
             "${{ env.NETBOX_WORKING_DIRECTORY }}/netbox/netbox/configuration.py"
 
       - name: Run Tests
-        uses: Onemind-Services-LLC/actions/actions/django-test-runner@cf62d1269631735ccc36988e8065f8ef4b1b8868
+        uses: Onemind-Services-LLC/actions/actions/django-test-runner@334a662a25fab25232599ca598a9dbfd08b83c20
         with:
           working-directory: ${{ env.NETBOX_WORKING_DIRECTORY }}/netbox
           django-settings-module-key: NETBOX_CONFIGURATION

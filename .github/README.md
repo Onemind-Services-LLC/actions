@@ -21,9 +21,9 @@ syntax. Parallel execution remains disabled pending validator support and a
 GitHub canary. Container scanning uses Trivy 0.75.0; publishing explicitly installs
 Cosign 3.1.3 rather than relying on the installer's older default.
 
-Reusable workflows retain their existing pins to this repository's composite
-actions. When publishing dependency upgrades, update those internal pins to the
-reviewed commit containing the composite changes so callers receive them too.
+Reusable workflows pin this repository's composite actions to the commit
+containing these dependency upgrades. Nested composite dependencies also pin
+the upgraded actions, so callers receive the changes throughout the action chain.
 
 ## Runner profiles
 

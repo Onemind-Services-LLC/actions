@@ -49,7 +49,7 @@ jobs:
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
       - name: Python setup and build deps
-        uses: Onemind-Services-LLC/actions/actions/python-setup-install@3cc80b064ebe1023e05533efa15b47c43ead5ef9
+        uses: Onemind-Services-LLC/actions/actions/python-setup-install@334a662a25fab25232599ca598a9dbfd08b83c20
         with:
           python-version: ${{ inputs.python-version }}
           working-directory: ${{ inputs.working-directory }}

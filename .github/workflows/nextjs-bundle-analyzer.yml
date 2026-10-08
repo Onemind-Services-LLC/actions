@@ -77,7 +77,7 @@ jobs:
 
       - name: Detect Package Manager
         id: pm
-        uses: Onemind-Services-LLC/actions/actions/detect-package-manager@3cc80b064ebe1023e05533efa15b47c43ead5ef9
+        uses: Onemind-Services-LLC/actions/actions/detect-package-manager@334a662a25fab25232599ca598a9dbfd08b83c20
         with:
           working-directory: ${{ inputs.working-directory }}
 
@@ -89,7 +89,7 @@ jobs:
           INPUT: ${{ inputs.extra-env }}
 
       - name: Install & Build
-        uses: Onemind-Services-LLC/actions/actions/node-install-build@3cc80b064ebe1023e05533efa15b47c43ead5ef9
+        uses: Onemind-Services-LLC/actions/actions/node-install-build@334a662a25fab25232599ca598a9dbfd08b83c20
         with:
           package-manager: ${{ steps.pm.outputs.package-manager }}
           node-version: ${{ inputs.node-version }}

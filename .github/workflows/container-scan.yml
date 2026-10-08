@@ -32,7 +32,7 @@ jobs:
           merge-multiple: true
           path: ${{ runner.temp }}/container
       - name: Install OCI Tools
-        uses: Onemind-Services-LLC/actions/actions/install-apt-packages@c092b25b4c78cd2cf3dc9b5cf27aaaa5e39c519a
+        uses: Onemind-Services-LLC/actions/actions/install-apt-packages@334a662a25fab25232599ca598a9dbfd08b83c20
         with:
           packages: skopeo
       - name: Verify Image Digest
