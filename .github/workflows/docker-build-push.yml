@@ -127,7 +127,7 @@ jobs:
 
       - name: Build, push, sign
         id: build
-        uses: Onemind-Services-LLC/actions/actions/docker-build-push@334a662a25fab25232599ca598a9dbfd08b83c20
+        uses: Onemind-Services-LLC/actions/actions/docker-build-push@e4f5933d0be3b3f87a4738366f8dde95dc914615
         with:
           images: ${{ inputs.image }}
           meta-tags: ${{ inputs.meta-tags }}
