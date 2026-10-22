@@ -68,7 +68,7 @@ jobs:
       - name: Install OCI Tools
         uses: Onemind-Services-LLC/actions/actions/install-apt-packages@334a662a25fab25232599ca598a9dbfd08b83c20
         with:
-          packages: skopeo
+          packages: skopeo gettext-base
       - name: Login to Registry
         uses: docker/login-action@dbcb813823bdd20940b903addbd779551569679f # v4.6.0
         with:

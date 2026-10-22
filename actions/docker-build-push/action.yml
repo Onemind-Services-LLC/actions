@@ -134,7 +134,7 @@ runs:
 
     - name: Sign Images
       if: inputs.push == 'true' && steps.build.outputs.digest
-      uses: Onemind-Services-LLC/actions/actions/cosign-sign@b78ae46162b6855b616623b241e73374afc794cd
+      uses: Onemind-Services-LLC/actions/actions/cosign-sign@c7e3333f2d8e30fb0e22f8fc986f89a0923f2ba6
       with:
         mode: docker
         docker-images: ${{ steps.meta.outputs.tags }}

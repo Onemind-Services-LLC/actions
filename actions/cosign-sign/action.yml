@@ -33,6 +33,11 @@ inputs:
 runs:
   using: composite
   steps:
+    - name: Install envsubst
+      uses: Onemind-Services-LLC/actions/actions/install-apt-packages@334a662a25fab25232599ca598a9dbfd08b83c20
+      with:
+        packages: gettext-base
+
     - name: Install Cosign
       uses: sigstore/cosign-installer@6f9f17788090df1f26f669e9d70d6ae9567deba6 # v4.1.2
       with:
