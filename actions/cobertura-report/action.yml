@@ -55,6 +55,10 @@ runs:
 
     - name: Add Coverage PR Comment
       if: ${{ always() && (github.event_name == 'pull_request' || inputs.pull-request-number != '') }}
+      # Pull requests from forks (and Dependabot) get a read-only token, so the
+      # comment cannot be posted. The coverage threshold is enforced by the
+      # summary step above, so a failed comment must not fail the job.
+      continue-on-error: true
       uses: marocchino/sticky-pull-request-comment@5770ad5eb8f42dd2c4f34da00c94c5381e49af88 # v3.0.5
       with:
         path: code-coverage-results.md
