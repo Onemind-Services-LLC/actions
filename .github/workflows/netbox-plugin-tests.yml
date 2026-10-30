@@ -147,7 +147,7 @@ jobs:
             "${{ env.NETBOX_WORKING_DIRECTORY }}/netbox/netbox/configuration.py"
 
       - name: Run Tests
-        uses: Onemind-Services-LLC/actions/actions/django-test-runner@90be16b7e1bb705800ea27b7c219e48b1fa1397e
+        uses: Onemind-Services-LLC/actions/actions/django-test-runner@9d2bbe5e0e8ad59337fa89206c992aa09508318b
         with:
           working-directory: ${{ env.NETBOX_WORKING_DIRECTORY }}/netbox
           django-settings-module-key: NETBOX_CONFIGURATION
