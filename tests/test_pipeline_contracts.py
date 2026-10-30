@@ -28,6 +28,17 @@ class PipelineContractTests(unittest.TestCase):
             result = subprocess.run(["bash", "-e", "-o", "pipefail", "-c", gate["run"]], env=env)
             self.assertEqual(result.returncode, 2)
 
+    def test_coverage_threshold_uses_coverage_args(self):
+        gate = step("django-test-runner", "Enforce coverage threshold")
+        with tempfile.TemporaryDirectory() as directory:
+            coverage = Path(directory) / "coverage"
+            coverage.write_text('#!/bin/sh\n[ "$1 $2 $3" = "report --omit=*/migrations/*,*/tests/* --fail-under=100" ] && exit 2\nexit 99\n')
+            coverage.chmod(0o755)
+            env = dict(os.environ, PATH=directory + os.pathsep + os.environ["PATH"], COVERAGE_MINIMUM="100",
+                       COVERAGE_ARGS="--omit=*/migrations/*,*/tests/*")
+            result = subprocess.run(["bash", "-e", "-o", "pipefail", "-c", gate["run"]], env=env)
+            self.assertEqual(result.returncode, 2)
+
     def test_dependency_authentication_never_updates_global_git_configuration(self):
         install = step("python-setup-install", "Install From requirements.txt")
         with tempfile.TemporaryDirectory() as directory:

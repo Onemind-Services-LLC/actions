@@ -169,13 +169,8 @@ runs:
         COVERAGE_ARGS: ${{ inputs.coverage-args }}
         COVERAGE_MINIMUM: ${{ inputs.coverage-minimum }}
       run: |
-        python - <<'PYTHON'
-        import os
-        import shlex
-        import subprocess
-        command = ['coverage', 'report'] + shlex.split(os.environ['COVERAGE_ARGS'])
-        subprocess.run(command + ['--fail-under=' + os.environ['COVERAGE_MINIMUM']], check=True)
-        PYTHON
+        read -r -a coverage_args <<< "${COVERAGE_ARGS:-}"
+        coverage report "${coverage_args[@]}" --fail-under="$COVERAGE_MINIMUM"
 
     - name: Coverage Reporter
       if: ${{ inputs.coverage-report == 'true' }}
