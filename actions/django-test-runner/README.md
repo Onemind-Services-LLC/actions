@@ -9,7 +9,7 @@ Run Django checks, apply migrations, collect static files, and execute tests wit
 - **django-settings-module-key**: Env var name to export the settings module under (default: `DJANGO_SETTINGS_MODULE`).
 - **verbosity**: Django command verbosity (default: `3`).
 - **test-args**: Extra args appended to `manage.py test`.
-- **coverage-args**: Extra args appended to `coverage xml`.
+- **coverage-args**: Extra args appended to `coverage xml` and `coverage report` (including the threshold check).
 - **pytest-paths**: Optional space-separated standalone pytest paths, run after Django tests with coverage appended. Install pytest in development requirements.
 - **coverage-source**: Comma-separated modules/paths to measure (passed to `coverage run --source`).
 

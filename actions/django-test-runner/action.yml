@@ -58,7 +58,7 @@ inputs:
     required: false
     default: ''
   coverage-args:
-    description: Extra arguments passed to `coverage xml`
+    description: Extra arguments passed to `coverage xml` and `coverage report` (e.g. `--omit=...`)
     required: false
     default: ''
   coverage-source:
@@ -166,8 +166,16 @@ runs:
       shell: bash
       working-directory: ${{ inputs.working-directory }}
       env:
+        COVERAGE_ARGS: ${{ inputs.coverage-args }}
         COVERAGE_MINIMUM: ${{ inputs.coverage-minimum }}
-      run: coverage report --fail-under="$COVERAGE_MINIMUM"
+      run: |
+        python - <<'PYTHON'
+        import os
+        import shlex
+        import subprocess
+        command = ['coverage', 'report'] + shlex.split(os.environ['COVERAGE_ARGS'])
+        subprocess.run(command + ['--fail-under=' + os.environ['COVERAGE_MINIMUM']], check=True)
+        PYTHON
 
     - name: Coverage Reporter
       if: ${{ inputs.coverage-report == 'true' }}
